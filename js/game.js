@@ -31,6 +31,8 @@ const game = {
   shake: 0,              // screen shake magnitude, decays fast
   slam: false,           // SLAM TIME reached
   lastTickAt: -1,
+  stats: [],             // per-team match stats: splats, downs, buttons
+  newBest: false,        // player set a personal coverage record this match
   button: { active: false, x: 0, y: 0, nextAt: 0 },   // positioned from PLAZA at match start
   timeLeft: MATCH_SECONDS,
   elapsed: 0,
@@ -121,6 +123,7 @@ addEventListener('contextmenu', e => e.preventDefault());
 /* ---------------- match lifecycle ---------------- */
 
 function startMatch(playerTeam) {
+  Replay.stop();
   setMap(game.mapIdx);   // builds the sketch layers, sets OBSTACLES/PLAZA
   initPaint();
   game.fighters = TEAMS.map(t => new Fighter(t.id, t.id === playerTeam));
@@ -142,6 +145,9 @@ function startMatch(playerTeam) {
   game.shake = 0;
   game.slam = false;
   game.lastTickAt = -1;
+  game.stats = TEAMS.map(() => ({ splats: 0, downs: 0, buttons: 0 }));
+  game.newBest = false;
+  Replay.reset();
   camPan.x = camPan.y = 0;
   for (let i = 0; i < 4; i++) spawnPickup();
   ui.feed.innerHTML = '';
@@ -153,12 +159,20 @@ function startMatch(playerTeam) {
 }
 
 function leaveMatch() {
+  Replay.stop();
   game.state = 'title';
+  updateTitleRecord();
   showScreen('#screen-title');
 }
 
 function endMatch() {
   game.lastCoverage = coverage();
+  Replay.snap();   // capture the true final frame
+  const order = [0, 1, 2, 3].sort((a, b) => game.lastCoverage[b] - game.lastCoverage[a]);
+  game.newBest = Records.addMatch({
+    won: order[0] === game.player.team,
+    coverage: game.lastCoverage[game.player.team] * 100,
+  });
   game.state = 'results';
   SFX.play('end');
   showResults(game);
@@ -232,6 +246,7 @@ function update(dt) {
     if (game.button.active && dist(f.x, f.y, game.button.x, game.button.y) < FIGHTER_RADIUS + 18) {
       game.button.active = false;
       game.button.nextAt = game.elapsed + BUTTON_INTERVAL;
+      game.stats[f.team].buttons++;
       SFX.play('button');
       SFX.play('rocketWarn');
       pushToast(`${f.name} hit the RED BUTTON!`, 'warn');
@@ -351,6 +366,9 @@ function update(dt) {
     game.covTimer = 0;
     game.lastCoverage = coverage();
   }
+
+  // turf replay snapshots
+  Replay.tick(dt);
 
   // camera follows player; mouse at the window edge pans it to scout,
   // and it eases back once the mouse leaves the edge (Space snaps back)
@@ -570,6 +588,7 @@ function boot() {
   buildMapCards(game.stageIdx);
   buildFighterCards();
   attachSplatFX($('#screen-stages'));
+  updateTitleRecord();
 
   // flow: title -> stage select -> map select -> fighter select -> match
   $('#play-btn').addEventListener('click', () => {

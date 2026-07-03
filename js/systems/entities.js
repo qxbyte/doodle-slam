@@ -111,6 +111,8 @@ class Fighter {
     if (this.hp <= 0) {
       this.alive = false;
       this.respawnTimer = 2.5;
+      game.stats[attacker.team].splats++;
+      game.stats[this.team].downs++;
       splat(this.x, this.y, 70 * slamMul(), attacker.team);
       addFx({ type: 'text', x: this.x, y: this.y - 24, text: 'SPLAT!', color: TEAMS[attacker.team].color });
       addShake(this.isPlayer ? 9 : 4);

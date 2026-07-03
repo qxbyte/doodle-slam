@@ -277,6 +277,16 @@ function buildFighterCards() {
   }
 }
 
+/* ---------------- title career line ---------------- */
+
+function updateTitleRecord() {
+  const el = $('#title-record');
+  const r = Records.get();
+  if (!r.plays) { el.textContent = ''; return; }
+  el.textContent =
+    `${r.plays} match${r.plays > 1 ? 'es' : ''} · ${r.wins} win${r.wins === 1 ? '' : 's'} · best turf ${r.best.toFixed(1)}%`;
+}
+
 /* ---------------- results ---------------- */
 
 function showResults(game) {
@@ -287,21 +297,29 @@ function showResults(game) {
 
   $('#winner-line').innerHTML =
     `<span style="color:${winner.color}">${winner.name}</span> takes the town!` +
-    (playerWon ? ' 🎉 That’s you!' : '');
+    (playerWon ? ' 🎉 That’s you!' : '') +
+    (game.newBest ? ' <span class="record-badge">NEW BEST TURF!</span>' : '');
 
   const wrap = $('#result-rows');
   wrap.innerHTML = '';
   order.forEach((tid, i) => {
     const t = TEAMS[tid];
+    const s = game.stats[tid];
     const you = tid === game.player.team ? ' (YOU)' : ' [bot]';
+    const bits = [`${s.splats} splat${s.splats === 1 ? '' : 's'}`, `${s.downs} down${s.downs === 1 ? '' : 's'}`];
+    if (s.buttons) bits.push(`${s.buttons} button${s.buttons === 1 ? '' : 's'}`);
     wrap.insertAdjacentHTML('beforeend', `
       <div class="result-row">
         <span class="r-rank">${i + 1}</span>
         <span class="r-dot" style="background:${t.color}"></span>
-        <span class="r-name">${t.name}${you}</span>
+        <span class="r-main">
+          <span class="r-name">${t.name}${you}</span>
+          <span class="r-stats">${bits.join(' · ')}</span>
+        </span>
         <span class="r-pct" style="color:${t.dark}">${(cov[tid] * 100).toFixed(1)}%</span>
       </div>`);
   });
 
   showScreen('#screen-results');
+  Replay.start($('#replay-canvas'));
 }

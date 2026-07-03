@@ -44,6 +44,7 @@
   <div class="menu-blobs"></div>
   <h1 class="logo">DOODLE<br>SLAM!</h1>
   <p class="tagline">Splat the town. Own the turf. 3 minutes on the clock.</p>
+  <div id="title-record"></div>
   <button id="play-btn" class="big-btn">PLAY</button>
   <div class="controls-hint">WASD move &nbsp;&middot;&nbsp; hold Left Click to spray &nbsp;&middot;&nbsp; Right Click throws Paint Bombs &nbsp;&middot;&nbsp; mouse at screen edge scouts, Space recenters &nbsp;&middot;&nbsp; M mutes</div>
   <div class="footnote">Fan project inspired by Splatoon. Not affiliated with Nintendo.</div>
@@ -91,6 +92,10 @@
   <div class="menu-blobs"></div>
   <h2 class="select-title">TIME'S UP!</h2>
   <div id="winner-line"></div>
+  <div id="replay-box">
+    <div class="replay-label">TURF REPLAY</div>
+    <canvas id="replay-canvas" width="330" height="220"></canvas>
+  </div>
   <div id="result-rows"></div>
   <div class="result-btns">
     <button id="again-btn" class="big-btn">PLAY AGAIN</button>
@@ -113,6 +118,8 @@
 <script src="js/world/collision.js"></script>
 <script src="js/systems/audio.js"></script>
 <script src="js/systems/paint.js"></script>
+<script src="js/systems/replay.js"></script>
+<script src="js/systems/records.js"></script>
 <script src="js/systems/entities.js"></script>
 <script src="js/ui/hud.js"></script>
 <script src="js/ui/screens.js"></script>
