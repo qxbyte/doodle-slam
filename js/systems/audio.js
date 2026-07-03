@@ -88,6 +88,7 @@ const SFX = (() => {
   return {
     play(name) {
       if (muted || !bank[name]) return;
+      if (typeof game !== 'undefined' && game.demo) return;   // attract mode is silent
       if (!ensure()) return;
       bank[name]();
     },

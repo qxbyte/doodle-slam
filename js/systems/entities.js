@@ -104,7 +104,7 @@ class Fighter {
   hurt(game, amount, attacker) {
     if (!this.alive) return;
     this.hp -= amount;
-    if (this.isPlayer) {
+    if (this.isPlayer && !game.demo) {
       SFX.play('hurt');
       flashHurt();
     }

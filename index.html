@@ -42,8 +42,15 @@
 <!-- ===== Title screen ===== -->
 <div id="screen-title" class="screen">
   <div class="menu-blobs"></div>
-  <h1 class="logo">DOODLE<br>SLAM!</h1>
+  <div class="logo-wrap">
+    <canvas id="logo-splat" width="720" height="420"></canvas>
+    <h1 class="logo" aria-label="DOODLE SLAM!">
+      <span class="logo-line"><span class="ch" style="--i:0">D</span><span class="ch" style="--i:1">O</span><span class="ch" style="--i:2">O</span><span class="ch" style="--i:3">D</span><span class="ch" style="--i:4">L</span><span class="ch" style="--i:5">E</span></span>
+      <span class="logo-line"><span class="ch" style="--i:6">S</span><span class="ch" style="--i:7">L</span><span class="ch" style="--i:8">A</span><span class="ch" style="--i:9">M</span><span class="ch" style="--i:10">!</span></span>
+    </h1>
+  </div>
   <p class="tagline">Splat the town. Own the turf. 3 minutes on the clock.</p>
+  <div class="swatches" aria-hidden="true"><i style="--c:#2f66e0"></i><i style="--c:#e6392a"></i><i style="--c:#f0b41c"></i><i style="--c:#3ba24f"></i></div>
   <div id="title-record"></div>
   <button id="play-btn" class="big-btn">PLAY</button>
   <div class="controls-hint">WASD move &nbsp;&middot;&nbsp; hold Left Click to spray &nbsp;&middot;&nbsp; Right Click throws Paint Bombs &nbsp;&middot;&nbsp; mouse at screen edge scouts, Space recenters &nbsp;&middot;&nbsp; M mutes</div>

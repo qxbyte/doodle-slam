@@ -84,6 +84,7 @@ function showSlamBanner() {
 }
 
 function pushToast(text, kind = '') {
+  if (typeof game !== 'undefined' && game.demo) return;   // attract mode is silent
   const el = document.createElement('div');
   el.className = `toast ${kind}`;
   el.textContent = text;

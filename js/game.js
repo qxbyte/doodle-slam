@@ -18,6 +18,7 @@ const SLAM_SCALE = 1.6;
 
 const game = {
   state: 'title',        // title | stages | maps | select | match | results
+  demo: false,           // attract mode: bots play behind the menus
   stageIdx: 0,           // chosen on the stage-select screen
   mapIdx: 0,             // chosen on the map-select screen
   difficulty: 'normal',  // bot tuning, chosen on the fighter-select screen
@@ -122,12 +123,8 @@ addEventListener('contextmenu', e => e.preventDefault());
 
 /* ---------------- match lifecycle ---------------- */
 
-function startMatch(playerTeam) {
-  Replay.stop();
-  setMap(game.mapIdx);   // builds the sketch layers, sets OBSTACLES/PLAZA
-  initPaint();
-  game.fighters = TEAMS.map(t => new Fighter(t.id, t.id === playerTeam));
-  game.player = game.fighters[playerTeam];
+/* shared between real matches and the menu attract mode */
+function resetMatchState() {
   game.projectiles = [];
   game.bombs = [];
   game.rockets = [];
@@ -146,10 +143,38 @@ function startMatch(playerTeam) {
   game.slam = false;
   game.lastTickAt = -1;
   game.stats = TEAMS.map(() => ({ splats: 0, downs: 0, buttons: 0 }));
+  for (let i = 0; i < 4; i++) spawnPickup();
+}
+
+/* attract mode: an all-bot match on a random map, rendered behind
+   the translucent menu screens with a slow cinematic camera */
+const demoCam = { x: WORLD.w / 2, y: WORLD.h / 2, tx: WORLD.w / 2, ty: WORLD.h / 2, retarget: 0 };
+
+function startDemoMatch() {
+  game.demo = true;
+  game.mapIdx = Math.floor(Math.random() * MAPS.length);
+  setMap(game.mapIdx);
+  initPaint();
+  game.fighters = TEAMS.map(t => new Fighter(t.id, false));
+  game.player = game.fighters[0];
+  resetMatchState();
+  const s = randomOpenSpot(300);
+  demoCam.x = demoCam.tx = s.x;
+  demoCam.y = demoCam.ty = s.y;
+  demoCam.retarget = 0;
+}
+
+function startMatch(playerTeam) {
+  Replay.stop();
+  game.demo = false;
+  setMap(game.mapIdx);   // builds the sketch layers, sets OBSTACLES/PLAZA
+  initPaint();
+  game.fighters = TEAMS.map(t => new Fighter(t.id, t.id === playerTeam));
+  game.player = game.fighters[playerTeam];
+  resetMatchState();
   game.newBest = false;
   Replay.reset();
   camPan.x = camPan.y = 0;
-  for (let i = 0; i < 4; i++) spawnPickup();
   ui.feed.innerHTML = '';
   setWeaponNote(playerTeam);
   game.state = 'match';
@@ -163,9 +188,15 @@ function leaveMatch() {
   game.state = 'title';
   updateTitleRecord();
   showScreen('#screen-title');
+  if (!prefersReducedMotion()) startDemoMatch();
+}
+
+function prefersReducedMotion() {
+  return matchMedia('(prefers-reduced-motion: reduce)').matches;
 }
 
 function endMatch() {
+  if (game.demo) { startDemoMatch(); return; }   // attract mode just loops
   game.lastCoverage = coverage();
   Replay.snap();   // capture the true final frame
   const order = [0, 1, 2, 3].sort((a, b) => game.lastCoverage[b] - game.lastCoverage[a]);
@@ -187,7 +218,7 @@ function spawnPickup() {
 /* ---------------- update ---------------- */
 
 function update(dt) {
-  if (game.state !== 'match') return;
+  if (game.state !== 'match' && !game.demo) return;
 
   game.elapsed += dt;
   game.timeLeft -= dt;
@@ -196,9 +227,11 @@ function update(dt) {
   // SLAM TIME: the endgame comeback window
   if (!game.slam && game.timeLeft <= SLAM_AT) {
     game.slam = true;
-    SFX.play('slam');
-    showSlamBanner();
-    pushToast('SLAM TIME! Splats hit bigger!', 'danger');
+    if (!game.demo) {
+      SFX.play('slam');
+      showSlamBanner();
+      pushToast('SLAM TIME! Splats hit bigger!', 'danger');
+    }
   }
   // final-10s countdown ticks
   const sec = Math.ceil(game.timeLeft);
@@ -209,8 +242,8 @@ function update(dt) {
 
   const p = game.player;
 
-  // player input
-  if (p.alive) {
+  // player input (attract mode is all bots)
+  if (p.alive && !game.demo) {
     let dx = 0, dy = 0;
     if (input.keys.has('KeyW') || input.keys.has('ArrowUp')) dy -= 1;
     if (input.keys.has('KeyS') || input.keys.has('ArrowDown')) dy += 1;
@@ -229,7 +262,7 @@ function update(dt) {
       continue;
     }
     f.updateRegen(dt);
-    if (!f.isPlayer) f.botUpdate(game, dt);
+    if (!f.isPlayer || game.demo) f.botUpdate(game, dt);
 
     // pickups
     for (let i = game.pickups.length - 1; i >= 0; i--) {
@@ -368,7 +401,25 @@ function update(dt) {
   }
 
   // turf replay snapshots
-  Replay.tick(dt);
+  if (!game.demo) Replay.tick(dt);
+
+  // attract mode: slow cinematic drift between random viewpoints
+  if (game.demo) {
+    cam.zoom = camZoom();
+    const vw = innerWidth / cam.zoom, vh = innerHeight / cam.zoom;
+    demoCam.retarget -= dt;
+    if (demoCam.retarget <= 0) {
+      const s = randomOpenSpot(280);
+      demoCam.tx = s.x; demoCam.ty = s.y;
+      demoCam.retarget = rand(Math.random, 7, 11);
+    }
+    const ease = Math.min(1, dt * 0.35);
+    demoCam.x = lerp(demoCam.x, demoCam.tx, ease);
+    demoCam.y = lerp(demoCam.y, demoCam.ty, ease);
+    cam.x = clamp(demoCam.x - vw / 2, -vw / 2, WORLD.w - vw / 2);
+    cam.y = clamp(demoCam.y - vh / 2, -vh / 2, WORLD.h - vh / 2);
+    return;   // no HUD, no player camera while in the menus
+  }
 
   // camera follows player; mouse at the window edge pans it to scout,
   // and it eases back once the mouse leaves the edge (Space snaps back)
@@ -417,7 +468,7 @@ function render() {
   ctx.fillStyle = '#f4d9d5';
   ctx.fillRect(0, 0, vw, vh);
 
-  if (game.state !== 'match' && game.state !== 'results') return;
+  if (game.state !== 'match' && game.state !== 'results' && !game.demo) return;
 
   ctx.save();
   ctx.scale(cam.zoom, cam.zoom);
@@ -584,10 +635,12 @@ function frame(now) {
 
 function boot() {
   initHUD();
+  initTitleArt();
   buildStageCards();
   buildMapCards(game.stageIdx);
   buildFighterCards();
   attachSplatFX($('#screen-stages'));
+  attachSplatFX($('#screen-title'));
   updateTitleRecord();
 
   // flow: title -> stage select -> map select -> fighter select -> match
@@ -671,6 +724,13 @@ function boot() {
   if (params.get('screen') === 'select') showScreen('#screen-select');
   if (params.get('screen') === 'maps') { buildMapCards(game.stageIdx); showScreen('#screen-maps'); }
   if (params.get('screen') === 'stages') showScreen('#screen-stages');
+
+  // attract mode behind the menus (skipped for reduced motion / debug runs)
+  if (auto === null && !prefersReducedMotion() && !params.has('nodemo')) {
+    startDemoMatch();
+    const dff = Number(params.get('dff')) || 0;   // debug: fast-forward the demo
+    for (let i = 0; i < dff * 30; i++) update(1 / 30);
+  }
 
   requestAnimationFrame(frame);
 }

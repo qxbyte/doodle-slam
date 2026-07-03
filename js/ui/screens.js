@@ -393,6 +393,23 @@ function buildFighterCards() {
   }
 }
 
+/* ---------------- title art ---------------- */
+
+/* the paint burst the logo sits on */
+function initTitleArt() {
+  const cv = $('#logo-splat');
+  const c = cv.getContext('2d');
+  const rng = makeRng(4242);
+  c.clearRect(0, 0, cv.width, cv.height);
+  c.globalAlpha = 0.9;
+  drawSplat(c, rng, cv.width * 0.36, cv.height * 0.40, 96, '#2f66e0');
+  drawSplat(c, rng, cv.width * 0.64, cv.height * 0.62, 88, '#e6392a');
+  c.globalAlpha = 0.85;
+  drawSplat(c, rng, cv.width * 0.74, cv.height * 0.30, 46, '#f0b41c');
+  drawSplat(c, rng, cv.width * 0.24, cv.height * 0.72, 40, '#3ba24f');
+  c.globalAlpha = 1;
+}
+
 /* ---------------- title career line ---------------- */
 
 function updateTitleRecord() {
