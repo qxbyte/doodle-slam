@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DOODLE SLAM!</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:ital,wght@0,700;0,900;1,800;1,900&family=Nunito:wght@600;700;800;900&family=Patrick+Hand&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<canvas id="game"></canvas>
+
+<!-- ===== In-match HUD ===== -->
+<div id="hud" class="hidden">
+  <div id="coverage-panel" class="card">
+    <div class="panel-title">COVERAGE</div>
+    <div class="cov-rows"></div>
+  </div>
+
+  <div id="timer" class="card">3:00</div>
+
+  <div id="feed"></div>
+
+  <div id="status-panel" class="card">
+    <div class="bar-row"><span class="bar-label">HP</span><div class="bar"><div id="hp-fill" class="bar-fill hp"></div></div></div>
+    <div class="bar-row"><span class="bar-label">INK</span><div class="bar"><div id="ink-fill" class="bar-fill ink"></div></div></div>
+    <div id="bomb-hint" class="dashed-box">PAINT BOMB &times;<span id="bomb-count">0</span> &mdash; right-click to throw!</div>
+    <div class="weapon-note"><b>SketchBlaster</b> &mdash; move faster and refill ink on your own paint</div>
+  </div>
+
+  <canvas id="minimap" width="176" height="118"></canvas>
+
+  <button id="leave-btn" class="pill-btn">LEAVE MATCH</button>
+</div>
+
+<!-- ===== Title screen ===== -->
+<div id="screen-title" class="screen">
+  <div class="menu-blobs"></div>
+  <h1 class="logo">DOODLE<br>SLAM!</h1>
+  <p class="tagline">Splat the town. Own the turf. 3 minutes on the clock.</p>
+  <button id="play-btn" class="big-btn">PLAY</button>
+  <div class="controls-hint">WASD move &nbsp;&middot;&nbsp; hold Left Click to spray &nbsp;&middot;&nbsp; Right Click throws Paint Bombs &nbsp;&middot;&nbsp; mouse at screen edge scouts, Space recenters</div>
+  <div class="footnote">Fan project inspired by Splatoon. Not affiliated with Nintendo.</div>
+</div>
+
+<!-- ===== Stage select ===== -->
+<div id="screen-stages" class="screen hidden">
+  <div class="menu-blobs"></div>
+  <h2 class="select-title">Pick Your Stage</h2>
+  <div id="stage-path">
+    <div class="path-line"></div>
+    <div id="stage-cards"></div>
+  </div>
+  <button id="stages-back-btn" class="pill-btn gray">BACK</button>
+  <div class="hint-line">Tip: click the blank paper.</div>
+  <div class="footnote">Fan project inspired by Splatoon. Not affiliated with Nintendo.</div>
+</div>
+
+<!-- ===== Map select ===== -->
+<div id="screen-maps" class="screen hidden">
+  <div class="menu-blobs"></div>
+  <h2 class="select-title">Pick Your Turf</h2>
+  <div id="map-cards"></div>
+  <button id="maps-back-btn" class="pill-btn gray">BACK</button>
+  <div class="footnote">Fan project inspired by Splatoon. Not affiliated with Nintendo.</div>
+</div>
+
+<!-- ===== Character select ===== -->
+<div id="screen-select" class="screen hidden">
+  <div class="menu-blobs"></div>
+  <h2 class="select-title">Pick Your Fighter</h2>
+  <div id="fighter-cards"></div>
+  <button id="back-btn" class="pill-btn gray">BACK</button>
+  <div class="footnote">Fan project inspired by Splatoon. Not affiliated with Nintendo.</div>
+</div>
+
+<!-- ===== Results ===== -->
+<div id="screen-results" class="screen hidden">
+  <div class="menu-blobs"></div>
+  <h2 class="select-title">TIME'S UP!</h2>
+  <div id="winner-line"></div>
+  <div id="result-rows"></div>
+  <div class="result-btns">
+    <button id="again-btn" class="big-btn">PLAY AGAIN</button>
+    <button id="menu-btn" class="pill-btn gray">BACK TO MENU</button>
+  </div>
+  <div class="footnote">Fan project inspired by Splatoon. Not affiliated with Nintendo.</div>
+</div>
+
+<!-- classic scripts share one global scope; load order matters:
+     core -> maps (registry first) -> world -> systems -> ui -> game -->
+<script src="js/core/util.js"></script>
+<script src="js/core/teams.js"></script>
+<script src="js/core/sketch.js"></script>
+<script src="js/maps/registry.js"></script>
+<script src="js/maps/downtown.js"></script>
+<script src="js/maps/riverside.js"></script>
+<script src="js/maps/pinecamp.js"></script>
+<script src="js/maps/fernhollow.js"></script>
+<script src="js/world/render.js"></script>
+<script src="js/world/collision.js"></script>
+<script src="js/systems/paint.js"></script>
+<script src="js/systems/entities.js"></script>
+<script src="js/ui/hud.js"></script>
+<script src="js/ui/screens.js"></script>
+<script src="js/game.js"></script>
+</body>
+</html>
