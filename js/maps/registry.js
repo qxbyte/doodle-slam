@@ -44,6 +44,10 @@ const STAGES = [
     desc: 'Streets, malls and rooftop billboards.' },
   { id: 1, name: 'THE WILDS', label: 'STAGE 2', vignette: 'forest',
     desc: 'Pines, campfires and creek crossings.' },
+  { id: 2, name: 'THE DESK',  label: 'STAGE 3', vignette: 'desk',
+    desc: 'Zoom out — battle the stationery on the desktop.' },
+  { id: 3, name: 'THE MOON',  label: 'STAGE 4', vignette: 'moon',
+    desc: 'Craters, flags and one crashed saucer.' },
 ];
 
 /* Team spawn corners: blue, red, yellow, green */
@@ -59,9 +63,12 @@ const MAPS = [];
 function registerMap(def) {
   MAPS.push(Object.assign({
     stage: 0,
+    ground: 'paper',            // paper | desk | moon — base surface texture
     water: [], bridges: [], rails: [], courts: [],
     crosswalks: [], trees: [], cars: [], kiosks: [],
     pines: [], flowers: [], logs: [], grass: 0,
+    papers: [], rings: [], clips: [], shavings: [],   // desk scenery
+    craters: [], flags: [], prints: [],               // moon scenery
     plazaStyle: 'fountain', roadStyle: 'asphalt',
   }, def));
 }

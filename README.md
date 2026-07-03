@@ -20,7 +20,7 @@ python3 -m http.server 8080
 ## 玩法
 
 - 流程：**选阶段**（STAGE 1 城市 / STAGE 2 野外）→ **选地图** → **选 Fighter**（ZURI 蓝 / JAX 红 / NIA 黄 / KOBI 绿）→ 与 3 个 bot 对战
-- 阶段与地图：城市阶段 = DOWNTOWN、RIVERSIDE；野外阶段 = PINE CAMP、FERN HOLLOW
+- 阶段与地图：城市 = DOWNTOWN、RIVERSIDE；野外 = PINE CAMP、FERN HOLLOW；书桌 = MESSY DESK；月球 = CRATER FIELD
 - 彩蛋：阶段选择页点击空白纸面会迸出随机队伍色的泼漆
 - **3 分钟**倒计时内，用泼漆覆盖最多地面的队伍获胜
 - **角色即武器**：ZURI 均衡喷枪 SketchBlaster / JAX 近战四连霰弹 Splat Scatter / NIA 长程狙击 Longshot Pen / KOBI 大范围慢速 Blob Roller
@@ -51,6 +51,8 @@ js/
     riverside.js      城市②：河流 + 桥 + 车站 + 体育场 + 公园池塘
     pinecamp.js       野外①：湖畔营地（帐篷/木屋/瞭望塔/营火广场）
     fernhollow.js     野外②：蕨谷（小溪原木桥/巨蘑菇/古树/立石圈）
+    messydesk.js      书桌：木纹桌面/文具障碍/纸胶带道路/打翻的墨水瓶
+    craterfield.js    月球：环形山/月面基地/火箭发射台/坠毁飞碟/脚印
   world/               把地图数据变成世界
     render.js         预渲染地面层/建筑层（每种元素一个 draw 函数）
     collision.js      碰撞与可行走查询（建筑 + 水域均阻挡）
@@ -74,7 +76,7 @@ js/
 
 ## 调试参数
 
-- `?auto=N` 跳过菜单直接以队伍 N（0-3）开局；`&map=M` 指定地图（0-3）
+- `?auto=N` 跳过菜单直接以队伍 N（0-3）开局；`&map=M` 指定地图（0-5）
 - `&ff=S` 开局快进 S 秒；`&mx=X&my=Y` 固定鼠标位置（配合边缘平移测试）
 - `?screen=stages` / `?screen=maps` / `?screen=select` 直接打开某个菜单
 
