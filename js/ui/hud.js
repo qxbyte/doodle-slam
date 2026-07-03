@@ -59,6 +59,30 @@ function updateHUD(game) {
   ui.bombHint.style.opacity = p.bombs > 0 ? 1 : 0.35;
 }
 
+/* red vignette pulse when the player takes damage */
+let hurtTimeout = null;
+function flashHurt() {
+  const el = $('#hurt-flash');
+  el.classList.add('on');
+  clearTimeout(hurtTimeout);
+  hurtTimeout = setTimeout(() => el.classList.remove('on'), 160);
+}
+
+/* the status panel names the selected fighter's weapon */
+function setWeaponNote(teamId) {
+  const w = WEAPONS[teamId];
+  $('#weapon-note').innerHTML =
+    `<b>${w.name}</b> &mdash; ${w.blurb}. Move faster and refill ink on your own paint.`;
+}
+
+/* big centre banner when SLAM TIME hits */
+function showSlamBanner() {
+  const el = $('#slam-banner');
+  el.classList.remove('show');
+  void el.offsetWidth;   // restart the animation
+  el.classList.add('show');
+}
+
 function pushToast(text, kind = '') {
   const el = document.createElement('div');
   el.className = `toast ${kind}`;

@@ -13,16 +13,24 @@ const ROCKET_COUNT = 8;
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
 
+const SLAM_AT = 30;          // last N seconds: SLAM TIME, splats scale up
+const SLAM_SCALE = 1.6;
+
 const game = {
   state: 'title',        // title | stages | maps | select | match | results
   stageIdx: 0,           // chosen on the stage-select screen
   mapIdx: 0,             // chosen on the map-select screen
+  difficulty: 'normal',  // bot tuning, chosen on the fighter-select screen
   fighters: [],
   player: null,
   projectiles: [],
   bombs: [],
   pickups: [],
   rockets: [],
+  fx: [],                // transient juice: impact bursts, SPLAT! text
+  shake: 0,              // screen shake magnitude, decays fast
+  slam: false,           // SLAM TIME reached
+  lastTickAt: -1,
   button: { active: false, x: 0, y: 0, nextAt: 0 },   // positioned from PLAZA at match start
   timeLeft: MATCH_SECONDS,
   elapsed: 0,
@@ -31,6 +39,19 @@ const game = {
   pickupTimer: 0,
   toast: pushToast,
 };
+
+function slamMul() { return game.slam ? SLAM_SCALE : 1; }
+
+function addShake(m) { game.shake = Math.min(12, game.shake + m); }
+
+function addFx(o) {
+  game.fx.push(Object.assign({
+    t: 0,
+    dur: o.type === 'text' ? 0.9 : 0.28,
+    r0: 4, r1: 26, drops: 5,
+    seed: Math.random() * Math.PI * 2,
+  }, o));
+}
 
 const input = {
   keys: new Set(),
@@ -70,6 +91,9 @@ addEventListener('keydown', e => {
   if (e.code === 'Space' && game.state === 'match') {
     e.preventDefault();
     camPan.x = camPan.y = 0;   // snap the camera back onto the player
+  }
+  if (e.code === 'KeyM') {
+    pushToast(SFX.toggleMute() ? 'Sound off' : 'Sound on');
   }
 });
 addEventListener('keyup', e => input.keys.delete(e.code));
@@ -114,11 +138,17 @@ function startMatch(playerTeam) {
   game.covTimer = 0;
   game.pickupTimer = 0;
   game.lastCoverage = [0, 0, 0, 0];
+  game.fx = [];
+  game.shake = 0;
+  game.slam = false;
+  game.lastTickAt = -1;
   camPan.x = camPan.y = 0;
   for (let i = 0; i < 4; i++) spawnPickup();
   ui.feed.innerHTML = '';
+  setWeaponNote(playerTeam);
   game.state = 'match';
   showScreen(null);
+  SFX.play('start');
   pushToast('Cover the most turf before time runs out!');
 }
 
@@ -130,6 +160,7 @@ function leaveMatch() {
 function endMatch() {
   game.lastCoverage = coverage();
   game.state = 'results';
+  SFX.play('end');
   showResults(game);
 }
 
@@ -147,6 +178,20 @@ function update(dt) {
   game.elapsed += dt;
   game.timeLeft -= dt;
   if (game.timeLeft <= 0) { endMatch(); return; }
+
+  // SLAM TIME: the endgame comeback window
+  if (!game.slam && game.timeLeft <= SLAM_AT) {
+    game.slam = true;
+    SFX.play('slam');
+    showSlamBanner();
+    pushToast('SLAM TIME! Splats hit bigger!', 'danger');
+  }
+  // final-10s countdown ticks
+  const sec = Math.ceil(game.timeLeft);
+  if (game.timeLeft <= 10 && sec !== game.lastTickAt) {
+    game.lastTickAt = sec;
+    SFX.play('tick');
+  }
 
   const p = game.player;
 
@@ -178,6 +223,7 @@ function update(dt) {
       if (dist(f.x, f.y, pk.x, pk.y) < FIGHTER_RADIUS + 14) {
         game.pickups.splice(i, 1);
         f.bombs = Math.min(f.bombs + 1, 3);
+        if (f.isPlayer) SFX.play('pickup');
         pushToast(`${f.name} picked up a Paint Bomb!`);
       }
     }
@@ -186,6 +232,8 @@ function update(dt) {
     if (game.button.active && dist(f.x, f.y, game.button.x, game.button.y) < FIGHTER_RADIUS + 18) {
       game.button.active = false;
       game.button.nextAt = game.elapsed + BUTTON_INTERVAL;
+      SFX.play('button');
+      SFX.play('rocketWarn');
       pushToast(`${f.name} hit the RED BUTTON!`, 'warn');
       pushToast('ROCKET STRIKE incoming!', 'danger');
       for (let i = 0; i < ROCKET_COUNT; i++) {
@@ -220,14 +268,18 @@ function update(dt) {
       for (const f of game.fighters) {
         if (f.team === pr.team || !f.alive) continue;
         if (dist(pr.x, pr.y, f.x, f.y) < FIGHTER_RADIUS + 4) {
-          f.hurt(game, SHOT_DAMAGE, pr.owner);
-          splat(pr.x, pr.y, rand(Math.random, 12, 18), pr.team);
+          f.hurt(game, pr.dmg, pr.owner);
+          splat(pr.x, pr.y, rand(Math.random, pr.sMin * 0.8, pr.sMax * 0.8) * slamMul(), pr.team);
+          addFx({ type: 'burst', x: pr.x, y: pr.y, r1: 22, color: TEAMS[pr.team].color });
+          if (f.isPlayer || pr.owner.isPlayer) SFX.play('hit');
           dead = true;
           break;
         }
       }
       if (!dead && pr.life <= 0) {
-        splat(pr.x, pr.y, rand(Math.random, 14, 24), pr.team);
+        const r = rand(Math.random, pr.sMin, pr.sMax) * slamMul();
+        splat(pr.x, pr.y, r, pr.team);
+        addFx({ type: 'burst', x: pr.x, y: pr.y, r1: r * 0.8, drops: 3, color: TEAMS[pr.team].color });
         dead = true;
       }
     }
@@ -241,17 +293,20 @@ function update(dt) {
     if (b.t >= b.dur) {
       const bx = b.tx, by = b.ty;
       if (!pointBlocked(bx, by)) {
-        splat(bx, by, 95, b.team);
+        splat(bx, by, 95 * slamMul(), b.team);
         for (let k = 0; k < 4; k++) {
           const a = Math.random() * Math.PI * 2, d = rand(Math.random, 50, 110);
           const sx = bx + Math.cos(a) * d, sy = by + Math.sin(a) * d;
-          if (!pointBlocked(sx, sy)) splat(sx, sy, rand(Math.random, 20, 40), b.team);
+          if (!pointBlocked(sx, sy)) splat(sx, sy, rand(Math.random, 20, 40) * slamMul(), b.team);
         }
         for (const f of game.fighters) {
           if (f.team !== b.team && f.alive && dist(f.x, f.y, bx, by) < 110) {
             f.hurt(game, 55, b.owner);
           }
         }
+        addFx({ type: 'burst', x: bx, y: by, r1: 110, drops: 8, dur: 0.4, color: TEAMS[b.team].color });
+        addShake(6);
+        SFX.play('boom');
       }
       game.bombs.splice(i, 1);
     }
@@ -263,15 +318,25 @@ function update(dt) {
     if (r.delay > 0) { r.delay -= dt; continue; }
     r.fall -= dt;
     if (r.fall <= 0) {
-      splat(r.x, r.y, rand(Math.random, 120, 160), r.team);
+      splat(r.x, r.y, rand(Math.random, 120, 160) * slamMul(), r.team);
       for (const f of game.fighters) {
         if (f.team !== r.team && f.alive && dist(f.x, f.y, r.x, r.y) < 130) {
           f.hurt(game, 70, game.fighters[r.team]);
         }
       }
+      addFx({ type: 'burst', x: r.x, y: r.y, r1: 150, drops: 10, dur: 0.5, color: TEAMS[r.team].color });
+      addShake(8);
+      SFX.play('rocketBoom');
       game.rockets.splice(i, 1);
     }
   }
+
+  // transient fx + screen shake decay
+  for (let i = game.fx.length - 1; i >= 0; i--) {
+    game.fx[i].t += dt;
+    if (game.fx[i].t >= game.fx[i].dur) game.fx.splice(i, 1);
+  }
+  game.shake = Math.max(0, game.shake - dt * 28);
 
   // pickup respawns
   game.pickupTimer += dt;
@@ -338,7 +403,9 @@ function render() {
 
   ctx.save();
   ctx.scale(cam.zoom, cam.zoom);
-  ctx.translate(-cam.x, -cam.y);
+  const shx = game.shake ? (Math.random() * 2 - 1) * game.shake / cam.zoom : 0;
+  const shy = game.shake ? (Math.random() * 2 - 1) * game.shake / cam.zoom : 0;
+  ctx.translate(-cam.x + shx, -cam.y + shy);
 
   // paper shadow + layers
   ctx.fillStyle = 'rgba(120,80,80,0.25)';
@@ -431,6 +498,45 @@ function render() {
     ctx.fillText(label, f.x, f.y - 31.5);
   }
 
+  // transient juice: impact bursts + SPLAT! comic text
+  for (const f of game.fx) {
+    const k = f.t / f.dur;
+    if (f.type === 'burst') {
+      const ease = 1 - (1 - k) * (1 - k);
+      ctx.globalAlpha = 1 - k;
+      ctx.strokeStyle = f.color;
+      ctx.lineWidth = 2.5 * (1 - k) + 0.5;
+      ctx.beginPath();
+      ctx.arc(f.x, f.y, f.r0 + (f.r1 - f.r0) * ease, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.fillStyle = f.color;
+      for (let i = 0; i < f.drops; i++) {
+        const a = f.seed + i * (Math.PI * 2 / f.drops);
+        const d = f.r1 * (0.5 + ease * 0.9);
+        ctx.beginPath();
+        ctx.arc(f.x + Math.cos(a) * d, f.y + Math.sin(a) * d, 3 * (1 - k) + 0.5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+    } else if (f.type === 'text') {
+      const scale = Math.min(1, k * 4) * (1 + 0.3 * Math.sin(Math.min(1, k * 4) * Math.PI));
+      ctx.save();
+      ctx.translate(f.x, f.y - k * 16);
+      ctx.rotate(-0.08);
+      ctx.scale(scale, scale);
+      ctx.globalAlpha = k > 0.7 ? (1 - k) / 0.3 : 1;
+      ctx.font = `italic 900 26px 'Archivo', 'Arial Black', sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.lineWidth = 5;
+      ctx.strokeStyle = '#fff';
+      ctx.strokeText(f.text, 0, 0);
+      ctx.fillStyle = f.color;
+      ctx.fillText(f.text, 0, 0);
+      ctx.restore();
+      ctx.globalAlpha = 1;
+    }
+  }
+
   ctx.restore();
 
   // crosshair (drawn last, in screen space)
@@ -501,9 +607,22 @@ function boot() {
     const card = e.target.closest('.fighter-card');
     if (card) startMatch(Number(card.dataset.team));
   });
+  $('#difficulty-row').addEventListener('click', e => {
+    const pill = e.target.closest('.diff-pill');
+    if (!pill) return;
+    game.difficulty = pill.dataset.diff;
+    for (const p of document.querySelectorAll('.diff-pill')) {
+      p.classList.toggle('selected', p === pill);
+    }
+  });
   $('#leave-btn').addEventListener('click', leaveMatch);
   $('#again-btn').addEventListener('click', () => startMatch(game.player.team));
   $('#menu-btn').addEventListener('click', leaveMatch);
+
+  // every button click gets a little pencil tick
+  document.addEventListener('click', e => {
+    if (e.target.closest('button')) SFX.play('click');
+  }, true);
 
   // once webfonts land, rebuild anything that draws canvas text
   if (document.fonts && document.fonts.ready) {

@@ -23,7 +23,10 @@ python3 -m http.server 8080
 - 阶段与地图：城市阶段 = DOWNTOWN、RIVERSIDE；野外阶段 = PINE CAMP、FERN HOLLOW
 - 彩蛋：阶段选择页点击空白纸面会迸出随机队伍色的泼漆
 - **3 分钟**倒计时内，用泼漆覆盖最多地面的队伍获胜
-- **WASD / 方向键** 移动，**按住左键** 朝准星喷漆，**右键** 投掷 Paint Bomb
+- **角色即武器**：ZURI 均衡喷枪 SketchBlaster / JAX 近战四连霰弹 Splat Scatter / NIA 长程狙击 Longshot Pen / KOBI 大范围慢速 Blob Roller
+- 选人页可选 **bot 难度**（EASY / NORMAL / HARD）
+- **SLAM TIME**：最后 30 秒所有泼漆半径 ×1.6，终局翻盘窗口
+- **WASD / 方向键** 移动，**按住左键** 朝准星喷漆，**右键** 投掷 Paint Bomb，**M** 静音（音效为 WebAudio 实时合成）
 - **鼠标移到屏幕边缘** 平移镜头侦察（有范围上限），**空格** 立刻回中到角色
 - 踩在自己颜色上移动更快、回墨更快；踩在敌方颜色上会减速
 - 地图上散落 Paint Bomb 道具（虚线圈中的炸弹）
@@ -51,8 +54,9 @@ js/
     render.js         预渲染地面层/建筑层（每种元素一个 draw 函数）
     collision.js      碰撞与可行走查询（建筑 + 水域均阻挡）
   systems/             玩法系统
+    audio.js          WebAudio 合成音效（射击/爆炸/事件/UI，零音频文件）
     paint.js          泼漆画布 + 归属网格（覆盖率/小地图/踩漆判定）
-    entities.js       角色、弹丸、炸弹、道具、bot AI
+    entities.js       角色、武器、弹丸、炸弹、道具、bot AI（三档难度）
   ui/
     hud.js            比赛 HUD：覆盖率、计时、播报、状态条、小地图
     screens.js        菜单屏幕：标题/选图/选人/结算

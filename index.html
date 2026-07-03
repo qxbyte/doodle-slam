@@ -28,12 +28,15 @@
     <div class="bar-row"><span class="bar-label">HP</span><div class="bar"><div id="hp-fill" class="bar-fill hp"></div></div></div>
     <div class="bar-row"><span class="bar-label">INK</span><div class="bar"><div id="ink-fill" class="bar-fill ink"></div></div></div>
     <div id="bomb-hint" class="dashed-box">PAINT BOMB &times;<span id="bomb-count">0</span> &mdash; right-click to throw!</div>
-    <div class="weapon-note"><b>SketchBlaster</b> &mdash; move faster and refill ink on your own paint</div>
+    <div id="weapon-note" class="weapon-note"><b>SketchBlaster</b> &mdash; move faster and refill ink on your own paint</div>
   </div>
 
   <canvas id="minimap" width="176" height="118"></canvas>
 
   <button id="leave-btn" class="pill-btn">LEAVE MATCH</button>
+
+  <div id="hurt-flash"></div>
+  <div id="slam-banner">SLAM TIME!</div>
 </div>
 
 <!-- ===== Title screen ===== -->
@@ -42,7 +45,7 @@
   <h1 class="logo">DOODLE<br>SLAM!</h1>
   <p class="tagline">Splat the town. Own the turf. 3 minutes on the clock.</p>
   <button id="play-btn" class="big-btn">PLAY</button>
-  <div class="controls-hint">WASD move &nbsp;&middot;&nbsp; hold Left Click to spray &nbsp;&middot;&nbsp; Right Click throws Paint Bombs &nbsp;&middot;&nbsp; mouse at screen edge scouts, Space recenters</div>
+  <div class="controls-hint">WASD move &nbsp;&middot;&nbsp; hold Left Click to spray &nbsp;&middot;&nbsp; Right Click throws Paint Bombs &nbsp;&middot;&nbsp; mouse at screen edge scouts, Space recenters &nbsp;&middot;&nbsp; M mutes</div>
   <div class="footnote">Fan project inspired by Splatoon. Not affiliated with Nintendo.</div>
 </div>
 
@@ -73,6 +76,12 @@
   <div class="menu-blobs"></div>
   <h2 class="select-title">Pick Your Fighter</h2>
   <div id="fighter-cards"></div>
+  <div id="difficulty-row">
+    <span class="diff-label">BOT DIFFICULTY</span>
+    <button class="diff-pill" data-diff="easy">EASY</button>
+    <button class="diff-pill selected" data-diff="normal">NORMAL</button>
+    <button class="diff-pill" data-diff="hard">HARD</button>
+  </div>
   <button id="back-btn" class="pill-btn gray">BACK</button>
   <div class="footnote">Fan project inspired by Splatoon. Not affiliated with Nintendo.</div>
 </div>
@@ -102,6 +111,7 @@
 <script src="js/maps/fernhollow.js"></script>
 <script src="js/world/render.js"></script>
 <script src="js/world/collision.js"></script>
+<script src="js/systems/audio.js"></script>
 <script src="js/systems/paint.js"></script>
 <script src="js/systems/entities.js"></script>
 <script src="js/ui/hud.js"></script>

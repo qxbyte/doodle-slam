@@ -471,6 +471,78 @@ html, body {
 #leave-btn:hover { transform: translateX(-50%) translateY(-2px); }
 #leave-btn:active { transform: translateX(-50%) translateY(2px); }
 
+/* ================= juice ================= */
+
+/* red vignette pulse when the player is hit */
+#hurt-flash {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center, transparent 55%, rgba(230, 57, 42, 0.45) 100%);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+#hurt-flash.on { opacity: 1; transition: opacity 0.05s ease; }
+
+/* SLAM TIME banner */
+#slam-banner {
+  position: absolute;
+  top: 34%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 900;
+  font-size: clamp(48px, 8vw, 84px);
+  color: var(--red);
+  -webkit-text-stroke: 3px var(--ink);
+  text-shadow: 0 6px 0 rgba(28, 28, 26, 0.7);
+  pointer-events: none;
+  opacity: 0;
+}
+#slam-banner.show { animation: slam-in 1.6s ease-out forwards; }
+@keyframes slam-in {
+  0%   { transform: translate(-50%, -50%) scale(0) rotate(-8deg); opacity: 0; }
+  12%  { transform: translate(-50%, -50%) scale(1.25) rotate(2deg); opacity: 1; }
+  22%  { transform: translate(-50%, -50%) scale(1) rotate(-2deg); }
+  70%  { opacity: 1; }
+  100% { transform: translate(-50%, -50%) scale(1.05); opacity: 0; }
+}
+
+/* ================= difficulty pills ================= */
+
+#difficulty-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  z-index: 1;
+}
+.diff-label {
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  color: #9a9a96;
+}
+.diff-pill {
+  font-family: var(--font-body);
+  font-weight: 900;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  padding: 6px 16px;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  background: #fff;
+  color: #9a9a96;
+  cursor: pointer;
+  box-shadow: 0 3px 0 rgba(28,28,26,0.85);
+  transition: transform 0.08s ease;
+}
+.diff-pill:hover { transform: translateY(-2px); }
+.diff-pill.selected {
+  background: var(--ink);
+  color: #fff;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }

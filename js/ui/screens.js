@@ -171,6 +171,7 @@ function attachSplatFX(screenEl) {
     cv.style.height = `${size * 2}px`;
     drawSplat(cv.getContext('2d'), rng, size, size, size * 0.4, team.color);
     screenEl.appendChild(cv);
+    SFX.play('uiSplat');
     setTimeout(() => cv.remove(), 900);
   });
 }
@@ -267,10 +268,11 @@ function buildFighterCards() {
     c.scale(2.6, 2.6);
     drawCharacter(c, team.id, 23, 24, { aim: -0.35 });
     card.appendChild(cv);
+    const w = WEAPONS[team.id];
     card.insertAdjacentHTML('beforeend', `
       <div class="f-name" style="color:${team.color}">${team.name}</div>
-      <div class="f-weapon">SketchBlaster</div>
-      <div class="f-desc">${team.desc}</div>`);
+      <div class="f-weapon">${w.name}</div>
+      <div class="f-desc">${team.desc} ${w.blurb[0].toUpperCase() + w.blurb.slice(1)}.</div>`);
     wrap.appendChild(card);
   }
 }
