@@ -138,10 +138,10 @@ function drawSplat(ctx, rng, x, y, r, color) {
 /* ============================================================
    Characters — tiny doodle people, each with their own build,
    outfit, hair and weapon silhouette. scale 1 ≈ 34px tall.
-     ZURI: scout — cap, scarf, antenna backpack, knee pads
-     JAX:  rusher — spikes, cheek plaster, wristband, belt
-     NIA:  duelist — ponytail, scope eye, long-barrel pen
-     KOBI: painter — headphone beanie, splattered apron, brush
+     SPLASH: scout — cap, scarf, antenna backpack, knee pads
+     BAM:  rusher — spikes, cheek plaster, wristband, belt
+     ZIP:  duelist — ponytail, scope eye, long-barrel pen
+     BLOB: painter — headphone beanie, splattered apron, brush
    ============================================================ */
 function drawCharacter(ctx, teamId, x, y, opts = {}) {
   const { scale = 1, walk = 0, aim = 0, firing = false } = opts;
@@ -157,7 +157,7 @@ function drawCharacter(ctx, teamId, x, y, opts = {}) {
   const bob = Math.sin(walk * 10) * 1.4;
   const by = bob * 0.3;               // upper-body bob
   const skin = ['#ba7a4a', '#e8b48c', '#d99a62', '#8d5a38'][teamId];
-  const bodyW = [13, 12, 11, 15][teamId];   // build: NIA slim, KOBI round
+  const bodyW = [13, 12, 11, 15][teamId];   // build: ZIP slim, BLOB round
   const hw = bodyW / 2;
 
   // legs + shoes
@@ -170,7 +170,7 @@ function drawCharacter(ctx, teamId, x, y, opts = {}) {
   ctx.beginPath(); ctx.ellipse(3.8, 14.5 + bob, 2.6, 1.4, 0, 0, Math.PI * 2); ctx.fill();
   // bottoms — a different cut per fighter
   if (teamId === 0) {
-    // ZURI: cargo shorts with side pockets
+    // SPLASH: cargo shorts with side pockets
     ctx.fillStyle = '#3c4a66';
     ctx.beginPath(); ctx.roundRect(-5, 6.2, 10, 5, 1.6); ctx.fill(); ctx.stroke();
     ctx.lineWidth = 1;
@@ -180,7 +180,7 @@ function drawCharacter(ctx, teamId, x, y, opts = {}) {
     ctx.beginPath(); ctx.roundRect(3.4, 7.6, 2.2, 2.4, 0.6); ctx.fill(); ctx.stroke();
     ctx.lineWidth = 1.4;
   } else if (teamId === 1) {
-    // JAX: short sporty shorts with white side stripes
+    // BAM: short sporty shorts with white side stripes
     ctx.fillStyle = '#4a3c40';
     ctx.beginPath(); ctx.roundRect(-5, 6.2, 10, 3.8, 1.6); ctx.fill(); ctx.stroke();
     ctx.strokeStyle = '#fff';
@@ -194,7 +194,7 @@ function drawCharacter(ctx, teamId, x, y, opts = {}) {
     ctx.beginPath(); ctx.moveTo(0, 7.6); ctx.lineTo(0, 10); ctx.stroke();
     ctx.lineWidth = 1.4;
   } else if (teamId === 2) {
-    // NIA: little pleated skirt
+    // ZIP: little pleated skirt
     ctx.fillStyle = '#54492e';
     ctx.beginPath();
     ctx.moveTo(-4, 6.2);
@@ -210,7 +210,7 @@ function drawCharacter(ctx, teamId, x, y, opts = {}) {
     ctx.stroke();
     ctx.lineWidth = 1.4;
   } else {
-    // KOBI: baggy painter pants, rolled cuffs, a stray drip
+    // BLOB: baggy painter pants, rolled cuffs, a stray drip
     ctx.fillStyle = '#38463a';
     ctx.beginPath(); ctx.roundRect(-5.4, 6.2, 10.8, 6.4, 2); ctx.fill(); ctx.stroke();
     ctx.lineWidth = 1;
@@ -222,13 +222,13 @@ function drawCharacter(ctx, teamId, x, y, opts = {}) {
     ctx.beginPath(); ctx.arc(-2.6, 9.4, 0.9, 0, Math.PI * 2); ctx.fill();
     ctx.lineWidth = 1.4;
   }
-  if (teamId === 0) {                  // ZURI: knee pads
+  if (teamId === 0) {                  // SPLASH: knee pads
     ctx.fillStyle = '#dfe3ea';
     ctx.beginPath(); ctx.arc(-3.5, 12, 1.5, 0, Math.PI * 2); ctx.fill();
     ctx.beginPath(); ctx.arc(3.5, 12, 1.5, 0, Math.PI * 2); ctx.fill();
   }
 
-  // ZURI's antenna backpack pokes out behind the body
+  // SPLASH's antenna backpack pokes out behind the body
   if (teamId === 0) {
     ctx.fillStyle = team.dark;
     ctx.beginPath(); ctx.roundRect(-hw - 2.4, -1 + by, 3, 8, 1.4); ctx.fill(); ctx.stroke();
@@ -236,7 +236,7 @@ function drawCharacter(ctx, teamId, x, y, opts = {}) {
     ctx.fillStyle = '#e6392a';
     ctx.beginPath(); ctx.arc(-hw - 1, -8.6 + by, 1.1, 0, Math.PI * 2); ctx.fill();
   }
-  // NIA's long ponytail swings behind
+  // ZIP's long ponytail swings behind
   if (teamId === 2) {
     ctx.strokeStyle = '#5a3d20';
     ctx.lineWidth = 3;
@@ -253,14 +253,14 @@ function drawCharacter(ctx, teamId, x, y, opts = {}) {
   ctx.beginPath();
   ctx.roundRect(-hw, -2 + by, bodyW, 11, 3);
   ctx.fill(); ctx.stroke();
-  if (teamId === 0) {           // ZURI: chest pocket grid + scarf
+  if (teamId === 0) {           // SPLASH: chest pocket grid + scarf
     ctx.beginPath();
     ctx.moveTo(-hw, 2.5); ctx.lineTo(hw, 2.5);
     ctx.moveTo(0, -2 + by); ctx.lineTo(0, 2.5);
     ctx.stroke();
     ctx.fillStyle = '#f0b41c';
     ctx.beginPath(); ctx.roundRect(-4, -3.4 + by, 8, 2.6, 1.3); ctx.fill(); ctx.stroke();
-  } else if (teamId === 1) {    // JAX: belt + lightning doodle + wristband
+  } else if (teamId === 1) {    // BAM: belt + lightning doodle + wristband
     ctx.fillStyle = '#3c3c3a';
     ctx.beginPath(); ctx.roundRect(-hw, 5.4, bodyW, 2, 1); ctx.fill(); ctx.stroke();
     ctx.strokeStyle = '#fff';
@@ -270,7 +270,7 @@ function drawCharacter(ctx, teamId, x, y, opts = {}) {
     ctx.stroke();
     ctx.strokeStyle = INK;
     ctx.lineWidth = 1.4;
-  } else if (teamId === 2) {    // NIA: zip line + star badge
+  } else if (teamId === 2) {    // ZIP: zip line + star badge
     ctx.beginPath(); ctx.moveTo(0, -2 + by); ctx.lineTo(0, 9 + by); ctx.stroke();
     ctx.fillStyle = '#fff';
     ctx.beginPath();
@@ -280,7 +280,7 @@ function drawCharacter(ctx, teamId, x, y, opts = {}) {
       k === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
     }
     ctx.closePath(); ctx.fill();
-  } else {                      // KOBI: splattered apron + brush in pocket
+  } else {                      // BLOB: splattered apron + brush in pocket
     ctx.fillStyle = '#efe9dc';
     ctx.beginPath(); ctx.roundRect(-4.4, 0 + by, 8.8, 9, 2); ctx.fill(); ctx.stroke();
     for (const [sx, sy, sc] of [[-2, 3, '#e6392a'], [1.6, 5.5, '#2f66e0'], [-0.6, 7, '#f0b41c']]) {
@@ -354,14 +354,14 @@ function drawCharacter(ctx, teamId, x, y, opts = {}) {
   ctx.beginPath(); ctx.arc(0.4, -6.6 + by, 2, 0.25, Math.PI - 0.55); ctx.stroke();
   ctx.strokeStyle = INK;
   ctx.lineWidth = 1.4;
-  if (teamId === 1) {           // JAX: cheek plaster
+  if (teamId === 1) {           // BAM: cheek plaster
     ctx.strokeStyle = '#e8d5a4';
     ctx.lineWidth = 1.4;
     ctx.beginPath(); ctx.moveTo(2.8, -5.6 + by); ctx.lineTo(5, -6.8 + by); ctx.stroke();
     ctx.strokeStyle = INK;
     ctx.lineWidth = 1.4;
   }
-  if (teamId === 2) {           // NIA: scope over the right eye
+  if (teamId === 2) {           // ZIP: scope over the right eye
     ctx.strokeStyle = '#3c3c3a';
     ctx.lineWidth = 1.3;
     ctx.beginPath(); ctx.arc(2, -8.5 + by, 2.4, 0, Math.PI * 2); ctx.stroke();
@@ -374,13 +374,13 @@ function drawCharacter(ctx, teamId, x, y, opts = {}) {
   }
 
   const hy = -8 + by; // hat anchor
-  if (teamId === 0) { // ZURI — blue cap with brim
+  if (teamId === 0) { // SPLASH — blue cap with brim
     ctx.fillStyle = team.color;
     ctx.beginPath(); ctx.arc(0, hy - 1.5, 6, Math.PI, 0); ctx.fill(); ctx.stroke();
     ctx.beginPath(); ctx.roundRect(-1, hy - 3.4, 9.5, 2.6, 1.2); ctx.fill(); ctx.stroke();
     ctx.fillStyle = '#fff';
     ctx.beginPath(); ctx.arc(-2, hy - 4, 1.2, 0, Math.PI * 2); ctx.fill();
-  } else if (teamId === 1) { // JAX — red spiky hair
+  } else if (teamId === 1) { // BAM — red spiky hair
     ctx.fillStyle = team.color;
     ctx.beginPath();
     ctx.moveTo(-6, hy - 1);
@@ -389,11 +389,11 @@ function drawCharacter(ctx, teamId, x, y, opts = {}) {
       ctx.lineTo(-6 + (i + 1) * 3, hy - 1.5);
     }
     ctx.closePath(); ctx.fill(); ctx.stroke();
-  } else if (teamId === 2) { // NIA — yellow cap, brim back
+  } else if (teamId === 2) { // ZIP — yellow cap, brim back
     ctx.fillStyle = team.color;
     ctx.beginPath(); ctx.arc(0, hy - 1.5, 6, Math.PI, 0); ctx.fill(); ctx.stroke();
     ctx.beginPath(); ctx.roundRect(-9.5, hy - 3.2, 8, 2.4, 1.2); ctx.fill(); ctx.stroke();
-  } else { // KOBI — green beanie with headphones + glasses
+  } else { // BLOB — green beanie with headphones + glasses
     ctx.fillStyle = team.color;
     ctx.beginPath(); ctx.roundRect(-6.2, hy - 7, 12.4, 5.4, 2.4); ctx.fill(); ctx.stroke();
     ctx.fillStyle = '#3c3c3a';
