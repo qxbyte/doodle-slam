@@ -792,7 +792,7 @@ body.touch #stick-base.on { opacity: 1; }
   box-shadow: 0 3px 0 rgba(28,28,26,0.6);
 }
 
-body.touch .touch-btn {
+body.touch #btn-bomb, body.touch #btn-skill {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -811,6 +811,8 @@ body.touch .touch-btn {
 body.touch #btn-bomb { bottom: 168px; }
 body.touch #btn-skill { bottom: 250px; right: 40px; background: rgba(190,215,250,0.9); }
 body.touch .touch-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 rgba(28,28,26,0.8); }
+body.touch, body.touch #game { touch-action: none; }
+body.touch #game { cursor: auto; }
 
 /* keep HUD clear of thumbs on touch layouts */
 body.touch #status-panel { width: 200px; padding: 8px 10px; }

@@ -9,7 +9,8 @@
    ============================================================ */
 
 const Touch = (() => {
-  const active = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+  const active = 'ontouchstart' in window || navigator.maxTouchPoints > 0 ||
+    new URLSearchParams(location.search).has('touch');   // debug force
   const state = { mx: 0, my: 0, aim: null, firing: false };
 
   let moveId = null, aimId = null;
@@ -20,6 +21,10 @@ const Touch = (() => {
   function init() {
     if (!active) return;
     document.body.classList.add('touch');
+    // hints assume a mouse otherwise
+    $('#bomb-hint').innerHTML = 'PAINT BOMB &times;<span id="bomb-count">0</span> &mdash; tap &#128163;';
+    $('#skill-hint').innerHTML = '<span id="skill-name">Skill</span> &times;<span id="skill-count">2</span> &mdash; tap Q';
+    ui.bombCount = $('#bomb-count');   // the rewrite replaced the cached span
     els = {
       stick: $('#stick-base'),
       knob: $('#stick-knob'),
