@@ -248,6 +248,7 @@ class Fighter {
     } else {
       let best = null, bestD = 500;
       for (const p of game.pickups) {
+        if (p.type === 'weapon') continue;   // hero-only relic — chasing it just wedges the bot
         const d = dist(this.x, this.y, p.x, p.y);
         if (d < bestD) { best = p; bestD = d; }
       }
