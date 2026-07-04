@@ -818,8 +818,10 @@ function boot() {
     const idx = Number(card.dataset.stage);
     if (!Campaign.stageUnlocked(idx)) {
       card.classList.remove('deny');
-      void card.offsetWidth;
+      void card.offsetWidth;          // restart the shake if re-clicked
       card.classList.add('deny');
+      // drop the class after the shake, or re-showing the screen replays it
+      card.addEventListener('animationend', () => card.classList.remove('deny'), { once: true });
       return;
     }
     game.stageIdx = idx;
