@@ -123,11 +123,13 @@ function buildMapCards(stageIdx = null) {
 function drawMapPreview(cv, map) {
   const c = cv.getContext('2d');
   const sx = cv.width / WORLD.w, sy = cv.height / WORLD.h;
-  c.fillStyle = { desk: '#eedfcf', moon: '#e9edef', sand: '#f2e7cf', snow: '#f4f7f9' }[map.ground] || PAPER;
+  c.fillStyle = { desk: '#eedfcf', moon: '#e9edef', sand: '#f2e7cf', snow: '#f4f7f9', chalk: '#2c3b35', seabed: '#dcebf0' }[map.ground] || '#f0efe9';
   c.fillRect(0, 0, cv.width, cv.height);
-  // frozen lakes
+  // frozen lakes + current lanes
   c.fillStyle = 'rgba(165,210,235,0.55)';
   for (const r of map.ice) c.fillRect(r.x * sx, r.y * sy, r.w * sx, r.h * sy);
+  c.fillStyle = 'rgba(120,185,215,0.5)';
+  for (const r of map.currents) c.fillRect(r.x * sx, r.y * sy, r.w * sx, r.h * sy);
   // craters read as terrain on the moon preview
   c.strokeStyle = 'rgba(90,98,110,0.5)';
   c.lineWidth = 1;
@@ -168,8 +170,9 @@ function drawMapPreview(cv, map) {
     c.fill();
   }
   // buildings
+  const blockTint = map.ground === 'chalk' ? 'rgba(240,242,236,0.5)' : '#c6c4bc';
   for (const b of map.buildings) {
-    c.fillStyle = '#c6c4bc';
+    c.fillStyle = blockTint;
     c.strokeStyle = '#8d8d88';
     c.lineWidth = 1;
     c.fillRect(b.x * sx, b.y * sy, b.w * sx, b.h * sy);

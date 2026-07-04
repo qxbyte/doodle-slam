@@ -51,9 +51,18 @@ class Fighter {
     return BASE_SPEED;
   }
 
+  /* ocean currents sweep anyone standing in them */
+  applyCurrent(dt) {
+    const c = currentAt(this.x, this.y);
+    if (!c) return;
+    const fixed = collideWorld(this.x + c.dx * 130 * dt, this.y + c.dy * 130 * dt, FIGHTER_RADIUS);
+    this.x = fixed.x; this.y = fixed.y;
+  }
+
   move(dx, dy, dt) {
     const len = Math.hypot(dx, dy);
     const sp = this.speed;
+    this.applyCurrent(dt);
 
     if (onIce(this.x, this.y)) {
       // skating: momentum carries, steering is slow, feet can't brake

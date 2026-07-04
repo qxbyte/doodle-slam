@@ -6,7 +6,7 @@
 registerMap({
   name: 'CRATER FIELD',
   desc: 'A moon base, a rocket pad and one crashed saucer.',
-  stage: 5,
+  stage: 7,
   seed: 20260708,
   ground: 'moon',
   roadStyle: 'dirt',

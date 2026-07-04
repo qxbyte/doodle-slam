@@ -26,6 +26,14 @@ function onIce(x, y) {
   return ICE.some(r => x > r.x && x < r.x + r.w && y > r.y && y < r.y + r.h);
 }
 
+/* ocean currents: returns the current lane at this point, or null */
+function currentAt(x, y) {
+  for (const c of CURRENTS) {
+    if (x > c.x && x < c.x + c.w && y > c.y && y < c.y + c.h) return c;
+  }
+  return null;
+}
+
 /* Random open spot on the map (for pickups, bot targets) */
 function randomOpenSpot(margin = 60) {
   for (let i = 0; i < 40; i++) {

@@ -7,9 +7,10 @@
    the STAGES entry (maps/registry.js).
    ============================================================ */
 
-const VIGNETTE_SEEDS = { city: 11, forest: 22, shore: 55, peaks: 66, desk: 33, moon: 44 };
+const VIGNETTE_SEEDS = { city: 11, forest: 22, shore: 55, deep: 77, peaks: 66, fair: 88, desk: 33, moon: 44 };
 const VIGNETTE_BG = {
   desk: '#eedfcf', moon: '#e9edef', shore: '#f2e7cf', peaks: '#f4f7f9',
+  deep: '#dcebf0', fair: '#2c3b35',
 };
 
 const VIGNETTES = {
@@ -353,5 +354,129 @@ const VIGNETTES = {
       c.arc(rand(rng, 10, cv.width - 10), rand(rng, 10, 100), 1.6, 0, Math.PI * 2);
       c.fill();
     }
+  },
+
+  deep(c, rng, cv) {
+    // light rays
+    c.fillStyle = 'rgba(255,255,255,0.25)';
+    for (const x of [30, 110, 190]) {
+      c.beginPath();
+      c.moveTo(x, 0); c.lineTo(x + 26, 0); c.lineTo(x + 62, cv.height); c.lineTo(x + 26, cv.height);
+      c.closePath(); c.fill();
+    }
+    // seabed line + wreck mast
+    c.strokeStyle = '#3d5566';
+    c.lineWidth = 2;
+    wobblyPath(c, rng, [[0, 118], [cv.width, 114]], 2);
+    c.stroke();
+    // little wreck hull
+    c.fillStyle = '#c9b8a0';
+    c.beginPath();
+    c.moveTo(40, 116); c.quadraticCurveTo(66, 132, 96, 114);
+    c.lineTo(92, 96); c.lineTo(46, 98);
+    c.closePath(); c.fill(); c.stroke();
+    c.beginPath(); c.moveTo(72, 96); c.lineTo(80, 66); c.stroke();
+    c.beginPath(); c.moveTo(66, 78); c.lineTo(92, 74); c.stroke();
+    // jellyfish
+    c.fillStyle = 'rgba(215,170,220,0.5)';
+    c.strokeStyle = 'rgba(150,110,170,0.8)';
+    c.lineWidth = 1.6;
+    c.beginPath(); c.arc(160, 52, 13, Math.PI, 0); c.closePath(); c.fill(); c.stroke();
+    c.lineWidth = 1.2;
+    for (const off of [-7, 0, 7]) {
+      c.beginPath();
+      c.moveTo(160 + off, 54);
+      c.quadraticCurveTo(163 + off, 66, 158 + off, 76);
+      c.stroke();
+    }
+    // fish trio + bubbles
+    c.strokeStyle = '#3d5566';
+    c.lineWidth = 1.4;
+    for (const [fx2, fy2] of [[110, 40], [128, 50], [116, 60]]) {
+      c.fillStyle = 'rgba(255,255,255,0.6)';
+      c.beginPath(); c.ellipse(fx2, fy2, 7, 3.4, 0, 0, Math.PI * 2); c.fill(); c.stroke();
+      c.beginPath(); c.moveTo(fx2 - 7, fy2); c.lineTo(fx2 - 11, fy2 - 3); c.lineTo(fx2 - 11, fy2 + 3);
+      c.closePath(); c.stroke();
+    }
+    c.strokeStyle = 'rgba(255,255,255,0.8)';
+    for (const [bx2, by2, br2] of [[206, 84, 4], [212, 66, 3], [204, 50, 2.2], [40, 60, 3]]) {
+      c.beginPath(); c.arc(bx2, by2, br2, 0, Math.PI * 2); c.stroke();
+    }
+    // kelp
+    c.strokeStyle = 'rgba(90,150,110,0.85)';
+    c.lineWidth = 2.4;
+    for (const off of [0, 9]) {
+      c.beginPath();
+      c.moveTo(202 + off, 118);
+      c.quadraticCurveTo(214 + off, 96, 202 + off, 78);
+      c.stroke();
+    }
+  },
+
+  fair(c, rng, cv) {
+    // everything chalk-white on the board
+    const chalk = '#f0f2ec';
+    // ferris wheel
+    c.strokeStyle = chalk;
+    c.lineWidth = 1.8;
+    c.beginPath(); c.arc(70, 66, 34, 0, Math.PI * 2); c.stroke();
+    c.beginPath(); c.arc(70, 66, 27, 0, Math.PI * 2); c.stroke();
+    c.beginPath();
+    for (let i = 0; i < 8; i++) {
+      const a = (i / 8) * Math.PI * 2;
+      c.moveTo(70, 66);
+      c.lineTo(70 + Math.cos(a) * 34, 66 + Math.sin(a) * 34);
+    }
+    c.stroke();
+    c.beginPath();
+    c.moveTo(54, 118); c.lineTo(70, 66); c.moveTo(86, 118); c.lineTo(70, 66);
+    c.stroke();
+    const tints = ['#e6392a', '#f0b41c', '#2f66e0', '#3ba24f'];
+    for (let i = 0; i < 8; i++) {
+      const a = (i / 8) * Math.PI * 2 + 0.4;
+      c.fillStyle = tints[i % 4];
+      c.beginPath();
+      c.roundRect(70 + Math.cos(a) * 34 - 4, 66 + Math.sin(a) * 34, 8, 7, 2);
+      c.fill();
+    }
+    // big top
+    c.strokeStyle = chalk;
+    c.fillStyle = '#e6392a';
+    c.beginPath();
+    c.moveTo(150, 88); c.lineTo(176, 56); c.lineTo(202, 88);
+    c.closePath(); c.fill(); c.stroke();
+    c.fillStyle = 'rgba(240,242,236,0.2)';
+    c.beginPath();
+    c.moveTo(154, 88); c.lineTo(158, 116); c.lineTo(196, 116); c.lineTo(198, 88);
+    c.closePath(); c.fill(); c.stroke();
+    c.beginPath(); c.moveTo(176, 56); c.lineTo(176, 44); c.stroke();
+    c.fillStyle = '#f0b41c';
+    c.beginPath(); c.moveTo(176, 44); c.lineTo(188, 48); c.lineTo(176, 52); c.closePath(); c.fill();
+    // bunting across the top
+    c.strokeStyle = 'rgba(240,242,236,0.7)';
+    c.lineWidth = 1.3;
+    c.beginPath(); c.moveTo(10, 18); c.quadraticCurveTo(cv.width / 2, 36, cv.width - 10, 14); c.stroke();
+    for (let i = 1; i < 8; i++) {
+      const t = i / 8;
+      const px = lerp(lerp(10, cv.width / 2, t), lerp(cv.width / 2, cv.width - 10, t), t);
+      const py = lerp(lerp(18, 36, t), lerp(36, 14, t), t);
+      c.fillStyle = tints[i % 4];
+      c.beginPath();
+      c.moveTo(px - 4, py); c.lineTo(px, py + 8); c.lineTo(px + 4, py);
+      c.closePath(); c.fill();
+    }
+    // chalk stars + ground
+    c.strokeStyle = 'rgba(240,242,236,0.6)';
+    c.lineWidth = 1.4;
+    for (const [sx2, sy2] of [[122, 34], [214, 40], [26, 96]]) {
+      c.beginPath();
+      c.moveTo(sx2 - 4, sy2); c.lineTo(sx2 + 4, sy2);
+      c.moveTo(sx2, sy2 - 4); c.lineTo(sx2, sy2 + 4);
+      c.stroke();
+    }
+    c.strokeStyle = chalk;
+    c.lineWidth = 2;
+    wobblyPath(c, rng, [[0, 122], [cv.width, 118]], 2);
+    c.stroke();
   },
 };

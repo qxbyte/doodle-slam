@@ -6,7 +6,7 @@
 registerMap({
   name: 'POWDER PEAKS',
   desc: 'Ski lifts, a lodge and two lakes of slippery ice.',
-  stage: 3,
+  stage: 4,
   seed: 20260710,
   ground: 'snow',
   plaza: { x: 1150, y: 1250, r: 140 },

@@ -7,7 +7,7 @@
 registerMap({
   name: 'MESSY DESK',
   desc: 'Duck behind the stationery and claim the ink spill.',
-  stage: 4,
+  stage: 6,
   seed: 20260707,
   ground: 'desk',
   roadStyle: 'tape',

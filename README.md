@@ -20,8 +20,10 @@ python3 -m http.server 8080
 ## 玩法
 
 - 流程：**选阶段**（STAGE 1 城市 / STAGE 2 野外）→ **选地图** → **选 Fighter**（ZURI 蓝 / JAX 红 / NIA 黄 / KOBI 绿）→ 与 3 个 bot 对战
-- 阶段与地图：城市 DOWNTOWN/RIVERSIDE · 野外 PINE CAMP/FERN HOLLOW · 海滨 SUNNY SHORE · 雪山 POWDER PEAKS · 书桌 MESSY DESK · 月球 CRATER FIELD
+- 八大阶段：城市 DOWNTOWN/RIVERSIDE · 野外 PINE CAMP/FERN HOLLOW · 海滨 SUNNY SHORE · 深海 THE DEEP · 雪山 POWDER PEAKS · 午夜游乐园 MIDNIGHT FAIR（黑板粉笔反色）· 书桌 MESSY DESK · 月球 CRATER FIELD
 - **冰面机制**（POWDER PEAKS）：冰湖可通行可涂色但打滑——惯性滑行、转向迟缓、停不下来
+- **洋流机制**（THE DEEP）：踩进洋流带会被持续冲走，借流赶路或被冲进敌阵
+- **角色外观差异化**：ZURI 背包天线+围巾+护膝 / JAX 脸贴+腰带+闪电纹 / NIA 马尾+瞄准镜+星徽 / KOBI 耳机毛帽+沾漆围裙+口袋画笔，武器剪影也各不相同
 - 彩蛋：阶段选择页点击空白纸面会迸出随机队伍色的泼漆
 - **3 分钟**倒计时内，用泼漆覆盖最多地面的队伍获胜
 - **角色即武器**：ZURI 均衡喷枪 SketchBlaster / JAX 近战四连霰弹 Splat Scatter / NIA 长程狙击 Longshot Pen / KOBI 大范围慢速 Blob Roller
@@ -66,6 +68,8 @@ js/
       moon.js         月面、环形山/旗帜/脚印、大坑广场、登月舱/飞碟/穹顶/发射台
       shore.js        沙滩地面、海浪泡沫、贝壳/海星/海鸥、潮池广场、灯塔/沙堡等
       peaks.js        雪地地面、冰湖/雪堆/滑雪道/缆车、旅馆/塔架/雪人
+      fair.js         黑板地面（chalk 调色板反色）、粉笔路/彩旗/星月、舞台广场、摩天轮等
+      deep.js         海床地面、洋流/海带/鱼群/水母、巨蚌广场、沉船/珊瑚/铁锚等
   systems/             玩法系统
     audio.js          WebAudio 合成音效（射击/爆炸/事件/UI，零音频文件）
     replay.js         涂色回放：比赛网格快照 + 结算页 timelapse 播放
@@ -81,12 +85,12 @@ js/
 ## 如何扩展
 
 **加一张地图**：新建 `js/maps/<name>.js` 调 `registerMap({...})`（schema 见 registry.js 注释）+ index.html 加一行 script，卡片/缩略图自动生成；出生角不可用时用 `spawns` 覆盖。
-**加一个主题**：新建 `js/world/themes/<name>.js`，用 `registerGround / registerRoadStyle / registerFeature / registerPlaza / registerObstacles` 注册绘制器 + index.html 加一行 script——渲染核心零改动。
+**加一个主题**：新建 `js/world/themes/<name>.js`，用 `registerGround / registerRoadStyle / registerFeature / registerPlaza / registerObstacles` 注册绘制器 + index.html 加一行 script——渲染核心零改动。整套线稿颜色可通过 `map.palette` 换调色板（core/sketch.js 的 PALETTES，如 chalk 黑板反色）。
 **加一个阶段**：`registry.js` 的 `STAGES` 加一项 + `ui/vignettes.js` 加一幅简画。
 
 ## 调试参数
 
-- `?auto=N` 跳过菜单直接以队伍 N（0-3）开局；`&map=M` 指定地图（0-7）
+- `?auto=N` 跳过菜单直接以队伍 N（0-3）开局；`&map=M` 指定地图（0-9）
 - `&ff=S` 开局快进 S 秒；`&mx=X&my=Y` 固定鼠标位置（配合边缘平移测试）
 - `?screen=stages` / `?screen=maps` / `?screen=select` 直接打开某个菜单
 

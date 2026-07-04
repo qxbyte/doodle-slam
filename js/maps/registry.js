@@ -46,11 +46,15 @@ const STAGES = [
     desc: 'Pines, campfires and creek crossings.' },
   { id: 2, name: 'THE SHORE', label: 'STAGE 3', vignette: 'shore',
     desc: 'Sun, piers and a striped lighthouse.' },
-  { id: 3, name: 'THE PEAKS', label: 'STAGE 4', vignette: 'peaks',
+  { id: 3, name: 'THE DEEP',  label: 'STAGE 4', vignette: 'deep',
+    desc: 'Wrecks, corals and sweeping currents.' },
+  { id: 4, name: 'THE PEAKS', label: 'STAGE 5', vignette: 'peaks',
     desc: 'Ski lifts, snowmen and slippery ice.' },
-  { id: 4, name: 'THE DESK',  label: 'STAGE 5', vignette: 'desk',
+  { id: 5, name: 'THE FAIR',  label: 'STAGE 6', vignette: 'fair',
+    desc: 'A funfair chalked on the midnight blackboard.' },
+  { id: 6, name: 'THE DESK',  label: 'STAGE 7', vignette: 'desk',
     desc: 'Zoom out — battle the stationery on the desktop.' },
-  { id: 5, name: 'THE MOON',  label: 'STAGE 6', vignette: 'moon',
+  { id: 7, name: 'THE MOON',  label: 'STAGE 8', vignette: 'moon',
     desc: 'Craters, flags and one crashed saucer.' },
 ];
 
@@ -70,14 +74,17 @@ const MAPS = [];
 function registerMap(def) {
   MAPS.push(Object.assign({
     stage: 0,
-    ground: 'paper',            // paper | desk | moon | sand | snow
-    water: [], bridges: [], rails: [], courts: [],
+    palette: 'default',         // default | chalk | deep — see core/sketch.js
+    ground: 'paper',            // paper | desk | moon | sand | snow | chalk | seabed
+    roads: [], water: [], bridges: [], rails: [], courts: [],
     crosswalks: [], trees: [], cars: [], kiosks: [],
     pines: [], flowers: [], logs: [], grass: 0,
     papers: [], rings: [], clips: [], shavings: [],   // desk scenery
     craters: [], flags: [], prints: [],               // moon scenery
     shells: [], starfish: [], gulls: [],              // shore scenery
     ice: [], drifts: [], snowpines: [], tracks: [], cables: [],  // peaks scenery
+    bunting: [], chalkstars: [],                      // fair scenery
+    currents: [], kelp: [], fishes: [], jellies: [],  // deep scenery
     plazaStyle: 'fountain', roadStyle: 'asphalt',
   }, def));
 }
@@ -88,6 +95,7 @@ let BUILDINGS = [];   // drawn on the top layer, stay clean
 let WATER = [];       // drawn on the ground layer as river/sea
 let OBSTACLES = [];   // buildings + water: block movement & paint
 let ICE = [];         // walkable but slippery, still paintable
+let CURRENTS = [];    // walkable lanes that push fighters along
 let PLAZA = null;
 
 function setMap(idx) {
@@ -96,7 +104,9 @@ function setMap(idx) {
   WATER = CURRENT_MAP.water;
   OBSTACLES = BUILDINGS.concat(WATER);
   ICE = CURRENT_MAP.ice;
+  CURRENTS = CURRENT_MAP.currents;
   PLAZA = CURRENT_MAP.plaza;
   SPAWNS = CURRENT_MAP.spawns || DEFAULT_SPAWNS;
+  setPalette(CURRENT_MAP.palette);
   buildWorldLayers(CURRENT_MAP);
 }

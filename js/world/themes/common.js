@@ -114,11 +114,22 @@ function drawBridges(g, rng, map) {
   }
 }
 
+/* on the default (paper) palette, greenery gets a soft colour wash
+   so the wilds read differently from the grey city */
+function isPaperPalette() {
+  return !CURRENT_MAP || (CURRENT_MAP.palette || 'default') === 'default';
+}
+
 function drawTrees(g, rng, map) {
+  const wash = isPaperPalette();
   for (const [tx, ty] of map.trees) {
     g.lineWidth = 1.5;
     g.strokeStyle = INK;
     scribbleBlob(g, rng, tx, ty, rand(rng, 18, 30));
+    if (wash) {
+      g.fillStyle = 'rgba(145,180,120,0.35)';
+      g.fill();
+    }
     g.stroke();
     g.beginPath(); g.moveTo(tx, ty + 18); g.lineTo(tx + 3, ty + 30); g.stroke();
   }
@@ -132,7 +143,7 @@ function drawPines(g, rng, map) {
     g.scale(s, s);
     g.strokeStyle = INK;
     g.lineWidth = 1.5;
-    g.fillStyle = PAPER;
+    g.fillStyle = isPaperPalette() ? '#e4ecd6' : PAPER;
     // three stacked jagged tiers
     for (let tier = 0; tier < 3; tier++) {
       const ty = -tier * 13, tw = 26 - tier * 6;
@@ -154,7 +165,7 @@ function drawPines(g, rng, map) {
 }
 
 function drawGrass(g, rng, map) {
-  g.strokeStyle = 'rgba(90,90,86,0.45)';
+  g.strokeStyle = isPaperPalette() ? 'rgba(110,145,85,0.55)' : 'rgba(90,90,86,0.45)';
   g.lineWidth = 1.1;
   for (let i = 0; i < map.grass; i++) {
     const x = rand(rng, 30, WORLD.w - 30), y = rand(rng, 30, WORLD.h - 30);
@@ -169,18 +180,22 @@ function drawGrass(g, rng, map) {
 }
 
 function drawFlowers(g, rng, map) {
+  const petalTints = ['rgba(235,170,185,0.6)', 'rgba(240,210,110,0.6)', 'rgba(185,200,235,0.6)'];
+  const wash = isPaperPalette();
   for (const [fx, fy] of map.flowers) {
     for (let i = 0; i < 4; i++) {
       const x = fx + rand(rng, -22, 22), y = fy + rand(rng, -16, 16);
+      const tint = petalTints[i % petalTints.length];
       g.strokeStyle = INK_LIGHT;
       g.lineWidth = 1.1;
       for (let pt = 0; pt < 5; pt++) {
         const a = (pt / 5) * Math.PI * 2;
         g.beginPath();
         g.ellipse(x + Math.cos(a) * 3.4, y + Math.sin(a) * 3.4, 2.2, 1.4, a, 0, Math.PI * 2);
+        if (wash) { g.fillStyle = tint; g.fill(); }
         g.stroke();
       }
-      g.fillStyle = 'rgba(90,90,86,0.5)';
+      g.fillStyle = wash ? 'rgba(240,180,28,0.8)' : 'rgba(90,90,86,0.5)';
       g.beginPath(); g.arc(x, y, 1.5, 0, Math.PI * 2); g.fill();
     }
   }
