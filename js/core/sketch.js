@@ -135,6 +135,39 @@ function drawSplat(ctx, rng, x, y, r, color) {
   }
 }
 
+/* Runs fn with the context rigged so every fill and stroke lands as
+   fat INK. Painting the figure through this first, then repainting
+   it in real colours on top, fuses all the separate shapes into one
+   continuous hand-inked contour — no more "assembled from parts". */
+function withInkSilhouette(ctx, fn, grow = 0.35) {
+  let proto = Object.getPrototypeOf(ctx);
+  const desc = p => {
+    for (let o = proto; o; o = Object.getPrototypeOf(o)) {
+      const d = Object.getOwnPropertyDescriptor(o, p);
+      if (d) return d;
+    }
+    return null;
+  };
+  const dFill = desc('fillStyle'), dStroke = desc('strokeStyle'), dLW = desc('lineWidth');
+  if (!dFill || !dFill.set || !dLW || !dLW.get) { fn(); return; }   // stub context (tests)
+  dFill.set.call(ctx, INK);
+  dStroke.set.call(ctx, INK);
+  Object.defineProperty(ctx, 'fillStyle', { configurable: true, get: () => INK, set: () => {} });
+  Object.defineProperty(ctx, 'strokeStyle', { configurable: true, get: () => INK, set: () => {} });
+  Object.defineProperty(ctx, 'lineWidth', {
+    configurable: true,
+    get: () => dLW.get.call(ctx) - grow,
+    set: v => dLW.set.call(ctx, v + grow),
+  });
+  try {
+    fn();
+  } finally {
+    delete ctx.fillStyle;
+    delete ctx.strokeStyle;
+    delete ctx.lineWidth;
+  }
+}
+
 /* ============================================================
    Characters — tiny doodle people, each with their own build,
    outfit, hair and weapon silhouette. scale 1 ≈ 34px tall.
@@ -163,6 +196,20 @@ function drawCharacter(ctx, teamId, x, y, opts = {}) {
   const bodyW = [13, 12, 11, 15][teamId];   // build: ZIP slim, BLOB round
   const hw = bodyW / 2;
   const runS = pose === 'run' ? Math.sin(walk * 10) : 0;   // stride phase
+
+  if (pose === 'run') {   // contact shadow keeps the jog grounded
+    ctx.fillStyle = 'rgba(60,60,55,0.13)';
+    ctx.beginPath();
+    ctx.ellipse(0, 15.6, 8.5 - Math.abs(runS) * 1.5, 1.8, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  /* the figure is painted twice: first as one fat ink silhouette
+     (fuses the parts into a single sticker-like contour), then in
+     real colours with shading on top. sil = silhouette pass. */
+  const paintFigure = sil => {
+  ctx.lineWidth = 1.4;
+  ctx.strokeStyle = INK;
 
   // legs + shoes
   if (pose === 'run') {
@@ -338,6 +385,22 @@ function drawCharacter(ctx, teamId, x, y, opts = {}) {
     ctx.lineWidth = 1.4;
   }
 
+  if (!sil) {
+    // torso: marker shade down the right, sheen up the left
+    ctx.strokeStyle = 'rgba(0,0,0,0.14)';
+    ctx.lineWidth = 2.2;
+    ctx.beginPath();
+    ctx.moveTo(hw - 1.6, 0.5 + by);
+    ctx.quadraticCurveTo(hw - 0.8, 4 + by, hw - 1.9, 7.4 + by);
+    ctx.stroke();
+    ctx.strokeStyle = 'rgba(255,255,255,0.32)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(-hw + 1.7, -0.4 + by);
+    ctx.quadraticCurveTo(-hw + 1, 2 + by, -hw + 1.8, 4.6 + by);
+    ctx.stroke();
+  }
+
   // weapon — battle: held toward aim; run: a per-fighter carry pose
   ctx.strokeStyle = INK;
   ctx.lineWidth = 1.4;
@@ -395,6 +458,17 @@ function drawCharacter(ctx, teamId, x, y, opts = {}) {
     ctx.fillStyle = '#fff';
     ctx.beginPath(); ctx.roundRect(12, -1.7, 3.8, 3.4, 1.2); ctx.fill(); ctx.stroke();
   }
+  if (!sil) {
+    // sheen along the top of the barrel
+    ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(5.5, [-1.9, -3.1, -0.9, -2.9][teamId]);
+    ctx.lineTo([12.5, 10.5, 17, 10.5][teamId], [-1.7, -2.9, -0.8, -2.5][teamId]);
+    ctx.stroke();
+    ctx.strokeStyle = INK;
+    ctx.lineWidth = 1.4;
+  }
   // both hands gripping
   ctx.fillStyle = skin;
   ctx.lineWidth = 1.2;
@@ -420,6 +494,20 @@ function drawCharacter(ctx, teamId, x, y, opts = {}) {
   ctx.beginPath(); ctx.arc(0.4, -6.6 + by, 2, 0.25, Math.PI - 0.55); ctx.stroke();
   ctx.strokeStyle = INK;
   ctx.lineWidth = 1.4;
+  if (!sil) {
+    // face: shade along the right jaw, sheen on the brow, blush
+    ctx.strokeStyle = 'rgba(0,0,0,0.10)';
+    ctx.lineWidth = 1.9;
+    ctx.beginPath(); ctx.arc(0, -8 + by, 5.2, -0.5, 0.8); ctx.stroke();
+    ctx.strokeStyle = 'rgba(255,255,255,0.35)';
+    ctx.lineWidth = 1.4;
+    ctx.beginPath(); ctx.arc(0, -8 + by, 5, Math.PI * 1.1, Math.PI * 1.45); ctx.stroke();
+    ctx.fillStyle = 'rgba(232,110,100,0.30)';
+    ctx.beginPath(); ctx.arc(-3.7, -5.9 + by, 1.15, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(3.7, -5.9 + by, 1.15, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = INK;
+    ctx.lineWidth = 1.4;
+  }
   if (teamId === 1) {           // BAM: cheek plaster
     ctx.strokeStyle = '#e8d5a4';
     ctx.lineWidth = 1.4;
@@ -470,6 +558,30 @@ function drawCharacter(ctx, teamId, x, y, opts = {}) {
     ctx.beginPath(); ctx.arc(2.2, -8.3 + by, 2.1, 0, Math.PI * 2); ctx.stroke();
     ctx.beginPath(); ctx.moveTo(-0.4, -8.3); ctx.lineTo(0.4, -8.3); ctx.stroke();
   }
+  if (!sil) {
+    // headwear: darker strands in BAM's hair, a sheen on the others
+    if (teamId === 1) {
+      ctx.strokeStyle = 'rgba(0,0,0,0.20)';
+      ctx.lineWidth = 1.3;
+      ctx.beginPath();
+      ctx.moveTo(-2.8, hy - 2); ctx.lineTo(-3.8, hy - 6);
+      ctx.moveTo(2, hy - 2); ctx.lineTo(2.8, hy - 6.5);
+      ctx.stroke();
+    } else {
+      ctx.strokeStyle = 'rgba(255,255,255,0.30)';
+      ctx.lineWidth = 1.4;
+      ctx.beginPath();
+      if (teamId === 3) ctx.arc(0, hy - 4.2, 4.4, Math.PI * 1.05, Math.PI * 1.45);
+      else ctx.arc(0, hy - 1.5, 4.3, Math.PI * 1.08, Math.PI * 1.5);
+      ctx.stroke();
+    }
+    ctx.strokeStyle = INK;
+    ctx.lineWidth = 1.4;
+  }
+  };   // end paintFigure
+
+  withInkSilhouette(ctx, () => paintFigure(true));
+  paintFigure(false);
 
   ctx.restore();
 }
