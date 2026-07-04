@@ -21,7 +21,7 @@ python3 -m http.server 8080
 
 ## 玩法
 
-- 流程：**选阶段**（STAGE 1 城市 / STAGE 2 野外）→ **选地图** → **选 Fighter**（SPLASH 蓝 / BAM 红 / ZIP 黄 / BLOB 绿）→ 与 3 个 bot 对战
+- 流程：**选阶段**（旅程线上 10 站）→ **选地图** → **选 Fighter**（SPLASH 蓝 / BAM 红 / ZIP 黄 / BLOB 绿）→ 与 3 个随机性格的 bot 对战
 - **战役**：每张地图 3 个星级挑战（获胜/覆盖率/击杀等），旅程线上一站拿到星星才解锁下一站
 - **三种模式**：TURF WAR 覆盖率 / SPLAT HUNT 击杀数 / ZONE CONTROL 三点占领计分
 - **角色技能（Q，每局 2 次）**：SPLASH 涂漆无人机 / BAM 冲撞突进 / ZIP 全图贯穿狙 / BLOB 漆墙
@@ -29,7 +29,8 @@ python3 -m http.server 8080
 - **道具**：涂料炸弹 / 加速鞋（8s ×1.45）/ 泡泡护盾（5s 免伤）
 - **分享与导出**：结算页一键生成战报 PNG 分享卡、TURF REPLAY 导出 WebM 视频
 - **环境粒子**：雪原飘雪 / 深海气泡 / 黑板萤火虫 / 林间落叶 / 书桌浮尘 / 月面流星
-- 八大阶段：城市 DOWNTOWN/RIVERSIDE · 野外 PINE CAMP/FERN HOLLOW · 海滨 SUNNY SHORE · 深海 THE DEEP · 雪山 POWDER PEAKS · 午夜游乐园 MIDNIGHT FAIR（黑板粉笔反色）· 书桌 MESSY DESK · 月球 CRATER FIELD
+- 十大阶段：城市 DOWNTOWN/RIVERSIDE · 野外 PINE CAMP/FERN HOLLOW · 海滨 SUNNY SHORE · 深海 THE DEEP（洋流）· 雪山 POWDER PEAKS（冰面）· 午夜游乐园 MIDNIGHT FAIR（黑板粉笔反色）· 书桌 MESSY DESK · 月球 CRATER FIELD · 火山 CINDER BASIN（岩浆伤害）· 下水道 GOO JUNCTION（传送管）
+- 留存：战役星章解锁阶段 · 12 枚成就徽章墙（标题页 BADGES）· 每日挑战 · 生涯战绩 · BGM 按阶段换情绪
 - **冰面机制**（POWDER PEAKS）：冰湖可通行可涂色但打滑——惯性滑行、转向迟缓、停不下来
 - **洋流机制**（THE DEEP）：踩进洋流带会被持续冲走，借流赶路或被冲进敌阵
 - **角色外观差异化**：SPLASH 背包天线+围巾+护膝 / BAM 脸贴+腰带+闪电纹 / ZIP 马尾+瞄准镜+星徽 / BLOB 耳机毛帽+沾漆围裙+口袋画笔，武器剪影也各不相同
@@ -111,7 +112,7 @@ js/
 ## 测试与 CI
 
 ```bash
-node test/run.js     # 28 项单元测试：工具函数/地图数据/碰撞/涂色网格/模式/战役/每日/角色数值
+node test/run.js     # 35 项单元测试：工具函数/地图数据/碰撞/涂色网格/模式/战役/成就/每日/地形机制
 ```
 
 GitHub Actions（.github/workflows/ci.yml）在每次 push/PR 时跑全量 `node --check` + 单测。
