@@ -7,7 +7,7 @@
 
 - `js/core/` — 与玩法无关的基础层（数学、常量、手绘绘制原语）。不得反向依赖上层。
 - `js/maps/` — 每张地图一个**纯数据**文件，调用 `registerMap({...})`；schema 见 `registry.js` 顶部注释。地图文件里不写渲染/玩法逻辑。
-- `js/world/` — 地图数据 → 世界：`render.js`（预渲染两张离屏层）、`collision.js`（阻挡查询）。新的地图元素 = 在 schema 加字段 + render.js 加一个 `drawXxx(g, rng, map)`。
+- `js/world/` — 地图数据 → 世界。`render.js` 是**插件核心**（grounds/roadStyles/features/plazas/obstacles 五个注册表），`themes/*.js` 每主题一个文件向核心注册绘制器；`collision.js` 阻挡查询 + 冰面 `onIce`。新地图元素 = schema 加字段 + 对应主题文件里 `registerFeature/registerObstacles`；新主题 = 新 theme 文件 + index.html 一行 script，核心零改动。
 - `js/systems/` — 玩法系统（paint 归属网格、entities/bot AI）。新玩法机制加新文件，不往 game.js 堆。
 - `js/ui/` — DOM HUD 与菜单屏幕。
 - `js/game.js` — 只做状态机、输入、相机、主循环的编排；具体逻辑下放到 systems。
@@ -15,7 +15,7 @@
 ## 硬约束
 
 - 地图静态美术必须用**种子随机数**（`makeRng(map.seed)`），否则每帧重绘会闪烁。
-- 建筑与水域 = `OBSTACLES`（碰撞 + 不可涂色 + 覆盖率分母剔除），三处由 `setMap()` 统一维护。
+- 建筑与水域 = `OBSTACLES`（碰撞 + 不可涂色 + 覆盖率分母剔除）；冰面 `ICE` 可走可涂但打滑（entities 的动量分支）；出生点默认四角、地图可用 `spawns` 覆盖——这些全部由 `setMap()` 统一切换。
 - 画布像素尺寸 = `窗口 × dpr`，CSS 显示尺寸固定 `100vw/100vh`（style.css `#game`）——两者缺一在 Retina 上就会画面溢出。
 - 相机：镜头中心不出世界边界（纸外显示桌面粉色）；边缘平移偏移上限为视口 42%，保证角色永不离屏。
 

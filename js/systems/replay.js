@@ -47,6 +47,10 @@ const Replay = (() => {
         }
       }
     }
+    c.fillStyle = 'rgba(165,210,235,0.55)';
+    for (const r of ICE) {
+      c.fillRect(r.x / WORLD.w * w, r.y / WORLD.h * h, r.w / WORLD.w * w, r.h / WORLD.h * h);
+    }
     c.fillStyle = 'rgba(110,150,175,0.5)';
     for (const wa of WATER) {
       c.fillRect(wa.x / WORLD.w * w, wa.y / WORLD.h * h, wa.w / WORLD.w * w, wa.h / WORLD.h * h);

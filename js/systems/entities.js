@@ -34,6 +34,8 @@ class Fighter {
     this.aim = 0;
     this.walkPhase = 0;
     this.firingVisual = 0;
+    this.vx = 0;           // carried momentum, only matters on ice
+    this.vy = 0;
     const s = SPAWNS[teamId];
     this.x = s.x; this.y = s.y;
     // bot brain
@@ -51,13 +53,36 @@ class Fighter {
 
   move(dx, dy, dt) {
     const len = Math.hypot(dx, dy);
+    const sp = this.speed;
+
+    if (onIce(this.x, this.y)) {
+      // skating: momentum carries, steering is slow, feet can't brake
+      const max = sp * 1.25;
+      if (len > 0) {
+        this.vx += (dx / len) * max * 2.0 * dt;
+        this.vy += (dy / len) * max * 2.0 * dt;
+      }
+      const cur = Math.hypot(this.vx, this.vy);
+      if (cur > max) { this.vx *= max / cur; this.vy *= max / cur; }
+      const drag = Math.max(0, 1 - 0.45 * dt);
+      this.vx *= drag; this.vy *= drag;
+      const fixed = collideWorld(this.x + this.vx * dt, this.y + this.vy * dt, FIGHTER_RADIUS);
+      this.x = fixed.x; this.y = fixed.y;
+      this.walkPhase += dt * (Math.hypot(this.vx, this.vy) / BASE_SPEED);
+      return;
+    }
+
     if (len > 0) {
-      const sp = this.speed;
       const nx = this.x + (dx / len) * sp * dt;
       const ny = this.y + (dy / len) * sp * dt;
       const fixed = collideWorld(nx, ny, FIGHTER_RADIUS);
       this.x = fixed.x; this.y = fixed.y;
       this.walkPhase += dt * (sp / BASE_SPEED);
+      // remember momentum so stepping onto ice keeps the glide
+      this.vx = (dx / len) * sp;
+      this.vy = (dy / len) * sp;
+    } else {
+      this.vx = this.vy = 0;
     }
   }
 

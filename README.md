@@ -20,7 +20,8 @@ python3 -m http.server 8080
 ## 玩法
 
 - 流程：**选阶段**（STAGE 1 城市 / STAGE 2 野外）→ **选地图** → **选 Fighter**（ZURI 蓝 / JAX 红 / NIA 黄 / KOBI 绿）→ 与 3 个 bot 对战
-- 阶段与地图：城市 = DOWNTOWN、RIVERSIDE；野外 = PINE CAMP、FERN HOLLOW；书桌 = MESSY DESK；月球 = CRATER FIELD
+- 阶段与地图：城市 DOWNTOWN/RIVERSIDE · 野外 PINE CAMP/FERN HOLLOW · 海滨 SUNNY SHORE · 雪山 POWDER PEAKS · 书桌 MESSY DESK · 月球 CRATER FIELD
+- **冰面机制**（POWDER PEAKS）：冰湖可通行可涂色但打滑——惯性滑行、转向迟缓、停不下来
 - 彩蛋：阶段选择页点击空白纸面会迸出随机队伍色的泼漆
 - **3 分钟**倒计时内，用泼漆覆盖最多地面的队伍获胜
 - **角色即武器**：ZURI 均衡喷枪 SketchBlaster / JAX 近战四连霰弹 Splat Scatter / NIA 长程狙击 Longshot Pen / KOBI 大范围慢速 Blob Roller
@@ -54,8 +55,16 @@ js/
     messydesk.js      书桌：木纹桌面/文具障碍/纸胶带道路/打翻的墨水瓶
     craterfield.js    月球：环形山/月面基地/火箭发射台/坠毁飞碟/脚印
   world/               把地图数据变成世界
-    render.js         预渲染地面层/建筑层（每种元素一个 draw 函数）
-    collision.js      碰撞与可行走查询（建筑 + 水域均阻挡）
+    render.js         渲染核心：ground/road/feature/plaza/obstacle 五个注册表 + 编排
+    collision.js      碰撞与可行走查询（建筑+水域阻挡；冰面 onIce 查询）
+    themes/           每主题一个文件，向核心注册自己的绘制器
+      common.js       纸张地面、街道/土路、水系与桥、树、草花、喷泉/池塘广场
+      city.js         铁轨/斑马线/球场/汽车/亭子 + 纸片楼房
+      wilds.js        原木、营火/立石广场、木屋/瞭望塔/帐篷/巨石/古树/蘑菇
+      desk.js         木纹桌面、纸胶带路、作业纸/咖啡渍/回形针、墨水广场、文具
+      moon.js         月面、环形山/旗帜/脚印、大坑广场、登月舱/飞碟/穹顶/发射台
+      shore.js        沙滩地面、海浪泡沫、贝壳/海星/海鸥、潮池广场、灯塔/沙堡等
+      peaks.js        雪地地面、冰湖/雪堆/滑雪道/缆车、旅馆/塔架/雪人
   systems/             玩法系统
     audio.js          WebAudio 合成音效（射击/爆炸/事件/UI，零音频文件）
     replay.js         涂色回放：比赛网格快照 + 结算页 timelapse 播放
@@ -68,15 +77,15 @@ js/
   game.js             状态机、输入、相机、主循环、比赛规则
 ```
 
-## 如何新增一张地图
+## 如何扩展
 
-1. 新建 `js/maps/<name>.js`，调用 `registerMap({...})`（字段说明见 `registry.js` 顶部注释）；
-2. 在 `index.html` 的 maps 段加一行 `<script>`（放在 `registry.js` 之后）；
-3. 完成——选图界面的卡片和缩略图会自动从地图数据生成。
+**加一张地图**：新建 `js/maps/<name>.js` 调 `registerMap({...})`（schema 见 registry.js 注释）+ index.html 加一行 script，卡片/缩略图自动生成；出生角不可用时用 `spawns` 覆盖。
+**加一个主题**：新建 `js/world/themes/<name>.js`，用 `registerGround / registerRoadStyle / registerFeature / registerPlaza / registerObstacles` 注册绘制器 + index.html 加一行 script——渲染核心零改动。
+**加一个阶段**：`registry.js` 的 `STAGES` 加一项 + `ui/vignettes.js` 加一幅简画。
 
 ## 调试参数
 
-- `?auto=N` 跳过菜单直接以队伍 N（0-3）开局；`&map=M` 指定地图（0-5）
+- `?auto=N` 跳过菜单直接以队伍 N（0-3）开局；`&map=M` 指定地图（0-7）
 - `&ff=S` 开局快进 S 秒；`&mx=X&my=Y` 固定鼠标位置（配合边缘平移测试）
 - `?screen=stages` / `?screen=maps` / `?screen=select` 直接打开某个菜单
 

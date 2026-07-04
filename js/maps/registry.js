@@ -44,31 +44,40 @@ const STAGES = [
     desc: 'Streets, malls and rooftop billboards.' },
   { id: 1, name: 'THE WILDS', label: 'STAGE 2', vignette: 'forest',
     desc: 'Pines, campfires and creek crossings.' },
-  { id: 2, name: 'THE DESK',  label: 'STAGE 3', vignette: 'desk',
+  { id: 2, name: 'THE SHORE', label: 'STAGE 3', vignette: 'shore',
+    desc: 'Sun, piers and a striped lighthouse.' },
+  { id: 3, name: 'THE PEAKS', label: 'STAGE 4', vignette: 'peaks',
+    desc: 'Ski lifts, snowmen and slippery ice.' },
+  { id: 4, name: 'THE DESK',  label: 'STAGE 5', vignette: 'desk',
     desc: 'Zoom out — battle the stationery on the desktop.' },
-  { id: 3, name: 'THE MOON',  label: 'STAGE 4', vignette: 'moon',
+  { id: 5, name: 'THE MOON',  label: 'STAGE 6', vignette: 'moon',
     desc: 'Craters, flags and one crashed saucer.' },
 ];
 
-/* Team spawn corners: blue, red, yellow, green */
-const SPAWNS = [
+/* Team spawn corners: blue, red, yellow, green.
+   A map whose corners are unusable (e.g. covered by sea) can
+   override them with its own `spawns` array. */
+const DEFAULT_SPAWNS = [
   { x: 90, y: 90 },
   { x: WORLD.w - 90, y: 90 },
   { x: 90, y: WORLD.h - 90 },
   { x: WORLD.w - 90, y: WORLD.h - 90 },
 ];
+let SPAWNS = DEFAULT_SPAWNS;
 
 const MAPS = [];
 
 function registerMap(def) {
   MAPS.push(Object.assign({
     stage: 0,
-    ground: 'paper',            // paper | desk | moon — base surface texture
+    ground: 'paper',            // paper | desk | moon | sand | snow
     water: [], bridges: [], rails: [], courts: [],
     crosswalks: [], trees: [], cars: [], kiosks: [],
     pines: [], flowers: [], logs: [], grass: 0,
     papers: [], rings: [], clips: [], shavings: [],   // desk scenery
     craters: [], flags: [], prints: [],               // moon scenery
+    shells: [], starfish: [], gulls: [],              // shore scenery
+    ice: [], drifts: [], snowpines: [], tracks: [], cables: [],  // peaks scenery
     plazaStyle: 'fountain', roadStyle: 'asphalt',
   }, def));
 }
@@ -76,8 +85,9 @@ function registerMap(def) {
 /* ---- active map state (set by setMap, read everywhere) ---- */
 let CURRENT_MAP = null;
 let BUILDINGS = [];   // drawn on the top layer, stay clean
-let WATER = [];       // drawn on the ground layer as river
+let WATER = [];       // drawn on the ground layer as river/sea
 let OBSTACLES = [];   // buildings + water: block movement & paint
+let ICE = [];         // walkable but slippery, still paintable
 let PLAZA = null;
 
 function setMap(idx) {
@@ -85,6 +95,8 @@ function setMap(idx) {
   BUILDINGS = CURRENT_MAP.buildings;
   WATER = CURRENT_MAP.water;
   OBSTACLES = BUILDINGS.concat(WATER);
+  ICE = CURRENT_MAP.ice;
   PLAZA = CURRENT_MAP.plaza;
+  SPAWNS = CURRENT_MAP.spawns || DEFAULT_SPAWNS;
   buildWorldLayers(CURRENT_MAP);
 }

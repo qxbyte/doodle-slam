@@ -21,6 +21,11 @@ function pointBlocked(x, y) {
   return OBSTACLES.some(b => x > b.x && x < b.x + b.w && y > b.y && y < b.y + b.h);
 }
 
+/* frozen lakes: walkable but slippery (see Fighter.move) */
+function onIce(x, y) {
+  return ICE.some(r => x > r.x && x < r.x + r.w && y > r.y && y < r.y + r.h);
+}
+
 /* Random open spot on the map (for pickups, bot targets) */
 function randomOpenSpot(margin = 60) {
   for (let i = 0; i < 40; i++) {
