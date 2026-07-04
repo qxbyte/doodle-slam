@@ -168,16 +168,60 @@ function drawCharacter(ctx, teamId, x, y, opts = {}) {
   ctx.fillStyle = '#333';
   ctx.beginPath(); ctx.ellipse(-3.8, 14.5 - bob, 2.6, 1.4, 0, 0, Math.PI * 2); ctx.fill();
   ctx.beginPath(); ctx.ellipse(3.8, 14.5 + bob, 2.6, 1.4, 0, 0, Math.PI * 2); ctx.fill();
-  // shorts — everyone wears them, like the reference doodles
-  ctx.fillStyle = ['#3c4a66', '#4a3c40', '#54492e', '#38463a'][teamId];
-  ctx.beginPath();
-  ctx.roundRect(-5, 6.2, 10, 4.6, 2);
-  ctx.fill(); ctx.stroke();
-  ctx.beginPath();
-  ctx.moveTo(0, 8); ctx.lineTo(0, 10.8);
-  ctx.lineWidth = 1;
-  ctx.stroke();
-  ctx.lineWidth = 1.4;
+  // bottoms — a different cut per fighter
+  if (teamId === 0) {
+    // ZURI: cargo shorts with side pockets
+    ctx.fillStyle = '#3c4a66';
+    ctx.beginPath(); ctx.roundRect(-5, 6.2, 10, 5, 1.6); ctx.fill(); ctx.stroke();
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(0, 8); ctx.lineTo(0, 11.2); ctx.stroke();
+    ctx.fillStyle = '#4c5a76';
+    ctx.beginPath(); ctx.roundRect(-5.6, 7.6, 2.2, 2.4, 0.6); ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.roundRect(3.4, 7.6, 2.2, 2.4, 0.6); ctx.fill(); ctx.stroke();
+    ctx.lineWidth = 1.4;
+  } else if (teamId === 1) {
+    // JAX: short sporty shorts with white side stripes
+    ctx.fillStyle = '#4a3c40';
+    ctx.beginPath(); ctx.roundRect(-5, 6.2, 10, 3.8, 1.6); ctx.fill(); ctx.stroke();
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 1.1;
+    ctx.beginPath();
+    ctx.moveTo(-4.2, 6.6); ctx.lineTo(-4.2, 9.6);
+    ctx.moveTo(4.2, 6.6); ctx.lineTo(4.2, 9.6);
+    ctx.stroke();
+    ctx.strokeStyle = INK;
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(0, 7.6); ctx.lineTo(0, 10); ctx.stroke();
+    ctx.lineWidth = 1.4;
+  } else if (teamId === 2) {
+    // NIA: little pleated skirt
+    ctx.fillStyle = '#54492e';
+    ctx.beginPath();
+    ctx.moveTo(-4, 6.2);
+    ctx.lineTo(4, 6.2);
+    ctx.lineTo(6, 10.6);
+    ctx.lineTo(-6, 10.6);
+    ctx.closePath();
+    ctx.fill(); ctx.stroke();
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(-2, 6.6); ctx.lineTo(-3, 10.4);
+    ctx.moveTo(2, 6.6); ctx.lineTo(3, 10.4);
+    ctx.stroke();
+    ctx.lineWidth = 1.4;
+  } else {
+    // KOBI: baggy painter pants, rolled cuffs, a stray drip
+    ctx.fillStyle = '#38463a';
+    ctx.beginPath(); ctx.roundRect(-5.4, 6.2, 10.8, 6.4, 2); ctx.fill(); ctx.stroke();
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(0, 8.4); ctx.lineTo(0, 12.6); ctx.stroke();
+    ctx.fillStyle = '#efe9dc';
+    ctx.beginPath(); ctx.roundRect(-5.4, 11.4, 4.4, 1.6, 0.8); ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.roundRect(1, 11.4, 4.4, 1.6, 0.8); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = '#f0b41c';
+    ctx.beginPath(); ctx.arc(-2.6, 9.4, 0.9, 0, Math.PI * 2); ctx.fill();
+    ctx.lineWidth = 1.4;
+  }
   if (teamId === 0) {                  // ZURI: knee pads
     ctx.fillStyle = '#dfe3ea';
     ctx.beginPath(); ctx.arc(-3.5, 12, 1.5, 0, Math.PI * 2); ctx.fill();
