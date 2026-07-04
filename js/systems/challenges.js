@@ -28,6 +28,8 @@ const CAMPAIGN_DEFS = {
   'MIDNIGHT FAIR': [['win'], ['coverage', 26], ['buttons', 2]],
   'MESSY DESK':    [['win'], ['coverage', 26], ['splats', 5]],
   'CRATER FIELD':  [['win'], ['coverage', 24], ['nodeath']],
+  'CINDER BASIN':  [['win'], ['coverage', 22], ['nodeath']],
+  'GOO JUNCTION':  [['win'], ['coverage', 24], ['splats', 5]],
 };
 
 const Campaign = {

@@ -61,6 +61,8 @@ class Fighter {
     this.botBurst = 0;
     this.persona = PERSONAS[pick(Math.random, Object.keys(PERSONAS))];
     this.grudge = null;    // who splatted me last (avenger fuel)
+    this.warpT = 0;        // warp-pipe cooldown
+    this.lavaTick = 0;     // lava sizzle fx throttle
   }
 
   get speed() {
@@ -250,9 +252,10 @@ class Fighter {
       a = Math.atan2(this.y - foe.y, this.x - foe.x);
     }
     const probe = 46;
-    if (pointBlocked(this.x + Math.cos(a) * probe, this.y + Math.sin(a) * probe)) {
+    const hazard = (px, py) => pointBlocked(px, py) || lavaAt(px, py);
+    if (hazard(this.x + Math.cos(a) * probe, this.y + Math.sin(a) * probe)) {
       for (const off of [0.5, -0.5, 1.1, -1.1, 1.8, -1.8]) {
-        if (!pointBlocked(this.x + Math.cos(a + off) * probe, this.y + Math.sin(a + off) * probe)) {
+        if (!hazard(this.x + Math.cos(a + off) * probe, this.y + Math.sin(a + off) * probe)) {
           a += off;
           break;
         }

@@ -88,7 +88,7 @@ const FILES = [
   'js/maps/downtown.js', 'js/maps/riverside.js', 'js/maps/pinecamp.js',
   'js/maps/fernhollow.js', 'js/maps/sunnyshore.js', 'js/maps/thedeep.js',
   'js/maps/powderpeaks.js', 'js/maps/midnightfair.js', 'js/maps/messydesk.js',
-  'js/maps/craterfield.js',
+  'js/maps/craterfield.js', 'js/maps/cinderbasin.js', 'js/maps/goojunction.js',
   'js/world/collision.js',
   'js/systems/paint.js',
   'js/systems/modes.js',

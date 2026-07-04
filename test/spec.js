@@ -87,9 +87,9 @@ t('circleRectResolve pushes the circle out', () => {
 
 /* ---------------- maps & registry ---------------- */
 
-t('ten maps registered with unique names', () => {
-  eq(MAPS.length, 10);
-  eq(new Set(MAPS.map(m => m.name)).size, 10);
+t('twelve maps registered with unique names', () => {
+  eq(MAPS.length, 12);
+  eq(new Set(MAPS.map(m => m.name)).size, 12);
 });
 
 t('every map references a valid stage', () => {
@@ -389,4 +389,33 @@ t('achievements unlock once and persist counters', () => {
   eq(c.total, ACHIEVEMENTS.length, 'count total matches defs');
   ok(c.got >= 8, 'unlock tally recorded');
   localStorage.removeItem('doodleSlam.achievements');
+});
+
+
+/* ---------------- volcano & sewer terrain ---------------- */
+
+t('lava pools register as hazard, causeways stay safe', () => {
+  const volcano = MAPS.find(m => m.name === 'CINDER BASIN');
+  ok(volcano, 'CINDER BASIN registered');
+  LAVA = volcano.lava;
+  ok(lavaAt(100, 750), 'inside the lava river');
+  ok(!lavaAt(970, 755), 'west causeway gap is safe');
+  ok(!lavaAt(1930, 755), 'east causeway gap is safe');
+  LAVA = [];
+});
+
+t('warp pipes come in valid, reachable pairs', () => {
+  const sewer = MAPS.find(m => m.name === 'GOO JUNCTION');
+  ok(sewer, 'GOO JUNCTION registered');
+  ok(sewer.pipes.length >= 2, 'at least two pipe pairs');
+  for (const p of sewer.pipes) {
+    ok(dist(p.ax, p.ay, p.bx, p.by) > 300, 'pipe ends are far apart');
+    for (const [x, y] of [[p.ax, p.ay], [p.bx, p.by]]) {
+      ok(x > 40 && x < WORLD.w - 40 && y > 40 && y < WORLD.h - 40, 'pipe mouth on the map');
+      ok(!sewer.buildings.some(b => x > b.x && x < b.x + b.w && y > b.y && y < b.y + b.h),
+        'pipe mouth clear of obstacles');
+      ok(!sewer.water.some(w => x > w.x && x < w.x + w.w && y > w.y && y < w.y + w.h),
+        'pipe mouth clear of goo');
+    }
+  }
 });

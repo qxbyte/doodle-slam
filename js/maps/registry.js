@@ -56,6 +56,10 @@ const STAGES = [
     desc: 'Zoom out — battle the stationery on the desktop.' },
   { id: 7, name: 'THE MOON',  label: 'STAGE 8', vignette: 'moon',
     desc: 'Craters, flags and one crashed saucer.' },
+  { id: 8, name: 'THE VOLCANO', label: 'STAGE 9', vignette: 'volcano',
+    desc: 'Black rock, ash plumes and bubbling lava.' },
+  { id: 9, name: 'THE SEWER', label: 'STAGE 10', vignette: 'sewer',
+    desc: 'Warp pipes and glowing goo under the town.' },
 ];
 
 /* Team spawn corners: blue, red, yellow, green.
@@ -85,6 +89,8 @@ function registerMap(def) {
     ice: [], drifts: [], snowpines: [], tracks: [], cables: [],  // peaks scenery
     bunting: [], chalkstars: [],                      // fair scenery
     currents: [], kelp: [], fishes: [], jellies: [],  // deep scenery
+    lava: [], vents: [], crags: [],                   // volcano scenery
+    pipes: [], drips: [], moss: [],                   // sewer scenery
     plazaStyle: 'fountain', roadStyle: 'asphalt',
     ambient: null,        // snow | bubbles | fireflies | leaves | dust | stars
     mood: 'default',      // Music.MOODS key — per-stage BGM feel
@@ -98,6 +104,8 @@ let WATER = [];       // drawn on the ground layer as river/sea
 let OBSTACLES = [];   // buildings + water: block movement & paint
 let ICE = [];         // walkable but slippery, still paintable
 let CURRENTS = [];    // walkable lanes that push fighters along
+let LAVA = [];        // walkable but searing — stand in it and melt
+let PIPES = [];       // paired warp pipes: step on one end, pop out the other
 let PLAZA = null;
 
 function setMap(idx) {
@@ -107,6 +115,8 @@ function setMap(idx) {
   OBSTACLES = BUILDINGS.concat(WATER);
   ICE = CURRENT_MAP.ice;
   CURRENTS = CURRENT_MAP.currents;
+  LAVA = CURRENT_MAP.lava;
+  PIPES = CURRENT_MAP.pipes;
   PLAZA = CURRENT_MAP.plaza;
   SPAWNS = CURRENT_MAP.spawns || DEFAULT_SPAWNS;
   setPalette(CURRENT_MAP.palette);

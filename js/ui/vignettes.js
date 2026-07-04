@@ -7,10 +7,10 @@
    the STAGES entry (maps/registry.js).
    ============================================================ */
 
-const VIGNETTE_SEEDS = { city: 11, forest: 22, shore: 55, deep: 77, peaks: 66, fair: 88, desk: 33, moon: 44 };
+const VIGNETTE_SEEDS = { city: 11, forest: 22, shore: 55, deep: 77, peaks: 66, fair: 88, desk: 33, moon: 44, volcano: 99, sewer: 111 };
 const VIGNETTE_BG = {
   desk: '#eedfcf', moon: '#e9edef', shore: '#f2e7cf', peaks: '#f4f7f9',
-  deep: '#dcebf0', fair: '#2c3b35',
+  deep: '#dcebf0', fair: '#2c3b35', volcano: '#eee3d8', sewer: '#e6ebe3',
 };
 
 const VIGNETTES = {
@@ -478,5 +478,115 @@ const VIGNETTES = {
     c.lineWidth = 2;
     wobblyPath(c, rng, [[0, 122], [cv.width, 118]], 2);
     c.stroke();
+  },
+
+  volcano(c, rng, cv) {
+    // the cone
+    c.strokeStyle = INK;
+    c.lineWidth = 2;
+    c.fillStyle = '#8d7d72';
+    c.beginPath();
+    c.moveTo(40, 120); c.lineTo(96, 34); c.lineTo(136, 34); c.lineTo(192, 120);
+    c.closePath(); c.fill(); c.stroke();
+    // crater glow + smoke curls
+    c.fillStyle = '#5a5049';
+    c.beginPath(); c.ellipse(116, 36, 20, 6, 0, 0, Math.PI * 2); c.fill(); c.stroke();
+    c.fillStyle = '#ee7434';
+    c.beginPath(); c.ellipse(116, 36, 11, 3.4, 0, 0, Math.PI * 2); c.fill();
+    c.strokeStyle = 'rgba(120,110,105,0.6)';
+    c.lineWidth = 2.2;
+    for (const [ox, s, r] of [[-6, 14, 6], [8, 26, 8], [-2, 40, 10]]) {
+      c.beginPath(); c.arc(116 + ox, 30 - s, r, 0.4, Math.PI * 1.5); c.stroke();
+    }
+    // lava streams down the flank
+    c.strokeStyle = '#ee7434';
+    c.lineWidth = 3.4;
+    c.beginPath();
+    c.moveTo(106, 40); c.quadraticCurveTo(96, 80, 102, 118);
+    c.stroke();
+    c.lineWidth = 2.4;
+    c.beginPath();
+    c.moveTo(128, 40); c.quadraticCurveTo(140, 76, 134, 100);
+    c.stroke();
+    // lava pool at the foot with bubbles
+    c.fillStyle = '#ee7434';
+    c.strokeStyle = '#a83c14';
+    c.lineWidth = 2;
+    c.beginPath(); c.ellipse(116, 126, 52, 12, 0, 0, Math.PI * 2); c.fill(); c.stroke();
+    c.strokeStyle = 'rgba(255,225,150,0.85)';
+    c.lineWidth = 1.4;
+    for (const [bx, byy, br] of [[92, 124, 3.4], [122, 129, 2.6], [146, 123, 3]]) {
+      c.beginPath(); c.arc(bx, byy, br, 0, Math.PI * 2); c.stroke();
+    }
+    // drifting embers
+    c.fillStyle = 'rgba(230,110,50,0.7)';
+    for (let i = 0; i < 10; i++) {
+      c.beginPath();
+      c.arc(rand(rng, 20, cv.width - 20), rand(rng, 14, 70), rand(rng, 1, 2), 0, Math.PI * 2);
+      c.fill();
+    }
+  },
+
+  sewer(c, rng, cv) {
+    // brick arch of the tunnel
+    c.strokeStyle = INK;
+    c.lineWidth = 2;
+    c.beginPath(); c.arc(116, 96, 78, Math.PI, 0); c.stroke();
+    c.lineWidth = 1.2;
+    c.strokeStyle = 'rgba(90,100,95,0.5)';
+    for (let i = 0; i < 9; i++) {
+      const a = Math.PI + (i / 8) * Math.PI;
+      c.beginPath();
+      c.moveTo(116 + Math.cos(a) * 66, 96 + Math.sin(a) * 66);
+      c.lineTo(116 + Math.cos(a) * 78, 96 + Math.sin(a) * 78);
+      c.stroke();
+    }
+    // goo channel with swirls
+    c.fillStyle = '#79b95c';
+    c.strokeStyle = '#3f7031';
+    c.lineWidth = 2;
+    c.beginPath(); c.roundRect(24, 108, 184, 26, 8); c.fill(); c.stroke();
+    c.strokeStyle = 'rgba(215,240,170,0.75)';
+    c.lineWidth = 1.6;
+    c.beginPath();
+    for (let x = 34; x < 200; x += 8) {
+      const wob = Math.sin(x * 0.09) * 3.4;
+      x === 34 ? c.moveTo(x, 121 + wob) : c.lineTo(x, 121 + wob);
+    }
+    c.stroke();
+    for (const [bx, byy] of [[60, 116], [150, 126], [186, 114]]) {
+      c.beginPath(); c.arc(bx, byy, 2.6, 0, Math.PI * 2); c.stroke();
+    }
+    // a warp pipe popping out of the wall
+    c.fillStyle = '#57a05a';
+    c.strokeStyle = INK;
+    c.lineWidth = 2;
+    c.beginPath(); c.arc(62, 72, 20, 0, Math.PI * 2); c.fill(); c.stroke();
+    c.fillStyle = '#2c4430';
+    c.beginPath(); c.arc(62, 72, 12.5, 0, Math.PI * 2); c.fill(); c.stroke();
+    c.fillStyle = '#fdfdf8';
+    c.lineWidth = 1.5;
+    c.beginPath(); c.arc(78, 56, 7.5, 0, Math.PI * 2); c.fill(); c.stroke();
+    c.fillStyle = INK;
+    c.font = "800 10px 'Nunito', sans-serif";
+    c.textAlign = 'center';
+    c.fillText('1', 78, 60);
+    // a leaky valve on the right
+    c.strokeStyle = '#a83c14';
+    c.lineWidth = 3;
+    c.beginPath(); c.arc(174, 66, 13, 0, Math.PI * 2); c.stroke();
+    c.lineWidth = 2;
+    for (let k = 0; k < 3; k++) {
+      const a = k / 3 * Math.PI * 2 + 0.4;
+      c.beginPath();
+      c.moveTo(174, 66); c.lineTo(174 + Math.cos(a) * 13, 66 + Math.sin(a) * 13);
+      c.stroke();
+    }
+    // drips from the arch
+    c.strokeStyle = 'rgba(130,160,170,0.7)';
+    c.lineWidth = 1.6;
+    for (const [dx, dy] of [[100, 40], [140, 34]]) {
+      c.beginPath(); c.moveTo(dx, dy); c.lineTo(dx, dy + 12); c.stroke();
+    }
   },
 };

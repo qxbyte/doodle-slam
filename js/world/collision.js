@@ -26,6 +26,11 @@ function onIce(x, y) {
   return ICE.some(r => x > r.x && x < r.x + r.w && y > r.y && y < r.y + r.h);
 }
 
+/* lava pools: walkable but searing (damage applied in game update) */
+function lavaAt(x, y) {
+  return LAVA.some(r => x > r.x && x < r.x + r.w && y > r.y && y < r.y + r.h);
+}
+
 /* ocean currents: returns the current lane at this point, or null */
 function currentAt(x, y) {
   for (const c of CURRENTS) {

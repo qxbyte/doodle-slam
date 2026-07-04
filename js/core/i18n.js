@@ -103,6 +103,8 @@ const I18N_ZH = {
   'A funfair chalked on the midnight blackboard.': '午夜黑板上粉笔画的游乐园。',
   'Zoom out — battle the stationery on the desktop.': '拉远镜头——在书桌文具间开战。',
   'Craters, flags and one crashed saucer.': '环形山、旗帜和一艘坠毁的飞碟。',
+  'Black rock, ash plumes and bubbling lava.': '黑岩、火山灰与咕嘟冒泡的岩浆。',
+  'Warp pipes and glowing goo under the town.': '小镇地下的传送管与荧光黏液。',
 
   /* ---- map select ---- */
   'Pick Your Turf': '选择地图',
@@ -116,6 +118,8 @@ const I18N_ZH = {
   'A funfair chalked onto the blackboard after dark.': '天黑后粉笔画在黑板上的游乐园。',
   'Duck behind the stationery and claim the ink spill.': '躲在文具后面，抢占打翻的墨水。',
   'A moon base, a rocket pad and one crashed saucer.': '月面基地、火箭发射台和一艘坠毁的飞碟。',
+  'Cross the lava river — or melt trying.': '跨越岩浆河——不然就熔在里面。',
+  'Grate bridges and warp pipes — mind the goo.': '格栅桥与传送管——小心脚下的黏液。',
 
   /* ---- challenges ---- */
   'Win the match': '赢下比赛',
@@ -174,6 +178,7 @@ const I18N_ZH = {
   'RED BUTTON appeared at the plaza!': '广场上出现了红按钮！',
   'SLAM TIME! Splats hit bigger!': 'SLAM TIME！泼漆范围加大！',
   '{a} splatted {b}!': '{a} 击倒了 {b}！',
+  '{n} melted in the lava!': '{n} 熔化在了岩浆里！',
   '{n} used {s}!': '{n} 使用了 {s}！',
   'Match paused — fly around with WASD or the screen edges. B returns.': '比赛已暂停——用 WASD 或屏幕边缘自由飞行，按 B 返回。',
   'Video export is not supported in this browser.': '当前浏览器不支持视频导出。',

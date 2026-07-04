@@ -81,6 +81,8 @@ const SFX = (() => {
     start:      () => { tone({ type: 'sine', from: 600, to: 950, dur: 0.25, gain: 0.25 }); tone({ type: 'sine', from: 950, dur: 0.18, gain: 0.22, delay: 0.28 }); },
     end:        () => { [660, 550, 440].forEach((f, i) => tone({ type: 'sawtooth', from: f, dur: 0.3, gain: 0.2, delay: i * 0.22 })); },
     skill:      () => { tone({ type: 'sawtooth', from: 220, to: 880, dur: 0.22, gain: 0.22 }); tone({ type: 'triangle', from: 990, dur: 0.1, gain: 0.18, delay: 0.2 }); },
+    sizzle:     () => { noise({ dur: 0.16, freq: 2600, slideTo: 800, gain: 0.16 }); },
+    warp:       () => { tone({ type: 'sine', from: 300, to: 900, dur: 0.16, gain: 0.22 }); tone({ type: 'sine', from: 900, to: 420, dur: 0.18, gain: 0.2, delay: 0.14 }); },
     // menus
     click:      () => { tone({ type: 'square', from: 640, to: 520, dur: 0.05, gain: 0.15 }); },
     uiSplat:    () => { noise({ dur: 0.18, freq: 1000, slideTo: 200, gain: 0.3 }); },

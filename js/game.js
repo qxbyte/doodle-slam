@@ -381,6 +381,48 @@ function update(dt) {
       continue;
     }
     f.updateRegen(dt);
+
+    // lava sears anyone standing in it (bubble shields hold it off)
+    if (LAVA.length && f.shieldT <= 0 && lavaAt(f.x, f.y)) {
+      f.hp -= 26 * dt;
+      f.lavaTick -= dt;
+      if (f.lavaTick <= 0) {
+        f.lavaTick = 0.45;
+        addFx({ type: 'burst', x: f.x, y: f.y, r1: 16, drops: 2, color: '#e8722c' });
+        if (f.isPlayer && !game.demo) { SFX.play('sizzle'); flashHurt(); }
+      }
+      if (f.hp <= 0) {
+        f.alive = false;
+        f.respawnTimer = 2.5;
+        game.stats[f.team].downs++;
+        splat(f.x, f.y, 55 * slamMul(), f.team);
+        addFx({ type: 'text', x: f.x, y: f.y - 24, text: 'MELTED!', color: '#e8722c' });
+        addShake(f.isPlayer ? 9 : 4);
+        SFX.play('splatted');
+        pushToast(L('{n} melted in the lava!', { n: f.name }));
+        continue;
+      }
+    }
+
+    // warp pipes: step on one mouth, pop out of its twin
+    f.warpT = Math.max(0, f.warpT - dt);
+    if (PIPES.length && f.warpT <= 0) {
+      for (const pp of PIPES) {
+        const atA = dist(f.x, f.y, pp.ax, pp.ay) < 26;
+        const atB = !atA && dist(f.x, f.y, pp.bx, pp.by) < 26;
+        if (atA || atB) {
+          addFx({ type: 'burst', x: f.x, y: f.y, r1: 22, drops: 4, color: '#57b06a' });
+          f.x = atA ? pp.bx : pp.ax;
+          f.y = atA ? pp.by : pp.ay;
+          f.vx = f.vy = 0;
+          f.warpT = 1.4;
+          addFx({ type: 'burst', x: f.x, y: f.y, r1: 26, drops: 6, color: '#57b06a' });
+          if (f.isPlayer && !game.demo) SFX.play('warp');
+          break;
+        }
+      }
+    }
+
     if (!f.isPlayer || game.demo) f.botUpdate(game, dt);
 
     // pickups
@@ -1024,8 +1066,12 @@ function boot() {
     for (let i = 0; i < ff * 30; i++) update(1 / 30);
   }
   if (params.get('screen') === 'select') { game.state = 'select'; showScreen('#screen-select'); }
+  if (params.has('stage')) game.stageIdx = clamp(Number(params.get('stage')) || 0, 0, STAGES.length - 1);
   if (params.get('screen') === 'maps') { buildMapCards(game.stageIdx); showScreen('#screen-maps'); }
-  if (params.get('screen') === 'stages') showScreen('#screen-stages');
+  if (params.get('screen') === 'stages') {
+    showScreen('#screen-stages');
+    if (params.has('scroll')) $('#stage-path').scrollLeft = Number(params.get('scroll')) || 0;
+  }
   if (params.get('screen') === 'badges') { buildBadgeWall(); $('#badges-panel').classList.remove('hidden'); }
 
   // attract mode behind the menus (skipped for reduced motion / debug runs)

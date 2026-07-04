@@ -27,7 +27,8 @@ function initPaint() {
   for (let gy = 0; gy < GRID_H; gy++) {
     for (let gx = 0; gx < GRID_W; gx++) {
       const cx = gx * CELL + CELL / 2, cy = gy * CELL + CELL / 2;
-      if (OBSTACLES.some(b => cx > b.x && cx < b.x + b.w && cy > b.y && cy < b.y + b.h)) {
+      if (OBSTACLES.some(b => cx > b.x && cx < b.x + b.w && cy > b.y && cy < b.y + b.h) ||
+          LAVA.some(r => cx > r.x && cx < r.x + r.w && cy > r.y && cy < r.y + r.h)) {
         grid[gy * GRID_W + gx] = -2;
       }
     }

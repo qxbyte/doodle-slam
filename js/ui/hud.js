@@ -121,9 +121,13 @@ function renderMinimap(game) {
       }
     }
   }
-  // ice, water, then buildings
+  // ice, lava, water, then buildings
   c.fillStyle = 'rgba(165,210,235,0.55)';
   for (const r of ICE) {
+    c.fillRect(r.x / WORLD.w * mw, r.y / WORLD.h * mh, r.w / WORLD.w * mw, r.h / WORLD.h * mh);
+  }
+  c.fillStyle = 'rgba(238,116,52,0.85)';
+  for (const r of LAVA) {
     c.fillRect(r.x / WORLD.w * mw, r.y / WORLD.h * mh, r.w / WORLD.w * mw, r.h / WORLD.h * mh);
   }
   c.fillStyle = 'rgba(110,150,175,0.5)';

@@ -142,13 +142,24 @@ function drawMapPreviewInner(cv, map) {
   const c = cv.getContext('2d');
   const sx = cv.width / WORLD.w, sy = cv.height / WORLD.h;
   c.clearRect(0, 0, cv.width, cv.height);
-  c.fillStyle = { desk: '#eedfcf', moon: '#e9edef', sand: '#f2e7cf', snow: '#f4f7f9', chalk: '#2c3b35', seabed: '#dcebf0' }[map.ground] || '#f0efe9';
+  c.fillStyle = { desk: '#eedfcf', moon: '#e9edef', sand: '#f2e7cf', snow: '#f4f7f9', chalk: '#2c3b35', seabed: '#dcebf0', ash: '#e8e2da', sewer: '#e5e9e2' }[map.ground] || '#f0efe9';
   c.fillRect(0, 0, cv.width, cv.height);
-  // frozen lakes + current lanes
+  // frozen lakes + current lanes + lava pools
   c.fillStyle = 'rgba(165,210,235,0.55)';
   for (const r of map.ice) c.fillRect(r.x * sx, r.y * sy, r.w * sx, r.h * sy);
   c.fillStyle = 'rgba(120,185,215,0.5)';
   for (const r of map.currents) c.fillRect(r.x * sx, r.y * sy, r.w * sx, r.h * sy);
+  c.fillStyle = 'rgba(238,116,52,0.8)';
+  for (const r of map.lava) c.fillRect(r.x * sx, r.y * sy, r.w * sx, r.h * sy);
+  // warp pipe pairs
+  c.fillStyle = 'rgba(87,160,90,0.9)';
+  for (const pp of map.pipes) {
+    for (const [px, py] of [[pp.ax, pp.ay], [pp.bx, pp.by]]) {
+      c.beginPath();
+      c.arc(px * sx, py * sy, 3, 0, Math.PI * 2);
+      c.fill();
+    }
+  }
   // craters read as terrain on the moon preview
   c.strokeStyle = 'rgba(90,98,110,0.5)';
   c.lineWidth = 1;
@@ -167,8 +178,8 @@ function drawMapPreviewInner(cv, map) {
     c.lineTo(r.x2 * sx, r.y2 * sy);
     c.stroke();
   }
-  // water + bridges
-  c.fillStyle = 'rgba(110,150,175,0.45)';
+  // water + bridges (sewer water is goo)
+  c.fillStyle = map.ground === 'sewer' ? 'rgba(121,185,92,0.7)' : 'rgba(110,150,175,0.45)';
   for (const w of map.water) c.fillRect(w.x * sx, w.y * sy, w.w * sx, w.h * sy);
   c.fillStyle = PAPER;
   for (const b of map.bridges) c.fillRect(b.x * sx, b.y * sy, b.w * sx, b.h * sy);
