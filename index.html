@@ -2,7 +2,14 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#f0efe9">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="assets/icon-192.png">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
 <title>DOODLE SLAM!</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -39,6 +46,11 @@
 
   <div id="hurt-flash"></div>
   <div id="slam-banner">SLAM TIME!</div>
+
+  <!-- touch controls (shown only on touch devices) -->
+  <div id="stick-base"><div id="stick-knob"></div></div>
+  <button id="btn-bomb" class="touch-btn">💣</button>
+  <button id="btn-skill" class="touch-btn">Q</button>
 </div>
 
 <!-- ===== Title screen ===== -->
@@ -162,6 +174,8 @@
 <script src="js/systems/daily.js"></script>
 <script src="js/systems/sharecard.js"></script>
 <script src="js/systems/ambient.js"></script>
+<script src="js/systems/touch.js"></script>
+<script src="js/systems/music.js"></script>
 <script src="js/systems/entities.js"></script>
 <script src="js/ui/hud.js"></script>
 <script src="js/ui/vignettes.js"></script>

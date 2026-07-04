@@ -763,3 +763,55 @@ html, body {
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+
+/* ================= touch controls ================= */
+
+#stick-base, #btn-bomb, #btn-skill { display: none; }
+
+body.touch #stick-base {
+  display: block;
+  position: absolute;
+  width: 108px; height: 108px;
+  margin: -54px 0 0 -54px;
+  border: 2.5px dashed rgba(28,28,26,0.45);
+  border-radius: 50%;
+  background: rgba(255,255,255,0.25);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.12s ease;
+}
+body.touch #stick-base.on { opacity: 1; }
+#stick-knob {
+  position: absolute;
+  left: 50%; top: 50%;
+  width: 46px; height: 46px;
+  transform: translate(-50%, -50%);
+  border: 2.5px solid var(--ink);
+  border-radius: 50%;
+  background: rgba(240,180,28,0.85);
+  box-shadow: 0 3px 0 rgba(28,28,26,0.6);
+}
+
+body.touch .touch-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  right: 24px;
+  width: 64px; height: 64px;
+  border: 2.5px solid var(--ink);
+  border-radius: 50%;
+  background: rgba(255,255,255,0.85);
+  box-shadow: 0 4px 0 rgba(28,28,26,0.8);
+  font-size: 24px;
+  font-weight: 900;
+  pointer-events: auto;
+  -webkit-user-select: none;
+}
+body.touch #btn-bomb { bottom: 168px; }
+body.touch #btn-skill { bottom: 250px; right: 40px; background: rgba(190,215,250,0.9); }
+body.touch .touch-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 rgba(28,28,26,0.8); }
+
+/* keep HUD clear of thumbs on touch layouts */
+body.touch #status-panel { width: 200px; padding: 8px 10px; }
+body.touch .weapon-note { display: none; }

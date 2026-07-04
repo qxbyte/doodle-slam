@@ -19,8 +19,11 @@
 - 画布像素尺寸 = `窗口 × dpr`，CSS 显示尺寸固定 `100vw/100vh`（style.css `#game`）——两者缺一在 Retina 上就会画面溢出。
 - 相机：镜头中心不出世界边界（纸外显示桌面粉色）；边缘平移偏移上限为视口 42%，保证角色永不离屏。
 
-## 验证方式（无测试框架）
+## 验证方式
 
+- **单元测试**：`node test/run.js` —— vm 沙箱加载纯逻辑脚本（不含 ui/game 主循环），spec 在同一 context 内执行以便触达顶层 let 绑定；新增纯逻辑请补测试。
+- **CI**：`.github/workflows/ci.yml` 每次 push 跑 node --check + 单测。
+- **PWA**：上线文件增删后必须同步 `sw.js` 的 SHELL 列表并 bump VERSION，否则老缓存不更新。
 - 语法：`for f in $(find js -name '*.js'); do node --check $f; done`
 - 视觉回归：起 `python3 -m http.server`，用无头 Chrome 截图调试参数场景
   （`?auto=N&map=M&ff=S&mx=X&my=Y`，见 README）；Retina 问题要加 `--force-device-scale-factor=2`。

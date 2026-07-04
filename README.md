@@ -8,7 +8,7 @@
 
 ## 运行
 
-任选其一：
+任选其一（也可直接在手机浏览器打开在线版，**支持触屏双摇杆 + 安装到主屏幕离线玩**）：
 
 ```bash
 # 方式一：直接双击 index.html（或）
@@ -39,7 +39,8 @@ python3 -m http.server 8080
 - 选人页可选 **bot 难度**（EASY / NORMAL / HARD）
 - **SLAM TIME**：最后 30 秒所有泼漆半径 ×1.6，终局翻盘窗口
 - **结算仪式**：TURF REPLAY 领土演变快放 + 每人战绩（击杀/阵亡/按钮）；标题页记录生涯战绩（localStorage），破个人最佳弹 NEW BEST TURF! 徽章
-- **WASD / 方向键** 移动，**按住左键** 朝准星喷漆，**右键** 投掷 Paint Bomb，**M** 静音（音效为 WebAudio 实时合成）
+- **WASD / 方向键** 移动，**按住左键** 朝准星喷漆，**右键** 投掷 Paint Bomb，**M** 静音（音效与 lo-fi 背景音乐均为 WebAudio 实时合成）
+- **触屏**：左半屏虚拟摇杆移动，右半屏拖动瞄准并自动开火，💣/Q 圆钮投弹与放技能；PWA 可安装、离线可玩
 - **B / BROWSE MAP 按钮**：浏览模式 = **暂停** + 自由镜头——比赛完全冻结（计时/bot/弹道静止），WASD/方向键/边缘平移飞越全图看风景；再按 B、空格或点按钮返回战斗
 - 踩在自己颜色上移动更快、回墨更快；踩在敌方颜色上会减速
 - 地图上散落 Paint Bomb 道具（虚线圈中的炸弹）
@@ -88,6 +89,8 @@ js/
     daily.js          每日挑战（日期种子定地图与角色）
     sharecard.js      战报分享卡 PNG 生成与下载
     ambient.js        环境粒子层（≤46 粒子，屏幕空间，逐图配置）
+    touch.js          触屏双摇杆 + 投弹/技能按钮（仅触屏设备激活）
+    music.js          程序化 lo-fi 背景音乐（WebAudio 调度器，零音频文件）
     paint.js          泼漆画布 + 归属网格（覆盖率/小地图/踩漆判定）
     entities.js       角色、武器、弹丸、炸弹、道具、bot AI（三档难度）
   ui/
@@ -101,6 +104,15 @@ js/
 **加一张地图**：新建 `js/maps/<name>.js` 调 `registerMap({...})`（schema 见 registry.js 注释）+ index.html 加一行 script，卡片/缩略图自动生成；出生角不可用时用 `spawns` 覆盖。
 **加一个主题**：新建 `js/world/themes/<name>.js`，用 `registerGround / registerRoadStyle / registerFeature / registerPlaza / registerObstacles` 注册绘制器 + index.html 加一行 script——渲染核心零改动。整套线稿颜色可通过 `map.palette` 换调色板（core/sketch.js 的 PALETTES，如 chalk 黑板反色）。
 **加一个阶段**：`registry.js` 的 `STAGES` 加一项 + `ui/vignettes.js` 加一幅简画。
+
+## 测试与 CI
+
+```bash
+node test/run.js     # 28 项单元测试：工具函数/地图数据/碰撞/涂色网格/模式/战役/每日/角色数值
+```
+
+GitHub Actions（.github/workflows/ci.yml）在每次 push/PR 时跑全量 `node --check` + 单测。
+PWA：`manifest.webmanifest` + `sw.js`（app-shell 缓存，改动上线文件需 bump `sw.js` 的 `VERSION`）。
 
 ## 调试参数
 

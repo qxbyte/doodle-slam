@@ -105,7 +105,9 @@ addEventListener('keydown', e => {
     Skills.cast(game, game.player);
   }
   if (e.code === 'KeyM') {
-    pushToast(SFX.toggleMute() ? 'Sound off' : 'Sound on');
+    const off = SFX.toggleMute();
+    Music.setMuted(off);
+    pushToast(off ? 'Sound off' : 'Sound on');
   }
 });
 addEventListener('keyup', e => input.keys.delete(e.code));
@@ -336,8 +338,15 @@ function update(dt) {
     if (input.keys.has('KeyS') || input.keys.has('ArrowDown')) dy += 1;
     if (input.keys.has('KeyA') || input.keys.has('ArrowLeft')) dx -= 1;
     if (input.keys.has('KeyD') || input.keys.has('ArrowRight')) dx += 1;
+    if (Touch.active) {
+      dx += Touch.state.mx;
+      dy += Touch.state.my;
+      if (Touch.state.aim !== null) p.aim = Touch.state.aim;
+      if (Touch.state.firing) p.tryFire(game, dt);
+    } else {
+      p.aim = Math.atan2(worldMouseY() - p.y, worldMouseX() - p.x);
+    }
     p.move(dx, dy, dt);
-    p.aim = Math.atan2(worldMouseY() - p.y, worldMouseX() - p.x);
     if (input.firing) p.tryFire(game, dt);
   }
 
@@ -745,8 +754,8 @@ function render() {
   // ambient weather overlay (screen space)
   Ambient.draw(ctx);
 
-  // crosshair (drawn last, in screen space; hidden while sightseeing)
-  if (game.state === 'match' && !game.browse) {
+  // crosshair (drawn last, in screen space; hidden while sightseeing/touch)
+  if (game.state === 'match' && !game.browse && !Touch.active) {
     const mx = input.mouseX, my = input.mouseY;
     ctx.strokeStyle = '#1c1c1a';
     ctx.lineWidth = 2.5;
@@ -773,6 +782,22 @@ function frame(now) {
 
 function boot() {
   initHUD();
+  Touch.init();
+
+  // background music unlocks on the first gesture (autoplay policy)
+  const wakeAudio = () => {
+    Music.start();
+    removeEventListener('pointerdown', wakeAudio);
+    removeEventListener('keydown', wakeAudio);
+  };
+  addEventListener('pointerdown', wakeAudio);
+  addEventListener('keydown', wakeAudio);
+
+  // installable/offline: register the service worker where allowed
+  if ('serviceWorker' in navigator &&
+      (location.protocol === 'https:' || location.hostname === 'localhost')) {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  }
   initTitleArt();
   buildStageCards();
   buildMapCards(game.stageIdx);
