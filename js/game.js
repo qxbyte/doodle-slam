@@ -217,7 +217,10 @@ const demoCam = { x: WORLD.w / 2, y: WORLD.h / 2, tx: WORLD.w / 2, ty: WORLD.h /
 function startDemoMatch() {
   game.demo = true;
   game.zones = [];
-  game.mapIdx = Math.floor(Math.random() * MAPS.length);
+  // dark (chalkboard) worlds grey out the translucent menus — skip them
+  const pool = MAPS.map((m, i) => i)
+    .filter(i => (MAPS[i].palette || 'default') !== 'chalk');
+  game.mapIdx = pool[Math.floor(Math.random() * pool.length)];
   setMap(game.mapIdx);
   Ambient.set(Settings.data.ambient ? CURRENT_MAP.ambient : null);
   initPaint();

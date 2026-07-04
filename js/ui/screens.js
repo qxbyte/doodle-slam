@@ -40,6 +40,10 @@ function buildStageCards() {
 
 /* Each stage gets one signature doodle, drawn with the sketch kit */
 function drawStageVignette(cv, kind) {
+  withDefaultPalette(() => drawStageVignetteInner(cv, kind));
+}
+
+function drawStageVignetteInner(cv, kind) {
   const c = cv.getContext('2d');
   const rng = makeRng(VIGNETTE_SEEDS[kind] || 99);
   const dims = { width: 232, height: 150 };   // logical space the art targets
@@ -131,6 +135,10 @@ function buildMapCards(stageIdx = null) {
 
 /* Schematic thumbnail drawn straight from the map data */
 function drawMapPreview(cv, map) {
+  withDefaultPalette(() => drawMapPreviewInner(cv, map));
+}
+
+function drawMapPreviewInner(cv, map) {
   const c = cv.getContext('2d');
   const sx = cv.width / WORLD.w, sy = cv.height / WORLD.h;
   c.clearRect(0, 0, cv.width, cv.height);
@@ -215,7 +223,7 @@ function buildFighterCards() {
     cv.style.height = '110px';
     const c = cv.getContext('2d');
     c.scale(5.2, 5.2);
-    drawCharacter(c, team.id, 23, 24, { aim: -0.35 });
+    withDefaultPalette(() => drawCharacter(c, team.id, 23, 24, { aim: -0.35 }));
     card.appendChild(cv);
     const w = WEAPONS[team.id];
     card.insertAdjacentHTML('beforeend', `

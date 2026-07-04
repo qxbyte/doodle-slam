@@ -18,11 +18,22 @@ const PALETTES = {
   deep:    { ink: '#3d5566', light: '#7e97a6', paper: '#e2eef2' },
 };
 
+let PALETTE_NAME = 'default';
+
 function setPalette(name) {
   const p = PALETTES[name] || PALETTES.default;
+  PALETTE_NAME = PALETTES[name] ? name : 'default';
   INK = p.ink;
   INK_LIGHT = p.light;
   PAPER = p.paper;
+}
+
+/* menu art (cards, vignettes, previews) must always render on the
+   default palette, whatever map the match/attract-mode left active */
+function withDefaultPalette(fn) {
+  const prev = PALETTE_NAME;
+  setPalette('default');
+  try { fn(); } finally { setPalette(prev); }
 }
 
 
