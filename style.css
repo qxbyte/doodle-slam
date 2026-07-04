@@ -815,3 +815,18 @@ body.touch .touch-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 r
 /* keep HUD clear of thumbs on touch layouts */
 body.touch #status-panel { width: 200px; padding: 8px 10px; }
 body.touch .weapon-note { display: none; }
+
+/* compact layout for short (phone-landscape) viewports */
+@media (max-height: 480px) {
+  .screen { gap: 10px; }
+  .logo { font-size: clamp(40px, 9vh, 64px); }
+  #logo-splat { width: min(300px, 60vw); }
+  .tagline { font-size: 15px; }
+  .controls-hint { display: none; }
+  .big-btn { font-size: 20px; padding: 10px 44px; }
+  .select-title { font-size: clamp(24px, 6vh, 34px); }
+  .stage-card { width: 164px; }
+  .stage-card canvas { height: 92px; object-fit: cover; }
+  .fighter-card { width: 148px; padding: 10px; }
+  #replay-box { display: none; }
+}
