@@ -6,7 +6,7 @@
    (CI reminder lives in CLAUDE.md).
    ============================================================ */
 
-const VERSION = 'doodle-slam-v19';
+const VERSION = 'doodle-slam-v20';
 
 const SHELL = [
   './',
@@ -21,14 +21,14 @@ const SHELL = [
   './js/maps/pinecamp.js', './js/maps/fernhollow.js', './js/maps/sunnyshore.js',
   './js/maps/thedeep.js', './js/maps/powderpeaks.js', './js/maps/midnightfair.js',
   './js/maps/messydesk.js', './js/maps/craterfield.js',
-  './js/maps/cinderbasin.js', './js/maps/goojunction.js',
+  './js/maps/cinderbasin.js', './js/maps/goojunction.js', './js/maps/theblueprint.js',
   './js/world/render.js', './js/world/collision.js',
   './js/world/themes/common.js', './js/world/themes/city.js',
   './js/world/themes/wilds.js', './js/world/themes/desk.js',
   './js/world/themes/moon.js', './js/world/themes/shore.js',
   './js/world/themes/peaks.js', './js/world/themes/fair.js',
   './js/world/themes/deep.js',
-  './js/world/themes/volcano.js', './js/world/themes/sewer.js',
+  './js/world/themes/volcano.js', './js/world/themes/sewer.js', './js/world/themes/blueprint.js',
   './js/systems/audio.js', './js/systems/music.js', './js/systems/settings.js',
   './js/systems/paint.js',
   './js/systems/replay.js', './js/systems/records.js', './js/systems/modes.js',

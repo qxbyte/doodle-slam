@@ -40,4 +40,6 @@ registerMap({
     [522, 400, 1], [598, 1200, 1], [1660, 300, 1], [1582, 1300, 1],
   ],
   kiosks: [[360, 950], [1900, 1440]],
+  // an unmarked little door on the mall's south wall. walk into it.
+  egg: { x: 280, y: 400, w: 40, h: 26, map: 'THE BLUEPRINT' },
 });

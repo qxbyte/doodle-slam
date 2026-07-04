@@ -83,7 +83,9 @@ const Campaign = {
      of any newly earned stars */
   evaluate(game) {
     if (game.demo || game.daily || game.mode !== 'turf') return [];
-    const map = CURRENT_MAP.name;
+    // a match that wandered into the hidden world still credits the
+    // map it started on
+    const map = game.originMapName || CURRENT_MAP.name;
     const defs = CAMPAIGN_DEFS[map];
     if (!defs) return [];
     const cov = game.lastCoverage;

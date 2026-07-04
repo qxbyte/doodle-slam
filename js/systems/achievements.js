@@ -44,6 +44,13 @@ const ACHIEVEMENTS = [
   { id: 'champion',     icon: 'trophy',   name: 'Champion',
     desc: 'Win 10 matches.',
     check: c => c.records.wins >= 10 },
+  /* secret badges — shown as ??? on the wall until unlocked */
+  { id: 'doorFinder',   icon: 'door',     name: 'Through the Little Door',
+    desc: 'Find the way into another world.', secret: true,
+    check: c => c.match.egg },
+  { id: 'otherSide',    icon: 'compass',  name: 'King of the Other Side',
+    desc: 'Win a match that ends in the hidden world.', secret: true,
+    check: c => c.match.eggEnd && c.match.won },
 ];
 
 const Achieve = (() => {

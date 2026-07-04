@@ -165,6 +165,8 @@ function resetMatchState() {
   game.skillFx = [];
   game.zoneScores = [0, 0, 0, 0];
   game.newStars = [];
+  game.eggEntered = false;
+  game.originMapName = CURRENT_MAP.name;   // campaign credit survives the egg world
   for (let i = 0; i < 4; i++) spawnPickup();
 }
 
@@ -221,7 +223,7 @@ function startDemoMatch() {
   game.zones = [];
   // dark (chalkboard) worlds grey out the translucent menus — skip them
   const pool = MAPS.map((m, i) => i)
-    .filter(i => (MAPS[i].palette || 'default') !== 'chalk');
+    .filter(i => (MAPS[i].palette || 'default') !== 'chalk' && !MAPS[i].hidden);
   game.mapIdx = pool[Math.floor(Math.random() * pool.length)];
   setMap(game.mapIdx);
   Ambient.set(Settings.data.ambient ? CURRENT_MAP.ambient : null);
@@ -266,6 +268,44 @@ function startDailyMatch() {
   game.daily = true;
 }
 
+/* through the hidden door: the whole match relocates to the secret
+   map — timer, stats and scores carry on, the turf starts blank
+   (fair for everyone), and the final numbers come from this world. */
+function enterEggWorld(name) {
+  const idx = MAPS.findIndex(m => m.name === name);
+  if (idx < 0) return;
+  game.eggEntered = true;
+  setMap(idx);                     // game.mapIdx stays on the origin map
+  Ambient.set(Settings.data.ambient ? CURRENT_MAP.ambient : null);
+  Music.setMood(CURRENT_MAP.mood);
+  initPaint();
+  game.projectiles = [];
+  game.bombs = [];
+  game.rockets = [];
+  game.pickups = [];
+  game.fx = [];
+  game.skillFx = [];
+  game.button.active = false;
+  game.button.x = PLAZA.x;
+  game.button.y = PLAZA.y;
+  game.button.nextAt = game.elapsed + 30;
+  game.zones = game.mode === 'zones' ? computeZones(CURRENT_MAP) : [];
+  for (const f of game.fighters) {
+    const s = SPAWNS[f.team];
+    f.x = s.x;
+    f.y = s.y;
+    f.vx = f.vy = 0;
+    f.botTarget = randomOpenSpot();
+    f.botRetargetIn = 0;
+  }
+  for (let i = 0; i < 4; i++) spawnPickup();
+  Replay.snap();
+  addShake(11);
+  SFX.play('warp');
+  pushToast(L('You slipped through the little door…'));
+  pushToast(L('WELCOME TO THE OTHER SIDE.'));
+}
+
 function leaveMatch() {
   Replay.stop();
   Music.setMood('default');
@@ -302,6 +342,8 @@ function endMatch() {
     buttons: ps.buttons,
     mode: game.mode,
     daily: game.daily,
+    egg: !!game.eggEntered,
+    eggEnd: !!CURRENT_MAP.hidden,
   });
   if (game.daily) {
     game.dailyBest = Daily.submit(Number((game.lastCoverage[game.player.team] * 100).toFixed(1)));
@@ -371,6 +413,15 @@ function update(dt) {
     }
     p.move(dx, dy, dt);
     if (input.firing) p.tryFire(game, dt);
+
+    // the hidden door: only the player can find it, once per match
+    // (not in daily runs — everyone's score must share the same map)
+    const egg = CURRENT_MAP.egg;
+    if (egg && !game.eggEntered && !game.demo && !game.daily && p.alive &&
+        p.x > egg.x - 6 && p.x < egg.x + egg.w + 6 &&
+        p.y > egg.y - 6 && p.y < egg.y + egg.h + 6) {
+      enterEggWorld(egg.map);
+    }
   }
 
   // fighters shared upkeep + bots
@@ -1062,6 +1113,8 @@ function boot() {
     startMatch(clamp(Number(auto) || 0, 0, 3));
     if (params.has('mx')) { input.mouseX = Number(params.get('mx')); input.mouseInside = true; }
     if (params.has('my')) { input.mouseY = Number(params.get('my')); input.mouseInside = true; }
+    if (params.has('px')) game.player.x = Number(params.get('px')) || game.player.x;
+    if (params.has('py')) game.player.y = Number(params.get('py')) || game.player.y;
     const ff = Number(params.get('ff')) || 0;
     for (let i = 0; i < ff * 30; i++) update(1 / 30);
   }

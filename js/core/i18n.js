@@ -89,6 +89,12 @@ const I18N_ZH = {
   'Play 25 matches.': '完成 25 场比赛。',
   'Champion': '常胜将军',
   'Win 10 matches.': '赢下 10 场比赛。',
+  'Through the Little Door': '穿过那扇小门',
+  'Find the way into another world.': '找到通往另一个世界的入口。',
+  'King of the Other Side': '彼界之王',
+  'Win a match that ends in the hidden world.': '在隐藏世界结束的对局中获胜。',
+  'You slipped through the little door…': '你从那扇小门溜了进去……',
+  'WELCOME TO THE OTHER SIDE.': '欢迎来到另一边。',
 
   /* ---- stage select ---- */
   'Pick Your Stage': '选择阶段',

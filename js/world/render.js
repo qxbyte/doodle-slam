@@ -54,6 +54,35 @@ function buildWorldLayers(map) {
   for (const b of map.buildings) {
     (RENDER.obstacles[b.kind] || drawUnknownObstacle)(t, rng, b);
   }
+  if (map.egg) drawEggDoor(t, rng, map.egg);
+}
+
+/* the unmarked little door to the hidden world — deliberately quiet:
+   just a door on a wall, drawn above the trigger zone. */
+function drawEggDoor(t, rng, egg) {
+  const x = egg.x + 4, w = egg.w - 8, h = 30;
+  const y = egg.y - h;   // the zone sits just outside the wall
+  t.fillStyle = '#3a4666';
+  t.strokeStyle = INK;
+  t.lineWidth = 1.8;
+  t.beginPath();
+  t.moveTo(x, y + h);
+  t.lineTo(x, y + 9);
+  t.quadraticCurveTo(x + w / 2, y - 6, x + w, y + 9);
+  t.lineTo(x + w, y + h);
+  t.closePath();
+  t.fill(); t.stroke();
+  // panel line + knob
+  t.lineWidth = 1;
+  t.strokeStyle = 'rgba(220,232,242,0.5)';
+  t.beginPath();
+  t.moveTo(x + w / 2, y + 6); t.lineTo(x + w / 2, y + h - 3);
+  t.stroke();
+  t.fillStyle = '#dce8f2';
+  t.beginPath(); t.arc(x + w * 0.72, y + h * 0.58, 1.8, 0, Math.PI * 2); t.fill();
+  // the faintest keyhole glow — you'd have to be looking
+  t.fillStyle = 'rgba(140,190,240,0.35)';
+  t.beginPath(); t.arc(x + w / 2, y + h * 0.45, 2.6, 0, Math.PI * 2); t.fill();
 }
 
 /* roads are a fixed feature slot; the look comes from the map */

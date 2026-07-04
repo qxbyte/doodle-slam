@@ -12,7 +12,10 @@ const Daily = {
     return `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}`;
   },
   seed() { return Number(this.todayKey()); },
-  mapIdx() { return this.seed() % MAPS.length; },
+  mapIdx() {
+    const pool = MAPS.map((m, i) => i).filter(i => !MAPS[i].hidden);
+    return pool[this.seed() % pool.length];
+  },
   team() { return (this.seed() >> 3) % 4; },
 
   best() {

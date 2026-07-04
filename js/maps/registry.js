@@ -94,6 +94,8 @@ function registerMap(def) {
     plazaStyle: 'fountain', roadStyle: 'asphalt',
     ambient: null,        // snow | bubbles | fireflies | leaves | dust | stars
     mood: 'default',      // Music.MOODS key — per-stage BGM feel
+    hidden: false,        // true = never shown in any select screen / pool
+    egg: null,            // {x,y,w,h,map} hidden-door trigger zone -> map name
   }, def));
 }
 
