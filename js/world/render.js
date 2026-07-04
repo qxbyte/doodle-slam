@@ -65,9 +65,9 @@ function buildWorldLayers(map) {
   if (map.egg) drawEggDoor(t, rng, map.egg);
 }
 
-/* the unmarked little door to the hidden world — deliberately quiet:
-   just a door on a wall, drawn above the trigger zone. */
+/* the unmarked way into a hidden world — deliberately quiet. */
 function drawEggDoor(t, rng, egg) {
+  if (egg.style === 'zipper') return drawEggZipper(t, rng, egg);
   const x = egg.x + 4, w = egg.w - 8, h = 30;
   const y = egg.y - h;   // the zone sits just outside the wall
   t.fillStyle = '#3a4666';
@@ -91,6 +91,36 @@ function drawEggDoor(t, rng, egg) {
   // the faintest keyhole glow — you'd have to be looking
   t.fillStyle = 'rgba(140,190,240,0.35)';
   t.beginPath(); t.arc(x + w / 2, y + h * 0.45, 2.6, 0, Math.PI * 2); t.fill();
+}
+
+/* zipper variant: the pencil case sits slightly unzipped */
+function drawEggZipper(t, rng, egg) {
+  const cx = egg.x + egg.w / 2, y = egg.y - 4;
+  // the gap, dark with the faintest glow inside
+  t.fillStyle = '#26344a';
+  t.strokeStyle = INK;
+  t.lineWidth = 1.8;
+  t.beginPath();
+  t.moveTo(cx - 22, y);
+  t.quadraticCurveTo(cx, y + 14, cx + 22, y);
+  t.quadraticCurveTo(cx, y + 4, cx - 22, y);
+  t.closePath();
+  t.fill(); t.stroke();
+  t.fillStyle = 'rgba(140,190,240,0.3)';
+  t.beginPath(); t.ellipse(cx, y + 5, 10, 3, 0, 0, Math.PI * 2); t.fill();
+  // zipper teeth walking away from the gap
+  t.fillStyle = '#b8c6d8';
+  for (const dir of [-1, 1]) {
+    for (let k = 0; k < 4; k++) {
+      t.fillRect(cx + dir * (26 + k * 11) - 3, y - 3 + (k % 2 ? 2 : -2), 7, 5);
+    }
+  }
+  // the little pull tab
+  t.strokeStyle = INK;
+  t.lineWidth = 1.6;
+  t.fillStyle = '#b8c6d8';
+  t.beginPath(); t.roundRect(cx - 4, y + 8, 8, 14, 3); t.fill(); t.stroke();
+  t.beginPath(); t.arc(cx, y + 26, 4, 0, Math.PI * 2); t.stroke();
 }
 
 /* roads are a fixed feature slot; the look comes from the map */

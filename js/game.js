@@ -168,6 +168,7 @@ function resetMatchState() {
   game.zoneScores = [0, 0, 0, 0];
   game.newStars = [];
   game.eggEntered = false;
+  game.eggWorld = null;
   game.pausedMenu = false;
   for (const k in hudCache) delete hudCache[k];   // fresh HUD writes
   game.originMapName = CURRENT_MAP.name;   // campaign credit survives the egg world
@@ -275,10 +276,12 @@ function startDailyMatch() {
 /* through the hidden door: the whole match relocates to the secret
    map — timer, stats and scores carry on, the turf starts blank
    (fair for everyone), and the final numbers come from this world. */
-function enterEggWorld(name) {
-  const idx = MAPS.findIndex(m => m.name === name);
+function enterEggWorld(egg) {
+  const idx = MAPS.findIndex(m => m.name === egg.map);
   if (idx < 0) return;
   game.eggEntered = true;
+  game.eggWorld = egg.map;
+  const zipper = egg.style === 'zipper';
   setMap(idx);                     // game.mapIdx stays on the origin map
   Ambient.set(Settings.data.ambient ? CURRENT_MAP.ambient : null);
   Music.setMood(CURRENT_MAP.mood);
@@ -306,8 +309,8 @@ function enterEggWorld(name) {
   Replay.snap();
   addShake(11);
   SFX.play('warp');
-  pushToast(L('You slipped through the little door…'));
-  pushToast(L('WELCOME TO THE OTHER SIDE.'));
+  pushToast(L(zipper ? 'You squeeze in through the zipper…' : 'You slipped through the little door…'));
+  pushToast(L(zipper ? 'WELCOME TO THE INSIDE.' : 'WELCOME TO THE OTHER SIDE.'));
 }
 
 /* ---------------- adventure mode ---------------- */
@@ -519,8 +522,8 @@ function endMatch() {
     downs: ps.downs,
     buttons: ps.buttons,
     daily: game.daily,
-    egg: !!game.eggEntered,
-    eggEnd: !!CURRENT_MAP.hidden,
+    egg: game.eggWorld || null,
+    eggEnd: CURRENT_MAP.hidden ? CURRENT_MAP.name : null,
   });
   if (game.daily) {
     game.dailyBest = Daily.submit(Number((game.lastCoverage[game.player.team] * 100).toFixed(1)));
@@ -601,7 +604,7 @@ function update(dt) {
     if (egg && !game.eggEntered && !game.demo && !game.daily && !game.adventure && p.alive &&
         p.x > egg.x - 6 && p.x < egg.x + egg.w + 6 &&
         p.y > egg.y - 6 && p.y < egg.y + egg.h + 6) {
-      enterEggWorld(egg.map);
+      enterEggWorld(egg);
     }
   }
 

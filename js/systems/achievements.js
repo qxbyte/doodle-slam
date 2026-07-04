@@ -46,11 +46,17 @@ const ACHIEVEMENTS = [
     check: c => c.records.wins >= 10 },
   /* secret badges — greyed out like any locked badge until earned */
   { id: 'doorFinder',   icon: 'door',     name: 'Through the Little Door',
-    desc: 'Find the way into another world.', secret: true,
-    check: c => c.match.egg },
+    desc: 'Find the door to another town.', secret: true,
+    check: c => c.match.egg === 'THE OTHER TOWN' },
   { id: 'otherSide',    icon: 'compass',  name: 'King of the Other Side',
-    desc: 'Win a match that ends in the hidden world.', secret: true,
-    check: c => c.match.eggEnd && c.match.won },
+    desc: 'Win a match that ends in the other town.', secret: true,
+    check: c => c.match.eggEnd === 'THE OTHER TOWN' && c.match.won },
+  { id: 'caseStowaway', icon: 'case',     name: 'Pencil Case Stowaway',
+    desc: 'Squeeze in through the zipper.', secret: true,
+    check: c => c.match.egg === 'INSIDE THE PENCIL CASE' },
+  { id: 'caseKing',     icon: 'case',     name: 'Keeper of the Case',
+    desc: 'Win a match that ends inside the pencil case.', secret: true,
+    check: c => c.match.eggEnd === 'INSIDE THE PENCIL CASE' && c.match.won },
 ];
 
 const Achieve = (() => {

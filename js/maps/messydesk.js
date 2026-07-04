@@ -40,4 +40,6 @@ registerMap({
   rings: [[1980, 480], [420, 640], [1150, 1350], [2280, 1030]],
   clips: [[760, 700, 0.4], [1620, 580, -0.7], [980, 1250, 1.2], [2200, 1050, 0.2], [480, 420, -1.1]],
   shavings: [[1560, 850], [1370, 640], [530, 1050]],
+  // the pencil case sits slightly unzipped. squeeze in through the gap.
+  egg: { x: 1730, y: 410, w: 44, h: 26, style: 'zipper', map: 'INSIDE THE PENCIL CASE' },
 });

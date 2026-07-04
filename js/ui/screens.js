@@ -482,6 +482,13 @@ function drawBadgeIcon(c, icon, x, y, accent, ink, rng) {
       c.moveTo(x - 9, y + 9); c.lineTo(x + 9, y + 9);
       c.stroke();
       break;
+    case 'case':
+      c.beginPath(); c.roundRect(x - 9, y - 5, 18, 11, 4); c.fill(); c.stroke();
+      c.beginPath(); c.moveTo(x - 9, y - 1.5); c.lineTo(x + 9, y - 1.5); c.stroke();
+      c.fillStyle = '#fdfdf8';
+      c.beginPath(); c.roundRect(x - 1.8, y - 1.2, 3.6, 5, 1.2); c.fill(); c.stroke();
+      c.beginPath(); c.arc(x, y + 6.4, 2, 0, Math.PI * 2); c.stroke();
+      break;
     case 'compass':
       c.beginPath(); c.arc(x, y - 6, 2.6, 0, Math.PI * 2); c.fill(); c.stroke();
       c.beginPath();

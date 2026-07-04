@@ -87,10 +87,10 @@ t('circleRectResolve pushes the circle out', () => {
 
 /* ---------------- maps & registry ---------------- */
 
-t('thirteen maps registered with unique names (one hidden)', () => {
-  eq(MAPS.length, 13);
-  eq(new Set(MAPS.map(m => m.name)).size, 13);
-  eq(MAPS.filter(m => m.hidden).length, 1);
+t('fourteen maps registered with unique names (two hidden)', () => {
+  eq(MAPS.length, 14);
+  eq(new Set(MAPS.map(m => m.name)).size, 14);
+  eq(MAPS.filter(m => m.hidden).length, 2);
 });
 
 t('every visible map references a valid stage', () => {
@@ -425,30 +425,31 @@ t('warp pipes come in valid, reachable pairs', () => {
 
 /* ---------------- hidden egg world ---------------- */
 
-t('the hidden door leads to a real, hidden map', () => {
-  const town = MAPS.find(m => m.name === 'DOWNTOWN');
-  ok(town.egg, 'DOWNTOWN carries the egg');
-  const dest = MAPS.find(m => m.name === town.egg.map);
-  ok(dest && dest.hidden, 'destination exists and is hidden');
-  // the trigger zone must be walkable: outside every obstacle
-  const cx = town.egg.x + town.egg.w / 2, cy = town.egg.y + town.egg.h / 2;
-  ok(!town.buildings.some(b => cx > b.x && cx < b.x + b.w && cy > b.y && cy < b.y + b.h),
-    'door zone sits outside the wall');
-  // and pressed against the mall so it reads as that building's door
-  const mall = town.buildings[0];
-  ok(Math.abs(town.egg.y - (mall.y + mall.h)) < 2, 'zone hugs the mall south wall');
+t('every hidden door leads to a real, hidden, walkable spot', () => {
+  for (const host of MAPS.filter(m => m.egg)) {
+    const dest = MAPS.find(m => m.name === host.egg.map);
+    ok(dest && dest.hidden, `${host.name} egg destination exists and is hidden`);
+    const cx = host.egg.x + host.egg.w / 2, cy = host.egg.y + host.egg.h / 2;
+    ok(!host.buildings.some(b => cx > b.x && cx < b.x + b.w && cy > b.y && cy < b.y + b.h),
+      `${host.name} egg zone sits outside every obstacle`);
+  }
+  eq(MAPS.filter(m => m.egg).length, 2, 'two eggs planted: city door + pencil case zipper');
 });
 
-t('secret badges unlock from egg flags only', () => {
+t('secret badges unlock per hidden world', () => {
   localStorage.removeItem('doodleSlam.achievements');
-  const base = { won: false, cov: 5, splats: 0, downs: 2, buttons: 0, mode: 'turf', daily: false, egg: false, eggEnd: false };
+  const base = { won: false, cov: 5, splats: 0, downs: 2, buttons: 0, daily: false, egg: null, eggEnd: null };
   let fresh = Achieve.evaluate({ ...base });
-  ok(!fresh.some(a => a.secret), 'nothing secret without the egg');
-  fresh = Achieve.evaluate({ ...base, egg: true });
-  ok(fresh.some(a => a.id === 'doorFinder'), 'entering unlocks doorFinder');
-  ok(!fresh.some(a => a.id === 'otherSide'), 'otherSide still needs the win there');
-  fresh = Achieve.evaluate({ ...base, egg: true, eggEnd: true, won: true });
-  ok(fresh.some(a => a.id === 'otherSide'), 'winning in the hidden world unlocks otherSide');
+  ok(!fresh.some(a => a.secret), 'nothing secret without an egg');
+  fresh = Achieve.evaluate({ ...base, egg: 'THE OTHER TOWN' });
+  ok(fresh.some(a => a.id === 'doorFinder'), 'city door unlocks doorFinder');
+  ok(!fresh.some(a => a.id === 'caseStowaway'), 'the city door is not the pencil case');
+  fresh = Achieve.evaluate({ ...base, egg: 'INSIDE THE PENCIL CASE' });
+  ok(fresh.some(a => a.id === 'caseStowaway'), 'the zipper unlocks the stowaway badge');
+  fresh = Achieve.evaluate({ ...base, egg: 'INSIDE THE PENCIL CASE', eggEnd: 'INSIDE THE PENCIL CASE', won: true });
+  ok(fresh.some(a => a.id === 'caseKing'), 'winning inside the case crowns its keeper');
+  fresh = Achieve.evaluate({ ...base, egg: 'THE OTHER TOWN', eggEnd: 'THE OTHER TOWN', won: true });
+  ok(fresh.some(a => a.id === 'otherSide'), 'winning in the other town still works');
   localStorage.removeItem('doodleSlam.achievements');
 });
 
