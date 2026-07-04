@@ -261,17 +261,11 @@ html, body {
   overflow-x: auto;
   overflow-y: hidden;
   z-index: 1;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(28,28,26,0.3) transparent;
+  scrollbar-width: none;          /* drag / wheel / touch instead */
   cursor: grab;
 }
 #stage-path:active { cursor: grabbing; }
-#stage-path::-webkit-scrollbar { height: 8px; }
-#stage-path::-webkit-scrollbar-thumb {
-  background: rgba(28,28,26,0.25);
-  border-radius: 4px;
-}
-#stage-path::-webkit-scrollbar-track { background: transparent; }
+#stage-path::-webkit-scrollbar { display: none; }
 
 #stage-track {
   position: relative;

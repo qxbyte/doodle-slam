@@ -149,10 +149,10 @@ function resetMatchState() {
   for (let i = 0; i < 4; i++) spawnPickup();
 }
 
-/* browse mode: free camera to sightsee the whole map;
-   the fighter stands idle until you come back */
-const browseCam = { x: 0, y: 0 };
-const BROWSE_SPEED = 720;   // world px/s with WASD/arrows
+/* browse mode: the match freezes completely (a pause) and only
+   the camera flies, so you can sightsee the whole map */
+const browseCam = { x: 0, y: 0, vx: 0, vy: 0 };
+const BROWSE_SPEED = 760;   // world px/s with WASD/arrows or screen edges
 
 function setBrowse(on) {
   if (game.state !== 'match' && on) return;
@@ -164,10 +164,35 @@ function setBrowse(on) {
   if (on) {
     browseCam.x = game.player.x;
     browseCam.y = game.player.y;
-    if (!was) pushToast('Browsing the map — your fighter stands idle. B returns.');
+    browseCam.vx = browseCam.vy = 0;
+    if (!was) pushToast('Match paused — fly around with WASD or the screen edges. B returns.');
   } else {
     camPan.x = camPan.y = 0;
   }
+}
+
+function updateBrowseCamera(dt) {
+  cam.zoom = camZoom();
+  const vw = innerWidth / cam.zoom, vh = innerHeight / cam.zoom;
+  let bx = 0, by = 0;
+  if (input.mouseInside) {
+    if (input.mouseX < EDGE_MARGIN) bx -= 1;
+    else if (input.mouseX > innerWidth - EDGE_MARGIN) bx += 1;
+    if (input.mouseY < EDGE_MARGIN) by -= 1;
+    else if (input.mouseY > innerHeight - EDGE_MARGIN) by += 1;
+  }
+  if (input.keys.has('KeyW') || input.keys.has('ArrowUp')) by -= 1;
+  if (input.keys.has('KeyS') || input.keys.has('ArrowDown')) by += 1;
+  if (input.keys.has('KeyA') || input.keys.has('ArrowLeft')) bx -= 1;
+  if (input.keys.has('KeyD') || input.keys.has('ArrowRight')) bx += 1;
+  // ease toward the target velocity so starts and stops feel fluid
+  const ease = Math.min(1, dt * 9);
+  browseCam.vx = lerp(browseCam.vx, clamp(bx, -1, 1) * BROWSE_SPEED, ease);
+  browseCam.vy = lerp(browseCam.vy, clamp(by, -1, 1) * BROWSE_SPEED, ease);
+  browseCam.x = clamp(browseCam.x + browseCam.vx * dt, 0, WORLD.w);
+  browseCam.y = clamp(browseCam.y + browseCam.vy * dt, 0, WORLD.h);
+  cam.x = clamp(browseCam.x - vw / 2, -vw / 2, WORLD.w - vw / 2);
+  cam.y = clamp(browseCam.y - vh / 2, -vh / 2, WORLD.h - vh / 2);
 }
 
 /* attract mode: an all-bot match on a random map, rendered behind
@@ -244,6 +269,14 @@ function spawnPickup() {
 
 function update(dt) {
   if (game.state !== 'match' && !game.demo) return;
+
+  // browse mode is a full pause: nothing simulates, only the camera flies
+  if (game.browse && game.state === 'match') {
+    updateBrowseCamera(dt);
+    updateHUD(game);
+    renderMinimap(game);
+    return;
+  }
 
   game.elapsed += dt;
   game.timeLeft -= dt;
@@ -456,23 +489,6 @@ function update(dt) {
     else if (input.mouseY > innerHeight - EDGE_MARGIN) ey = 1;
   }
 
-  // browse mode: free camera — WASD/arrows and screen edges move it
-  // anywhere on the map, no tether to the fighter
-  if (game.browse) {
-    let bx = ex, by = ey;
-    if (input.keys.has('KeyW') || input.keys.has('ArrowUp')) by -= 1;
-    if (input.keys.has('KeyS') || input.keys.has('ArrowDown')) by += 1;
-    if (input.keys.has('KeyA') || input.keys.has('ArrowLeft')) bx -= 1;
-    if (input.keys.has('KeyD') || input.keys.has('ArrowRight')) bx += 1;
-    browseCam.x = clamp(browseCam.x + clamp(bx, -1, 1) * BROWSE_SPEED * dt, 0, WORLD.w);
-    browseCam.y = clamp(browseCam.y + clamp(by, -1, 1) * BROWSE_SPEED * dt, 0, WORLD.h);
-    cam.x = clamp(browseCam.x - vw / 2, -vw / 2, WORLD.w - vw / 2);
-    cam.y = clamp(browseCam.y - vh / 2, -vh / 2, WORLD.h - vh / 2);
-    updateHUD(game);
-    renderMinimap(game);
-    return;
-  }
-
   // camera follows player; mouse at the window edge pans it to scout,
   // and it eases back once the mouse leaves the edge (Space snaps back)
   if (ex || ey) {
@@ -517,7 +533,11 @@ function render() {
   ctx.scale(cam.zoom, cam.zoom);
   const shx = game.shake ? (Math.random() * 2 - 1) * game.shake / cam.zoom : 0;
   const shy = game.shake ? (Math.random() * 2 - 1) * game.shake / cam.zoom : 0;
-  ctx.translate(-cam.x + shx, -cam.y + shy);
+  // snap the camera to whole screen pixels — subpixel compositing of the
+  // big world layers causes shimmer and jank while the camera glides
+  const camX = Math.round((cam.x - shx) * cam.zoom) / cam.zoom;
+  const camY = Math.round((cam.y - shy) * cam.zoom) / cam.zoom;
+  ctx.translate(-camX, -camY);
 
   // paper shadow + layers
   ctx.fillStyle = 'rgba(120,80,80,0.25)';
@@ -526,9 +546,9 @@ function render() {
   ctx.drawImage(paintCanvas, 0, 0);
   ctx.drawImage(topLayer, 0, 0);
 
-  // pickups: bomb in a dashed circle
+  // pickups: bomb in a dashed circle (bobbing freezes while paused)
   for (const pk of game.pickups) {
-    pk.bob += 0.03;
+    if (!game.browse) pk.bob += 0.03;
     const oy = Math.sin(pk.bob) * 3;
     ctx.strokeStyle = 'rgba(74,74,72,0.6)';
     ctx.lineWidth = 1.5;
