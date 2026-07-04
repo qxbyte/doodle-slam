@@ -158,4 +158,33 @@ function renderMinimap(game) {
     c.arc(f.x / WORLD.w * mw, f.y / WORLD.h * mh, f.isPlayer ? 3.4 : 2.6, 0, Math.PI * 2);
     c.fill(); c.stroke();
   }
+
+  // the red button: live = pulsing dot, pending = ring + countdown
+  const bx = game.button.x / WORLD.w * mw;
+  const by = game.button.y / WORLD.h * mh;
+  if (game.button.active) {
+    const pulse = 3.2 + Math.sin(game.elapsed * 6) * 1;
+    c.fillStyle = '#e6392a';
+    c.strokeStyle = '#fdfdf8';
+    c.lineWidth = 1.2;
+    c.beginPath(); c.arc(bx, by, pulse, 0, Math.PI * 2); c.fill(); c.stroke();
+  } else {
+    const left = Math.ceil(game.button.nextAt - game.elapsed);
+    if (left > 0 && game.timeLeft > left) {
+      c.strokeStyle = 'rgba(230,57,42,0.9)';
+      c.lineWidth = 1.2;
+      c.setLineDash([2.5, 2.5]);
+      c.beginPath(); c.arc(bx, by, 4, 0, Math.PI * 2); c.stroke();
+      c.setLineDash([]);
+      c.font = "800 8px 'Nunito', sans-serif";
+      c.textAlign = bx > mw - 24 ? 'right' : 'left';
+      c.textBaseline = 'middle';
+      const tx = bx > mw - 24 ? bx - 6 : bx + 6;
+      c.strokeStyle = 'rgba(253,253,248,0.9)';
+      c.lineWidth = 2.5;
+      c.strokeText(`${left}s`, tx, by);
+      c.fillStyle = '#a8231a';
+      c.fillText(`${left}s`, tx, by);
+    }
+  }
 }
