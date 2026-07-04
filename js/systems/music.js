@@ -5,24 +5,126 @@
    files). A lookahead scheduler plays a four-chord pad with a
    soft kick, hats, bass and occasional pentatonic plucks.
    Starts on the first user gesture; M mutes it with the SFX.
+
+   Each stage picks a MOOD (map data `mood` field): same engine,
+   different tempo / chords / filter / drum pattern, so the deep
+   sea drags and the chalk fair swings. setMood() switches live.
    ============================================================ */
 
 const Music = (() => {
-  const TEMPO = 82;
-  const STEP = 60 / TEMPO / 2;           // 8th notes
   const VOLUME = 0.13;
 
-  // Am — F — C — G, as frequency stacks (root, third, fifth)
-  const CHORDS = [
-    [220.0, 261.6, 329.6],
-    [174.6, 220.0, 261.6],
-    [196.0, 246.9, 293.7],
-    [164.8, 196.0, 246.9],
-  ];
-  const PENTA = [440, 523.3, 587.3, 659.3, 784.0];
+  /* note frequencies used by the chord stacks (3rd octave-ish) */
+  // E3 164.8  F3 174.6  G3 196.0  G#3 207.7  A3 220.0  B3 246.9
+  // C4 261.6  D4 293.7  E4 329.6  F4 349.2  G4 392.0
 
-  let ac = null, master = null, timer = null;
+  const MOODS = {
+    // Am F C G — the classic daydream loop (city + menus)
+    default: {
+      tempo: 82, lp: 2400, pad: 'triangle', pluck: 0.22, hatMul: 1, swing: 0,
+      kickBeats: [0, 5],
+      chords: [
+        [220.0, 261.6, 329.6], [174.6, 220.0, 261.6],
+        [196.0, 246.9, 293.7], [164.8, 196.0, 246.9],
+      ],
+      penta: [440, 523.3, 587.3, 659.3, 784.0],
+    },
+    // C G Am F — warm campfire folk, a touch slower
+    forest: {
+      tempo: 72, lp: 2200, pad: 'triangle', pluck: 0.18, hatMul: 0.8, swing: 0,
+      kickBeats: [0, 5],
+      chords: [
+        [196.0, 261.6, 329.6], [196.0, 246.9, 293.7],
+        [220.0, 261.6, 329.6], [174.6, 220.0, 261.6],
+      ],
+      penta: [523.3, 587.3, 659.3, 784.0, 880.0],
+    },
+    // C F C G — bright, quick, sunny
+    shore: {
+      tempo: 92, lp: 3200, pad: 'triangle', pluck: 0.30, hatMul: 1.2, swing: 0,
+      kickBeats: [0, 5],
+      chords: [
+        [196.0, 261.6, 329.6], [174.6, 220.0, 261.6],
+        [196.0, 261.6, 329.6], [196.0, 246.9, 293.7],
+      ],
+      penta: [523.3, 659.3, 784.0, 880.0, 1046.5],
+    },
+    // Am Em F Am — slow, dark, muffled like deep water
+    deep: {
+      tempo: 58, lp: 1300, pad: 'sine', pluck: 0.08, hatMul: 0.5, swing: 0,
+      kickBeats: [0],
+      chords: [
+        [220.0, 261.6, 329.6], [164.8, 196.0, 246.9],
+        [174.6, 220.0, 261.6], [220.0, 261.6, 329.6],
+      ],
+      penta: [329.6, 392.0, 440.0, 523.3, 587.3],
+    },
+    // Am F Am G — sparse and cold, thin air
+    peaks: {
+      tempo: 68, lp: 2000, pad: 'triangle', pluck: 0.07, hatMul: 0.6, swing: 0,
+      kickBeats: [0, 5],
+      chords: [
+        [220.0, 261.6, 329.6], [174.6, 220.0, 261.6],
+        [220.0, 261.6, 329.6], [196.0, 246.9, 293.7],
+      ],
+      penta: [659.3, 784.0, 880.0, 1046.5, 1174.7],
+    },
+    // Dm7 G7 Cmaj7 Am7 — night-fair swing, brushed and jazzy
+    chalk: {
+      tempo: 98, lp: 2800, pad: 'triangle', pluck: 0.35, hatMul: 1.3, swing: 0.32,
+      kickBeats: [0, 5],
+      chords: [
+        [220.0, 261.6, 293.7, 349.2], [196.0, 246.9, 293.7, 349.2],
+        [196.0, 246.9, 261.6, 329.6], [220.0, 261.6, 329.6, 392.0],
+      ],
+      penta: [523.3, 587.3, 659.3, 784.0, 880.0],
+    },
+    // C F G F — playful desk-toy bounce
+    desk: {
+      tempo: 104, lp: 2800, pad: 'triangle', pluck: 0.32, hatMul: 1.1, swing: 0,
+      kickBeats: [0, 4, 5],
+      chords: [
+        [196.0, 261.6, 329.6], [174.6, 220.0, 261.6],
+        [196.0, 246.9, 293.7], [174.6, 220.0, 261.6],
+      ],
+      penta: [784.0, 880.0, 1046.5, 1174.7, 1318.5],
+    },
+    // Am F Am G — slow, airy, high sparkles far away
+    moon: {
+      tempo: 62, lp: 1600, pad: 'sine', pluck: 0.10, hatMul: 0.4, swing: 0,
+      kickBeats: [0],
+      chords: [
+        [220.0, 261.6, 329.6], [174.6, 220.0, 261.6],
+        [220.0, 261.6, 329.6], [196.0, 246.9, 293.7],
+      ],
+      penta: [880.0, 1046.5, 1174.7, 1318.5, 1568.0],
+    },
+    // Am G Am E — tense, driving, extra kicks
+    volcano: {
+      tempo: 90, lp: 2000, pad: 'triangle', pluck: 0.12, hatMul: 0.9, swing: 0,
+      kickBeats: [0, 3, 5],
+      chords: [
+        [220.0, 261.6, 329.6], [196.0, 246.9, 293.7],
+        [220.0, 261.6, 329.6], [164.8, 207.7, 246.9],
+      ],
+      penta: [440.0, 523.3, 587.3, 659.3, 784.0],
+    },
+    // Dm Am Dm G — murky offbeat dub under the streets
+    sewer: {
+      tempo: 74, lp: 1100, pad: 'sine', pluck: 0.15, hatMul: 1.4, swing: 0.2,
+      kickBeats: [0, 5],
+      chords: [
+        [220.0, 293.7, 349.2], [220.0, 261.6, 329.6],
+        [220.0, 293.7, 349.2], [196.0, 246.9, 293.7],
+      ],
+      penta: [392.0, 440.0, 523.3, 587.3, 659.3],
+    },
+  };
+
+  let ac = null, master = null, lpNode = null, timer = null;
   let muted = false, step = 0, nextTime = 0, noiseBuf = null;
+  let mood = MOODS.default;
+  const stepDur = () => 60 / mood.tempo / 2;   // 8th notes
 
   function ensure() {
     if (ac) return true;
@@ -32,10 +134,10 @@ const Music = (() => {
     master = ac.createGain();
     master.gain.value = VOLUME;
     // gentle lowpass over the whole mix = instant lo-fi
-    const lp = ac.createBiquadFilter();
-    lp.type = 'lowpass';
-    lp.frequency.value = 2400;
-    master.connect(lp).connect(ac.destination);
+    lpNode = ac.createBiquadFilter();
+    lpNode.type = 'lowpass';
+    lpNode.frequency.value = mood.lp;
+    master.connect(lpNode).connect(ac.destination);
     const len = ac.sampleRate * 0.1;
     noiseBuf = ac.createBuffer(1, len, ac.sampleRate);
     const d = noiseBuf.getChannelData(0);
@@ -84,24 +186,24 @@ const Music = (() => {
   }
 
   function scheduleStep(s, t) {
+    const S = stepDur();
     const bar = Math.floor(s / 8) % 4;
     const beat = s % 8;
-    const chord = CHORDS[bar];
+    const chord = mood.chords[bar];
     if (beat === 0) {
       // pad: two soft detuned voices per chord note, one bar long
       for (const f of chord) {
-        note(f, t, STEP * 8, 0.05, 'triangle', -6);
-        note(f, t, STEP * 8, 0.05, 'triangle', 6);
+        note(f, t, S * 8, 0.05, mood.pad, -6);
+        note(f, t, S * 8, 0.05, mood.pad, 6);
       }
-      note(chord[0] / 2, t, STEP * 3.4, 0.16, 'sine');   // bass
-      kick(t);
+      note(chord[0] / 2, t, S * 3.4, 0.16, 'sine');   // bass
     }
-    if (beat === 4) note(chord[0] / 2, t, STEP * 1.6, 0.1, 'sine');
-    if (beat === 5) kick(t);
-    if (beat % 2 === 1) hat(t, beat === 7 ? 0.05 : 0.028);
+    if (beat === 4) note(chord[0] / 2, t, S * 1.6, 0.1, 'sine');
+    if (mood.kickBeats.includes(beat)) kick(t);
+    if (beat % 2 === 1) hat(t, (beat === 7 ? 0.05 : 0.028) * mood.hatMul);
     // sparse pentatonic pluck on offbeats
-    if (beat % 2 === 0 && beat !== 0 && Math.random() < 0.22) {
-      note(PENTA[Math.floor(Math.random() * PENTA.length)], t, STEP * 1.4, 0.05, 'sine');
+    if (beat % 2 === 0 && beat !== 0 && Math.random() < mood.pluck) {
+      note(mood.penta[Math.floor(Math.random() * mood.penta.length)], t, S * 1.4, 0.05, 'sine');
     }
   }
 
@@ -112,10 +214,21 @@ const Music = (() => {
     // machine-gunning every missed step at once
     if (nextTime < ac.currentTime) nextTime = ac.currentTime + 0.1;
     while (nextTime < ac.currentTime + 0.2) {
-      scheduleStep(step, nextTime);
+      // swung 8ths: odd steps land late
+      const t = nextTime + (step % 2 ? stepDur() * mood.swing : 0);
+      scheduleStep(step, t);
       step++;
-      nextTime += STEP;
+      nextTime += stepDur();
     }
+  }
+
+  /* switch mood live; takes effect at the next scheduled bar */
+  function setMood(name) {
+    const next = MOODS[name] || MOODS.default;
+    if (next === mood) return;
+    mood = next;
+    if (lpNode) lpNode.frequency.setTargetAtTime(mood.lp, ac.currentTime, 0.4);
+    step = Math.floor(step / 8) * 8;   // restart the bar cleanly
   }
 
   function start() {
@@ -140,5 +253,5 @@ const Music = (() => {
     else start();
   }
 
-  return { start, stop, setMuted };
+  return { start, stop, setMuted, setMood, MOODS };
 })();

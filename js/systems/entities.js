@@ -19,6 +19,19 @@ const DIFFICULTY = {
   hard:   { aimNoise: 0.05, detect: 400, burstWindow: 1.4, bombProb: 0.022 },
 };
 
+/* Bot personalities — one is rolled per bot per match, so every
+   lobby plays out differently. Multipliers stack on DIFFICULTY.
+     rusher:  hunts the nearest fighter and trades paint eagerly
+     farmer:  quietly rolls turf, backs away from fights
+     presser: sprints for the red button from anywhere on the map
+     avenger: remembers who splatted them and goes after them */
+const PERSONAS = {
+  rusher:  { detect: 1.5, hunts: true,  grudge: false, shy: false, buttonPull: 0.5,  burst: 1.5, bomb: 1.6 },
+  farmer:  { detect: 0.6, hunts: false, grudge: false, shy: true,  buttonPull: 0.25, burst: 0.6, bomb: 0.5 },
+  presser: { detect: 0.9, hunts: false, grudge: false, shy: false, buttonPull: 3.0,  burst: 1.0, bomb: 1.0 },
+  avenger: { detect: 1.2, hunts: true,  grudge: true,  shy: false, buttonPull: 0.6,  burst: 1.1, bomb: 1.3 },
+};
+
 class Fighter {
   constructor(teamId, isPlayer) {
     this.team = teamId;
@@ -46,6 +59,8 @@ class Fighter {
     this.botTarget = randomOpenSpot();
     this.botRetargetIn = 0;
     this.botBurst = 0;
+    this.persona = PERSONAS[pick(Math.random, Object.keys(PERSONAS))];
+    this.grudge = null;    // who splatted me last (avenger fuel)
   }
 
   get speed() {
@@ -145,6 +160,7 @@ class Fighter {
       return;   // the bubble soaks it
     }
     this.hp -= amount;
+    this.grudge = attacker;
     if (this.isPlayer && !game.demo) {
       SFX.play('hurt');
       flashHurt();
@@ -183,12 +199,15 @@ class Fighter {
   botUpdate(game, dt) {
     if (!this.alive) return;
     const diff = DIFFICULTY[game.difficulty] || DIFFICULTY.normal;
+    const per = this.persona;
 
     this.botRetargetIn -= dt;
 
-    // priorities: red button > nearby bomb pickup > roam to enemy/blank turf
+    // priorities: red button (persona-weighted pull) > bomb pickup > agenda
     let goal = this.botTarget;
-    if (game.button.active) {
+    const wantsButton = game.button.active &&
+      dist(this.x, this.y, game.button.x, game.button.y) < 650 * per.buttonPull;
+    if (wantsButton) {
       goal = game.button;
     } else {
       let best = null, bestD = 500;
@@ -200,9 +219,9 @@ class Fighter {
     }
 
     if (this.botRetargetIn <= 0 || dist(this.x, this.y, this.botTarget.x, this.botTarget.y) < 60) {
-      // roam toward a spot that is not ours yet
+      // roam toward a spot that is not ours yet (farmers look harder)
       let spot = randomOpenSpot();
-      for (let i = 0; i < 6; i++) {
+      for (let i = 0; i < (per.shy ? 12 : 6); i++) {
         const s = randomOpenSpot();
         if (paintAt(s.x, s.y) !== this.team) { spot = s; break; }
       }
@@ -210,8 +229,26 @@ class Fighter {
       this.botRetargetIn = rand(Math.random, 3, 6);
     }
 
+    // spot the nearest live enemy (awareness scales with persona)
+    let foe = null, foeD = diff.detect * per.detect;
+    for (const f of game.fighters) {
+      if (f === this || !f.alive) continue;
+      const d = dist(this.x, this.y, f.x, f.y);
+      if (d < foeD) { foe = f; foeD = d; }
+    }
+
+    // hunters chase a live target instead of roaming
+    if (per.hunts && !wantsButton) {
+      const prey = per.grudge && this.grudge && this.grudge.alive ? this.grudge : foe;
+      if (prey) goal = prey;
+    }
+
     // steer, with simple wall probing
     let a = Math.atan2(goal.y - this.y, goal.x - this.x);
+    // farmers back away from trouble instead of trading paint
+    if (per.shy && foe && foeD < 160) {
+      a = Math.atan2(this.y - foe.y, this.x - foe.x);
+    }
     const probe = 46;
     if (pointBlocked(this.x + Math.cos(a) * probe, this.y + Math.sin(a) * probe)) {
       for (const off of [0.5, -0.5, 1.1, -1.1, 1.8, -1.8]) {
@@ -223,26 +260,21 @@ class Fighter {
     }
     this.move(Math.cos(a), Math.sin(a), dt);
 
-    // aim: nearest enemy within both weapon range and awareness range
-    let foe = null, foeD = Math.min(this.weapon.range, diff.detect);
-    for (const f of game.fighters) {
-      if (f === this || !f.alive) continue;
-      const d = dist(this.x, this.y, f.x, f.y);
-      if (d < foeD) { foe = f; foeD = d; }
-    }
-    if (foe) {
+    // aim at the foe when one is inside weapon range, else spray ahead
+    if (foe && foeD < this.weapon.range) {
       this.aim = Math.atan2(foe.y - this.y, foe.x - this.x) + rand(Math.random, -diff.aimNoise, diff.aimNoise);
     } else {
       this.aim = a;
+      foe = null;
     }
 
     // fire in loose bursts so bots do not hose constantly
     this.botBurst -= dt;
     if (this.botBurst <= 0) this.botBurst = rand(Math.random, 0.8, 2.0);
-    if (this.botBurst < diff.burstWindow || foe) this.tryFire(game, dt);
+    if (this.botBurst < diff.burstWindow * per.burst || foe) this.tryFire(game, dt);
 
     // lob a bomb at clumps of enemies or big enemy turf
-    if (this.bombs > 0 && foe && foeD > 120 && Math.random() < diff.bombProb) {
+    if (this.bombs > 0 && foe && foeD > 120 && Math.random() < diff.bombProb * per.bomb) {
       this.throwBomb(game, foe.x, foe.y);
       game.toast(L('{n} threw a Paint Bomb!', { n: this.name }));
     }

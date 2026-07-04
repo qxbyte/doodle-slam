@@ -5,6 +5,7 @@
    and a campfire clearing where the red button appears. */
 registerMap({
   name: 'PINE CAMP',
+  mood: 'forest',
   desc: 'Lakeside campground — tents, a watchtower and a campfire clearing.',
   stage: 1,
   seed: 20260705,

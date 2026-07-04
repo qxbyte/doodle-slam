@@ -5,6 +5,7 @@
    the lodge, and a campfire circle for the red button. */
 registerMap({
   name: 'POWDER PEAKS',
+  mood: 'peaks',
   desc: 'Ski lifts, a lodge and two lakes of slippery ice.',
   stage: 4,
   seed: 20260710,

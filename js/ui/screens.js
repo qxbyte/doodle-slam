@@ -253,6 +253,158 @@ function tickFighterCards(now) {
   }
 }
 
+/* ---------------- badge wall ---------------- */
+
+const BADGE_ACCENTS = ['#2f66e0', '#e6392a', '#f0b41c', '#3ba24f'];
+
+/* one doodle rosette badge, 60x60 logical */
+function drawBadge(c, def, unlocked, i) {
+  const rng = makeRng(500 + i * 37);
+  const cx = 30, cy = 27;
+  const accent = unlocked ? BADGE_ACCENTS[i % 4] : '#c6c4bb';
+  const ink = unlocked ? INK : INK_LIGHT;
+  c.lineWidth = 1.6;
+  c.strokeStyle = ink;
+  c.lineJoin = 'round';
+  // ribbon tails
+  c.fillStyle = accent;
+  c.beginPath();
+  c.moveTo(cx - 9, cy + 12); c.lineTo(cx - 13, cy + 27); c.lineTo(cx - 6, cy + 22);
+  c.closePath(); c.fill(); c.stroke();
+  c.beginPath();
+  c.moveTo(cx + 9, cy + 12); c.lineTo(cx + 13, cy + 27); c.lineTo(cx + 6, cy + 22);
+  c.closePath(); c.fill(); c.stroke();
+  // scalloped rosette
+  c.beginPath();
+  for (let k = 0; k <= 48; k++) {
+    const a = (k / 48) * Math.PI * 2;
+    const r = 19.5 + Math.cos(a * 12) * 2 + rand(rng, -0.3, 0.3);
+    const x = cx + Math.cos(a) * r, y = cy + Math.sin(a) * r;
+    k === 0 ? c.moveTo(x, y) : c.lineTo(x, y);
+  }
+  c.closePath();
+  c.fillStyle = accent;
+  c.fill(); c.stroke();
+  // paper core
+  c.fillStyle = unlocked ? '#fdfdf8' : '#e7e5dd';
+  c.beginPath(); c.arc(cx, cy, 13.5, 0, Math.PI * 2); c.fill(); c.stroke();
+  // icon
+  c.strokeStyle = ink;
+  c.fillStyle = accent;
+  c.lineWidth = 1.5;
+  drawBadgeIcon(c, def.icon, cx, cy, accent, ink, rng);
+}
+
+function drawBadgeIcon(c, icon, x, y, accent, ink, rng) {
+  const star = (sx, sy, r) => {
+    c.beginPath();
+    for (let k = 0; k < 10; k++) {
+      const a = -Math.PI / 2 + k * Math.PI / 5;
+      const rr = k % 2 ? r * 0.45 : r;
+      const px = sx + Math.cos(a) * rr, py = sy + Math.sin(a) * rr;
+      k === 0 ? c.moveTo(px, py) : c.lineTo(px, py);
+    }
+    c.closePath(); c.fill(); c.stroke();
+  };
+  switch (icon) {
+    case 'splat':
+      drawSplat(c, rng, x, y, 6.5, accent);
+      break;
+    case 'bolt':
+      c.beginPath();
+      c.moveTo(x + 2, y - 8); c.lineTo(x - 4, y + 1); c.lineTo(x - 0.5, y + 1);
+      c.lineTo(x - 2, y + 8); c.lineTo(x + 4, y - 1); c.lineTo(x + 0.5, y - 1);
+      c.closePath(); c.fill(); c.stroke();
+      break;
+    case 'crown':
+      c.beginPath();
+      c.moveTo(x - 7, y + 5); c.lineTo(x - 8, y - 4); c.lineTo(x - 3.5, y);
+      c.lineTo(x, y - 7); c.lineTo(x + 3.5, y); c.lineTo(x + 8, y - 4);
+      c.lineTo(x + 7, y + 5);
+      c.closePath(); c.fill(); c.stroke();
+      break;
+    case 'flag':
+      c.beginPath(); c.moveTo(x - 4, y + 9); c.lineTo(x - 4, y - 8); c.stroke();
+      c.beginPath();
+      c.moveTo(x - 4, y - 8); c.lineTo(x + 7, y - 5.5); c.lineTo(x - 4, y - 3);
+      c.closePath(); c.fill(); c.stroke();
+      break;
+    case 'shield':
+      c.beginPath();
+      c.moveTo(x, y - 8); c.quadraticCurveTo(x + 8, y - 6, x + 7, y - 1);
+      c.quadraticCurveTo(x + 6, y + 6, x, y + 9);
+      c.quadraticCurveTo(x - 6, y + 6, x - 7, y - 1);
+      c.quadraticCurveTo(x - 8, y - 6, x, y - 8);
+      c.closePath(); c.fill(); c.stroke();
+      break;
+    case 'button':
+      c.beginPath(); c.arc(x, y, 7, 0, Math.PI * 2); c.stroke();
+      c.beginPath(); c.arc(x, y, 4, 0, Math.PI * 2); c.fill(); c.stroke();
+      break;
+    case 'loop':
+      c.beginPath(); c.arc(x, y, 6.5, -0.4, Math.PI * 1.3); c.stroke();
+      c.beginPath();
+      c.moveTo(x + 8.5, y - 5.5); c.lineTo(x + 5, y - 3); c.lineTo(x + 9, y - 0.5);
+      c.closePath(); c.fill(); c.stroke();
+      break;
+    case 'star':
+      star(x, y, 8);
+      break;
+    case 'stars':
+      star(x - 4.5, y + 2.5, 4.5);
+      star(x + 4.5, y + 2, 4);
+      star(x + 0.5, y - 5, 5);
+      break;
+    case 'calendar':
+      c.beginPath(); c.roundRect(x - 7, y - 6, 14, 13, 2); c.fill(); c.stroke();
+      c.fillStyle = '#fdfdf8';
+      c.beginPath(); c.roundRect(x - 5, y - 1, 10, 6, 1); c.fill();
+      c.beginPath(); c.moveTo(x - 3.5, y - 8.5); c.lineTo(x - 3.5, y - 4.5);
+      c.moveTo(x + 3.5, y - 8.5); c.lineTo(x + 3.5, y - 4.5); c.stroke();
+      break;
+    case 'pencil':
+      c.save();
+      c.translate(x, y); c.rotate(-0.75);
+      c.beginPath(); c.roundRect(-2.5, -8, 5, 12, 1); c.fill(); c.stroke();
+      c.beginPath(); c.moveTo(-2.5, 4); c.lineTo(0, 9); c.lineTo(2.5, 4);
+      c.closePath(); c.fillStyle = '#e8d5a4'; c.fill(); c.stroke();
+      c.restore();
+      break;
+    case 'trophy':
+      c.beginPath();
+      c.moveTo(x - 6, y - 7); c.lineTo(x + 6, y - 7);
+      c.quadraticCurveTo(x + 6, y + 2, x, y + 3);
+      c.quadraticCurveTo(x - 6, y + 2, x - 6, y - 7);
+      c.closePath(); c.fill(); c.stroke();
+      c.beginPath(); c.arc(x - 7.5, y - 4, 2.5, Math.PI * 0.5, Math.PI * 1.6); c.stroke();
+      c.beginPath(); c.arc(x + 7.5, y - 4, 2.5, Math.PI * 1.4, Math.PI * 0.5); c.stroke();
+      c.beginPath(); c.moveTo(x - 3, y + 7.5); c.lineTo(x + 3, y + 7.5);
+      c.moveTo(x, y + 3); c.lineTo(x, y + 7.5); c.stroke();
+      break;
+  }
+}
+
+function buildBadgeWall() {
+  const grid = $('#badge-grid');
+  grid.innerHTML = '';
+  Achieve.all().forEach((a, i) => {
+    const item = document.createElement('div');
+    item.className = 'badge-item' + (a.unlocked ? '' : ' locked');
+    const cv = document.createElement('canvas');
+    cv.width = 120; cv.height = 120;          // 2x backing = crisp on retina
+    cv.style.width = '60px';
+    cv.style.height = '60px';
+    const c = cv.getContext('2d');
+    c.scale(2, 2);
+    withDefaultPalette(() => drawBadge(c, a, a.unlocked, i));
+    item.appendChild(cv);
+    item.insertAdjacentHTML('beforeend',
+      `<div class="badge-name">${L(a.name)}</div><div class="badge-desc">${L(a.desc)}</div>`);
+    grid.appendChild(item);
+  });
+  $('#badge-count').textContent = L('{got}/{total} unlocked', Achieve.count());
+}
+
 /* ---------------- title art ---------------- */
 
 /* the paint burst the logo sits on */
@@ -306,7 +458,9 @@ function showResults(game) {
 
   const starWrap = $('#star-earned');
   starWrap.innerHTML = game.newStars
-    .map(d => `<div class="star-earn">${L('★ NEW STAR — {d}', { d })}</div>`).join('');
+    .map(d => `<div class="star-earn">${L('★ NEW STAR — {d}', { d })}</div>`).join('')
+    + (game.newBadges || [])
+      .map(b => `<div class="star-earn badge-earn">${L('🏅 BADGE UNLOCKED — {n}', { n: L(b.name) })}</div>`).join('');
 
   const wrap = $('#result-rows');
   wrap.innerHTML = '';

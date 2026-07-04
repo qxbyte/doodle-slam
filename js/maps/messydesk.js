@@ -6,6 +6,7 @@
    a spilled bottle of ink. */
 registerMap({
   name: 'MESSY DESK',
+  mood: 'desk',
   desc: 'Duck behind the stationery and claim the ink spill.',
   stage: 6,
   seed: 20260707,

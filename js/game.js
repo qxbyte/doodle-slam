@@ -241,6 +241,7 @@ function startMatch(playerTeam) {
   game.daily = false;
   setMap(game.mapIdx);   // builds the sketch layers, sets OBSTACLES/PLAZA
   Ambient.set(Settings.data.ambient ? CURRENT_MAP.ambient : null);
+  Music.setMood(CURRENT_MAP.mood);
   initPaint();
   game.zones = game.mode === 'zones' ? computeZones(CURRENT_MAP) : [];
   game.fighters = TEAMS.map(t => new Fighter(t.id, t.id === playerTeam));
@@ -267,6 +268,7 @@ function startDailyMatch() {
 
 function leaveMatch() {
   Replay.stop();
+  Music.setMood('default');
   game.state = 'title';
   updateTitleRecord();
   updateDailyButton();
@@ -291,6 +293,16 @@ function endMatch() {
     coverage: game.lastCoverage[game.player.team] * 100,
   });
   game.newStars = Campaign.evaluate(game);
+  const ps = game.stats[game.player.team];
+  game.newBadges = Achieve.evaluate({
+    won: order[0] === game.player.team,
+    cov: game.lastCoverage[game.player.team] * 100,
+    splats: ps.splats,
+    downs: ps.downs,
+    buttons: ps.buttons,
+    mode: game.mode,
+    daily: game.daily,
+  });
   if (game.daily) {
     game.dailyBest = Daily.submit(Number((game.lastCoverage[game.player.team] * 100).toFixed(1)));
   }
@@ -857,6 +869,17 @@ function initSettingsUI() {
     buildStageCards();
     renderSettingsPanel();
   });
+
+  // badge wall
+  const badges = $('#badges-panel');
+  $('#badges-btn').addEventListener('click', () => {
+    buildBadgeWall();
+    badges.classList.remove('hidden');
+  });
+  $('#badges-close').addEventListener('click', () => badges.classList.add('hidden'));
+  badges.addEventListener('click', e => {
+    if (e.target === badges) badges.classList.add('hidden');
+  });
 }
 
 function boot() {
@@ -1003,6 +1026,7 @@ function boot() {
   if (params.get('screen') === 'select') { game.state = 'select'; showScreen('#screen-select'); }
   if (params.get('screen') === 'maps') { buildMapCards(game.stageIdx); showScreen('#screen-maps'); }
   if (params.get('screen') === 'stages') showScreen('#screen-stages');
+  if (params.get('screen') === 'badges') { buildBadgeWall(); $('#badges-panel').classList.remove('hidden'); }
 
   // attract mode behind the menus (skipped for reduced motion / debug runs)
   if (auto === null && !prefersReducedMotion() && !params.has('nodemo')) {

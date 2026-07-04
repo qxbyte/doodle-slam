@@ -346,3 +346,47 @@ t('L translates known keys in zh and challenge descs follow', () => {
   setLang('en');
   ok(Campaign.descs('DOWNTOWN')[0].includes('Win'), 'and back to English');
 });
+
+
+/* ---------------- achievements ---------------- */
+
+t('achievements unlock once and persist counters', () => {
+  localStorage.removeItem('doodleSlam.achievements');
+  const base = { won: false, cov: 5, splats: 0, downs: 2, buttons: 0, mode: 'turf', daily: false };
+
+  // one splat -> firstSplat only, and only the first time
+  let fresh = Achieve.evaluate({ ...base, splats: 1 });
+  ok(fresh.some(a => a.id === 'firstSplat'), 'firstSplat unlocks');
+  fresh = Achieve.evaluate({ ...base, splats: 1 });
+  ok(!fresh.some(a => a.id === 'firstSplat'), 'firstSplat only fires once');
+
+  // single-match feats
+  fresh = Achieve.evaluate({ ...base, splats: 8, cov: 45, buttons: 3 });
+  const ids = fresh.map(a => a.id);
+  ok(ids.includes('hatTrick') && ids.includes('rampage'), 'splat feats unlock');
+  ok(ids.includes('landlord'), 'coverage feat unlocks');
+  ok(ids.includes('buttonMasher'), 'button feat unlocks');
+
+  // untouchable needs BOTH the win and zero downs
+  fresh = Achieve.evaluate({ ...base, won: true, downs: 1 });
+  ok(!fresh.some(a => a.id === 'untouchable'), 'no untouchable when splatted');
+  fresh = Achieve.evaluate({ ...base, won: true, downs: 0 });
+  ok(fresh.some(a => a.id === 'untouchable'), 'untouchable unlocks');
+
+  // mode hopper needs a win in each mode
+  Achieve.evaluate({ ...base, won: true, mode: 'splat' });
+  ok(!Achieve.all().find(a => a.id === 'modeHopper').unlocked, 'two modes are not enough');
+  fresh = Achieve.evaluate({ ...base, won: true, mode: 'zones' });
+  ok(fresh.some(a => a.id === 'modeHopper'), 'third mode win completes the set');
+
+  // daily counter
+  Achieve.evaluate({ ...base, daily: true });
+  Achieve.evaluate({ ...base, daily: true });
+  fresh = Achieve.evaluate({ ...base, daily: true });
+  ok(fresh.some(a => a.id === 'dailyRegular'), 'three dailies unlock the regular');
+
+  const c = Achieve.count();
+  eq(c.total, ACHIEVEMENTS.length, 'count total matches defs');
+  ok(c.got >= 8, 'unlock tally recorded');
+  localStorage.removeItem('doodleSlam.achievements');
+});

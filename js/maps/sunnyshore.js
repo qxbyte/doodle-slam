@@ -5,6 +5,7 @@
    red button waits beside a tidepool. */
 registerMap({
   name: 'SUNNY SHORE',
+  mood: 'shore',
   desc: 'Sun, sand, two piers and a lighthouse.',
   stage: 2,
   seed: 20260709,

@@ -6,6 +6,7 @@
    pearl of a giant clam. */
 registerMap({
   name: 'THE DEEP',
+  mood: 'deep',
   desc: 'A wreck, corals and currents that carry you away.',
   stage: 3,
   seed: 20260712,

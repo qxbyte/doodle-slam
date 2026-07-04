@@ -94,6 +94,7 @@ const FILES = [
   'js/systems/modes.js',
   'js/systems/skills.js',
   'js/systems/challenges.js',
+  'js/systems/achievements.js',
   'js/systems/daily.js',
   'js/systems/settings.js',
   'js/systems/records.js',

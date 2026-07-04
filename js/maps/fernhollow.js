@@ -5,6 +5,7 @@
    standing-stone circle where the red button appears. */
 registerMap({
   name: 'FERN HOLLOW',
+  mood: 'forest',
   desc: 'A creek, giant mushrooms and a stone circle deep in the woods.',
   stage: 1,
   seed: 20260706,

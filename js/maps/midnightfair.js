@@ -6,6 +6,7 @@
    show stage. */
 registerMap({
   name: 'MIDNIGHT FAIR',
+  mood: 'chalk',
   desc: 'A funfair chalked onto the blackboard after dark.',
   stage: 5,
   seed: 20260711,

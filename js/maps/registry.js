@@ -87,6 +87,7 @@ function registerMap(def) {
     currents: [], kelp: [], fishes: [], jellies: [],  // deep scenery
     plazaStyle: 'fountain', roadStyle: 'asphalt',
     ambient: null,        // snow | bubbles | fireflies | leaves | dust | stars
+    mood: 'default',      // Music.MOODS key — per-stage BGM feel
   }, def));
 }
 

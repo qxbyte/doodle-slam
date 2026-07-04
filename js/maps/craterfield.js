@@ -5,6 +5,7 @@
    The red button sits inside the biggest crater. */
 registerMap({
   name: 'CRATER FIELD',
+  mood: 'moon',
   desc: 'A moon base, a rocket pad and one crashed saucer.',
   stage: 7,
   seed: 20260708,
