@@ -987,9 +987,9 @@ body.touch .weapon-note { display: none; }
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
-  width: 190px;
-  padding: 10px 14px;
+  gap: 1px;
+  width: 138px;
+  padding: 6px 10px;
   border: 2.5px solid var(--ink);
   border-radius: 14px;
   background: #fff;
@@ -1008,10 +1008,10 @@ body.touch .weapon-note { display: none; }
   font-family: var(--font-display);
   font-style: italic;
   font-weight: 900;
-  font-size: 17px;
+  font-size: 14px;
 }
 .home-mode .hm-desc {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
   color: #8a8a86;
 }
@@ -1117,7 +1117,7 @@ body.touch .weapon-note { display: none; }
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(28, 28, 26, 0.4);
+  background: rgba(28, 28, 26, 0.55);
 }
 #story-panel.hidden, #level-end-panel.hidden { display: none; }
 .story-card {

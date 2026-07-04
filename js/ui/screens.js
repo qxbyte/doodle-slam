@@ -316,6 +316,8 @@ function showStory(idx) {
   storyLevel = idx;
   const lvl = ADV_LEVELS[idx];
   $('#level-end-panel').classList.add('hidden');
+  // the story card takes the stage alone — hide the level select
+  $('#screen-adventure').classList.add('hidden');
   $('#story-title').textContent = `${L('LEVEL')} ${idx + 1} · ${lvl.name}`;
   $('#story-text').textContent = L(lvl.intro);
   const cv = $('#story-portrait');
