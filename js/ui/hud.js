@@ -38,32 +38,49 @@ function initHUD() {
   ui.covRows = [...wrap.querySelectorAll('.cov-row')];
 }
 
+/* DOM writes happen only when a displayed value actually changed —
+   style/text churn every frame forces needless style recalcs */
+const hudCache = {};
+function hudSet(key, val, apply) {
+  if (hudCache[key] === val) return;
+  hudCache[key] = val;
+  apply(val);
+}
+
 function updateHUD(game) {
   // timer
-  ui.timer.textContent = formatTime(game.timeLeft);
-  ui.timer.classList.toggle('urgent', game.timeLeft <= 30);
+  hudSet('timer', formatTime(game.timeLeft), v => { ui.timer.textContent = v; });
+  hudSet('urgent', game.timeLeft <= 30, v => ui.timer.classList.toggle('urgent', v));
 
   // score panel adapts to the match mode
   const mode = currentMode();
-  $('#panel-title').textContent = L(mode.panel);
+  hudSet('panel', L(mode.panel), v => { $('#panel-title').textContent = v; });
   const scores = mode.scores(game);
   const top = Math.max(1, ...scores);
   for (let i = 0; i < 4; i++) {
     const w = mode.key === 'turf'
       ? Math.min(100, scores[i] * 2.4)
       : (scores[i] / top) * 100;
-    ui.covRows[i].querySelector('.c-fill').style.width = `${w}%`;
-    ui.covRows[i].querySelector('.c-pct').textContent = mode.fmt(scores[i]);
+    hudSet(`cw${i}`, Math.round(w * 10), v => {
+      ui.covRows[i].querySelector('.c-fill').style.width = `${v / 10}%`;
+    });
+    hudSet(`cp${i}`, mode.fmt(scores[i]), v => {
+      ui.covRows[i].querySelector('.c-pct').textContent = v;
+    });
   }
 
-  // player bars + skill charges
+  // player bars + skill cooldown
   const p = game.player;
-  ui.hpFill.style.width = `${p.hp}%`;
-  ui.inkFill.style.width = `${p.ink}%`;
-  ui.bombCount.textContent = p.bombs;
-  ui.bombHint.style.opacity = p.bombs > 0 ? 1 : 0.35;
-  $('#skill-count').textContent = p.skillCd > 0 ? `${Math.ceil(p.skillCd)}s` : 'OK';
-  $('#skill-hint').style.opacity = p.skillCd > 0 ? 0.35 : 1;
+  hudSet('hp', Math.round(p.hp), v => { ui.hpFill.style.width = `${v}%`; });
+  hudSet('ink', Math.round(p.ink), v => { ui.inkFill.style.width = `${v}%`; });
+  hudSet('bombs', p.bombs, v => {
+    ui.bombCount.textContent = v;
+    ui.bombHint.style.opacity = v > 0 ? 1 : 0.35;
+  });
+  hudSet('skill', p.skillCd > 0 ? Math.ceil(p.skillCd) : 0, v => {
+    $('#skill-count').textContent = v > 0 ? `${v}s` : 'OK';
+    $('#skill-hint').style.opacity = v > 0 ? 0.35 : 1;
+  });
 }
 
 /* red vignette pulse when the player takes damage */
@@ -102,7 +119,14 @@ function pushToast(text, kind = '') {
   setTimeout(() => { el.remove(); }, 4200);
 }
 
+/* the minimap repaints ~7x/s — it walks the whole ownership grid,
+   and at 176x118 css px nobody can tell 7Hz from 60Hz */
+let minimapNextAt = 0;
+
 function renderMinimap(game) {
+  const now = performance.now();
+  if (now < minimapNextAt) return;
+  minimapNextAt = now + 150;
   const c = ui.minimapCtx;
   // 2x backing for retina; draw in logical 176x118 space
   c.setTransform(2, 0, 0, 2, 0, 0);

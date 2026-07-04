@@ -168,6 +168,7 @@ function resetMatchState() {
   game.newStars = [];
   game.eggEntered = false;
   game.pausedMenu = false;
+  for (const k in hudCache) delete hudCache[k];   // fresh HUD writes
   game.originMapName = CURRENT_MAP.name;   // campaign credit survives the egg world
   for (let i = 0; i < 4; i++) spawnPickup();
 }
@@ -905,15 +906,37 @@ function render() {
 
 /* ---------------- loop ---------------- */
 
+/* Power budget: the sim+render are capped at 60fps (ProMotion
+   screens fire rAF at 120Hz — twice the heat for no visible gain),
+   the attract demo runs at 30fps, and the demo freezes entirely
+   when the window loses focus or nobody has touched anything for
+   a minute (the canvas keeps its last frame under the menus). */
 let lastT = performance.now();
+let winFocused = !document.hidden;
+let lastInteraction = performance.now();
+
+addEventListener('focus', () => { winFocused = true; });
+addEventListener('blur', () => { winFocused = false; });
+for (const ev of ['pointerdown', 'pointermove', 'keydown', 'wheel', 'touchstart']) {
+  addEventListener(ev, () => { lastInteraction = performance.now(); }, { passive: true });
+}
+
 function frame(now) {
+  requestAnimationFrame(frame);
+  const isAttract = game.demo;
+  // attract mode idles out: unfocused or 60s untouched -> full stop
+  if (isAttract && (!winFocused || now - lastInteraction > 60000)) {
+    lastT = now;
+    return;
+  }
+  const minMs = isAttract ? 31 : 15.5;   // ~30fps demo, ~60fps play
+  if (now - lastT < minMs) return;
   const dt = Math.min((now - lastT) / 1000, 0.05);
   lastT = now;
   update(dt);
   if (game.state === 'match' || game.state === 'results' || game.demo) Ambient.update(dt);
   if (game.state === 'select') tickFighterCards(now);
   render();
-  requestAnimationFrame(frame);
 }
 
 /* ---------------- boot ---------------- */
