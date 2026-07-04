@@ -16,6 +16,7 @@ const RENDER = {
   grounds: {},      // map.ground     -> fn(g, rng, map)
   roadStyles: {},   // map.roadStyle  -> fn(g, rng, map)
   features: [],     // [{order, fn(g, rng, map)}], low order drawn first
+  topFeatures: [],  // like features, but on the top layer, above the paint
   plazas: {},       // map.plazaStyle -> fn(g, rng, map, p)
   obstacles: {},    // building.kind  -> fn(t, rng, b)
 };
@@ -25,6 +26,12 @@ function registerRoadStyle(name, fn) { RENDER.roadStyles[name] = fn; }
 function registerFeature(order, fn) {
   RENDER.features.push({ order, fn });
   RENDER.features.sort((a, b) => a.order - b.order);
+}
+/* for map elements the player must always find (warp pipes…):
+   drawn above the paint so splats can never bury them */
+function registerTopFeature(order, fn) {
+  RENDER.topFeatures.push({ order, fn });
+  RENDER.topFeatures.sort((a, b) => a.order - b.order);
 }
 function registerPlaza(name, fn) { RENDER.plazas[name] = fn; }
 function registerObstacles(byKind) { Object.assign(RENDER.obstacles, byKind); }
@@ -54,6 +61,7 @@ function buildWorldLayers(map) {
   for (const b of map.buildings) {
     (RENDER.obstacles[b.kind] || drawUnknownObstacle)(t, rng, b);
   }
+  for (const f of RENDER.topFeatures) f.fn(t, rng, map);
   if (map.egg) drawEggDoor(t, rng, map.egg);
 }
 

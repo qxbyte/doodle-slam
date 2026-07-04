@@ -63,6 +63,10 @@ class Fighter {
     this.grudge = null;    // who splatted me last (avenger fuel)
     this.warpT = 0;        // warp-pipe cooldown
     this.lavaTick = 0;     // lava sizzle fx throttle
+    this.botAvoid = 0;     // sticky wall-avoidance heading offset
+    this.stuckX = this.x;  // anti-jitter: where we last made progress
+    this.stuckY = this.y;
+    this.stuckT = 0;
   }
 
   get speed() {
@@ -254,14 +258,39 @@ class Fighter {
     const probe = 46;
     const hazard = (px, py) => pointBlocked(px, py) || lavaAt(px, py);
     if (hazard(this.x + Math.cos(a) * probe, this.y + Math.sin(a) * probe)) {
-      for (const off of [0.5, -0.5, 1.1, -1.1, 1.8, -1.8]) {
+      // keep last frame's detour first — flip-flopping between left
+      // and right every frame is what makes bots shake in corners
+      const offs = this.botAvoid
+        ? [this.botAvoid, 0.5, -0.5, 1.1, -1.1, 1.8, -1.8, 2.5, -2.5]
+        : [0.5, -0.5, 1.1, -1.1, 1.8, -1.8, 2.5, -2.5];
+      for (const off of offs) {
         if (!hazard(this.x + Math.cos(a + off) * probe, this.y + Math.sin(a + off) * probe)) {
+          this.botAvoid = off;
           a += off;
           break;
         }
       }
+    } else {
+      this.botAvoid = 0;
     }
     this.move(Math.cos(a), Math.sin(a), dt);
+
+    // stuck in a corner? pick a fresh destination instead of vibrating
+    if (dist(this.x, this.y, this.stuckX, this.stuckY) > 30) {
+      this.stuckX = this.x;
+      this.stuckY = this.y;
+      this.stuckT = 0;
+    } else {
+      this.stuckT += dt;
+      if (this.stuckT > 1.2) {
+        this.botTarget = randomOpenSpot();
+        this.botRetargetIn = rand(Math.random, 3, 6);
+        this.botAvoid = 0;
+        this.stuckT = 0;
+        this.stuckX = this.x;
+        this.stuckY = this.y;
+      }
+    }
 
     // aim at the foe when one is inside weapon range, else spray ahead
     if (foe && foeD < this.weapon.range) {

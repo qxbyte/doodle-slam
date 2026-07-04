@@ -156,8 +156,9 @@ function drawMossDrips(g, rng, map) {
 }
 
 registerFeature(31, drawGoo);
-registerFeature(46, drawPipes);
 registerFeature(47, drawMossDrips);
+// pipe mouths live on the top layer so paint can never bury them
+registerTopFeature(10, drawPipes);
 
 /* plaza: a big riveted drain cover for the red button */
 registerPlaza('drain', (g, rng, map, p) => {

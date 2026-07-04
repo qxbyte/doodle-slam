@@ -713,6 +713,13 @@ function render() {
   for (const pk of game.pickups) {
     if (!game.browse) pk.bob += 0.03;
     const oy = Math.sin(pk.bob) * 3;
+    // paper backing disc so the icon reads on any paint underneath
+    ctx.fillStyle = PAPER;
+    ctx.globalAlpha = 0.85;
+    ctx.beginPath();
+    ctx.arc(pk.x, pk.y, 20, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = 1;
     ctx.strokeStyle = 'rgba(74,74,72,0.6)';
     ctx.lineWidth = 1.5;
     ctx.setLineDash([6, 6]);
