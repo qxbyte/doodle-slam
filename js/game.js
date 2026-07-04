@@ -1156,12 +1156,21 @@ function boot() {
   addEventListener('click', e => {
     if (!e.target.closest('#play-bang')) bang.classList.remove('open');
   });
+  let advPicking = false;   // fighter select is doing adventure duty
+  function openAdventureSelect() {
+    advPicking = true;
+    $('#difficulty-row').classList.add('hidden');   // career-only knob
+    game.state = 'select';
+    showScreen('#screen-select');
+  }
+  function openWorldMap() {
+    buildAdventureScreen();
+    game.state = 'adventure';
+    showScreen('#screen-adventure');
+  }
   $('#play-btn').addEventListener('click', () => {
-    if (homeMode === 'adventure') {
-      buildAdventureScreen();
-      game.state = 'adventure';
-      showScreen('#screen-adventure');
-    } else {
+    if (homeMode === 'adventure') openAdventureSelect();
+    else {
       game.state = 'stages';
       showScreen('#screen-stages');
     }
@@ -1169,6 +1178,7 @@ function boot() {
 
   // adventure screen
   initWorldMapClicks();
+  $('#adv-hero').addEventListener('click', () => openAdventureSelect());
   $('#adv-continue').addEventListener('click', () => showStory(Adventure.lastLevel()));
   $('#adv-restart').addEventListener('click', () => {
     Adventure.reset();
@@ -1231,12 +1241,27 @@ function boot() {
     showScreen('#screen-stages');
   });
   $('#back-btn').addEventListener('click', () => {
+    if (advPicking) {
+      advPicking = false;
+      $('#difficulty-row').classList.remove('hidden');
+      game.state = 'title';
+      showScreen('#screen-title');
+      return;
+    }
     game.state = 'maps';
     showScreen('#screen-maps');
   });
   $('#fighter-cards').addEventListener('click', e => {
     const card = e.target.closest('.fighter-card');
-    if (card) startMatch(Number(card.dataset.team));
+    if (!card) return;
+    if (advPicking) {
+      advPicking = false;
+      $('#difficulty-row').classList.remove('hidden');
+      Adventure.team = Number(card.dataset.team);
+      openWorldMap();
+      return;
+    }
+    startMatch(Number(card.dataset.team));
   });
   $('#difficulty-row').addEventListener('click', e => {
     const pill = e.target.closest('.diff-pill');

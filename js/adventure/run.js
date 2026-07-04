@@ -129,7 +129,10 @@ function advHitEnemies(game, x, y, r, dmg) {
   for (let i = adv.minions.length - 1; i >= 0; i--) {
     const m = adv.minions[i];
     if (dist(x, y, m.x, m.y) < r + ADV_MINION_RADIUS) {
-      m.awake = true;
+      // one hit wakes the whole patrol group — no safe sniping
+      for (const o of adv.minions) {
+        if (o.zoneIdx === m.zoneIdx) o.awake = true;
+      }
       if (m.hurt(game, dmg)) adv.minions.splice(i, 1);
       hit = true;
     }

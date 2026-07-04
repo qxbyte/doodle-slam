@@ -6,7 +6,7 @@
    (CI reminder lives in CLAUDE.md).
    ============================================================ */
 
-const VERSION = 'doodle-slam-v32';
+const VERSION = 'doodle-slam-v33';
 
 const SHELL = [
   './',

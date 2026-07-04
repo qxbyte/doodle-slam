@@ -21,30 +21,8 @@ const WORLDMAP = {
 let storyLevel = 0;
 
 function buildAdventureScreen() {
-  // hero chips — SPLASH by default, any fighter selectable
-  const chips = $('#adv-heroes');
-  chips.innerHTML = '';
-  for (const team of TEAMS) {
-    const chip = document.createElement('button');
-    chip.className = 'adv-hero' + (Adventure.team === team.id ? ' selected' : '');
-    const cv = document.createElement('canvas');
-    cv.width = 96; cv.height = 84;
-    cv.style.width = '48px';
-    cv.style.height = '42px';
-    const c = cv.getContext('2d');
-    c.scale(2.4, 2.4);
-    withDefaultPalette(() => drawCharacter(c, team.id, 20, 19, { scale: 0.95, pose: 'run' }));
-    chip.appendChild(cv);
-    chip.insertAdjacentHTML('beforeend',
-      `<span class="ah-name" style="color:${team.color}">${team.name}</span>`);
-    chip.addEventListener('click', () => {
-      Adventure.team = team.id;
-      buildAdventureScreen();
-    });
-    chips.appendChild(chip);
-  }
-
   drawWorldMap();
+  $('#adv-hero').textContent = `${L('HERO')} · ${TEAMS[Adventure.team].name} ⇄`;
   $('#adv-continue').textContent =
     `${L('CONTINUE')} · ${L('LEVEL')} ${Adventure.lastLevel() + 1}`;
 }

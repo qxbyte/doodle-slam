@@ -42,6 +42,11 @@ class AdvMinion {
     const p = game.player;
 
     if (!this.awake) {
+      // creeping close wakes them — no free point-blank ambush
+      if (p.alive && dist(this.x, this.y, p.x, p.y) < 400) {
+        this.awake = true;
+        return;
+      }
       // patrol a-b, oblivious
       const goal = this.toB ? this.b : this.a;
       const d = dist(this.x, this.y, goal.x, goal.y);
@@ -69,7 +74,7 @@ class AdvMinion {
 
     // slow telegraphed shots — dodgeable by design
     this.fireT -= dt;
-    if (this.fireT <= 0 && pd < 520) {
+    if (this.fireT <= 0 && pd < 560) {
       this.fireT = this.t.fireEvery * rand(Math.random, 0.9, 1.25);
       const a = toP + rand(Math.random, -this.t.aimNoise, this.t.aimNoise);
       game.adv.shots.push({
@@ -232,7 +237,10 @@ class AdvBoss {
   }
 
   hurt(game, dmg) {
-    if (!this.awake) return false;
+    if (!this.awake) {
+      this.awake = true;   // sniping it just makes it angry
+      pushToast(L('THE ERASER wakes up!'), 'danger');
+    }
     this.hp -= dmg;
     this.hitT = 0.15;
     if (this.hp <= 0) {

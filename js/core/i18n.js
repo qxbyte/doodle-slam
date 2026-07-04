@@ -72,6 +72,7 @@ const I18N_ZH = {
   'CONTINUE': '继续闯关',
   'LEVEL': '关卡',
   'TAP TO PLAY': '点击进入',
+  'HERO': '主角',
   'LOCKED': '未解锁',
   'GO!': '出发！',
   'NEXT LEVEL': '下一关',
