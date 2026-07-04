@@ -530,13 +530,33 @@ t('enemy shots stay dodgeable at every tier', () => {
   }
 });
 
-t('the Rainbow Blaster outclasses the starting loadout', () => {
-  const base = WEAPONS[0];   // SketchBlaster, the hero default
-  ok(ADV_WEAPON.damage > base.damage, 'hits harder');
-  ok(ADV_WEAPON.fireInterval < base.fireInterval, 'fires faster');
-  ok(ADV_WEAPON.range > base.range, 'reaches further');
-  ok(ADV_WEAPON.splatMin > base.splatMin && ADV_WEAPON.splatMax > base.splatMax, 'paints bigger');
-  ok(ADV_WEAPON.inkCost < base.inkCost, 'sips ink');
+t('every legendary weapon outguns every starting loadout', () => {
+  eq(ADV_WEAPONS.length, 3, 'three legendaries in the arsenal');
+  const bestBaseDps = Math.max(...WEAPONS.map(w => w.damage * w.pellets / w.fireInterval));
+  for (const w of ADV_WEAPONS) {
+    const dps = (w.damage + (w.boomSplash || 0)) * w.pellets / w.fireInterval;
+    ok(dps > bestBaseDps, `${w.name} dps ${dps.toFixed(0)} beats the best loadout (${bestBaseDps.toFixed(0)})`);
+    ok(w.splatMax >= 26, `${w.name} paints big`);
+  }
+});
+
+t('bosses carry distinct kinds and skills; minion breeds ramp with tiers', () => {
+  const kinds = [2, 6, 9].map(i => {
+    const r = ADV_LEVELS[i].route;
+    return r[r.length - 1].boss.kind;
+  });
+  eq(new Set(kinds).size, 3, 'three different boss kinds');
+  for (const i of [2, 6, 9]) {
+    const bdef = ADV_LEVELS[i].route.at(-1).boss;
+    ok(bdef.skillEvery > 0 && bdef.telegraph > 0.5, 'boss has a skill cadence and a fair telegraph');
+  }
+  // breed distribution: tier 0 is shooters only, later tiers mix
+  const rng0 = makeRng(1);
+  for (let k = 0; k < 30; k++) eq(advMinionKind(0, rng0), 'shooter');
+  const rng3 = makeRng(2);
+  const seen = new Set();
+  for (let k = 0; k < 60; k++) seen.add(advMinionKind(3, rng3));
+  eq(seen.size, 3, 'top tier fields all three breeds');
 });
 
 t('erasePaint wipes cells back to blank but never obstacles', () => {

@@ -313,51 +313,6 @@ function enterEggWorld(egg) {
   pushToast(L(zipper ? 'WELCOME TO THE INSIDE.' : 'WELCOME TO THE OTHER SIDE.'));
 }
 
-/* the boss: a giant eraser dragged across the town */
-function drawEraserBoss(b) {
-  ctx.save();
-  ctx.translate(b.x, b.y);
-  ctx.rotate(-0.16 + Math.sin(game.elapsed * 3.2) * 0.06);
-  ctx.strokeStyle = '#1c1c1a';
-  ctx.lineWidth = 3;
-  // rubber body
-  ctx.fillStyle = b.hitT > 0 ? '#ffffff' : '#f2e3e0';
-  ctx.beginPath(); ctx.roundRect(-38, -56, 76, 112, 10); ctx.fill(); ctx.stroke();
-  // paper sleeve
-  ctx.fillStyle = '#5a78b8';
-  ctx.beginPath(); ctx.roundRect(-38, -56, 76, 42, [10, 10, 0, 0]); ctx.fill(); ctx.stroke();
-  ctx.fillStyle = '#fdfdf8';
-  ctx.font = "italic 900 15px 'Archivo', sans-serif";
-  ctx.textAlign = 'center';
-  ctx.fillText('ERASE', 0, -30);
-  // the angry face on the rubber
-  ctx.fillStyle = '#1c1c1a';
-  ctx.beginPath(); ctx.arc(-13, 4, 4, 0, Math.PI * 2); ctx.fill();
-  ctx.beginPath(); ctx.arc(13, 4, 4, 0, Math.PI * 2); ctx.fill();
-  ctx.lineWidth = 2.6;
-  ctx.beginPath();
-  ctx.moveTo(-22, -6); ctx.lineTo(-6, -1);
-  ctx.moveTo(22, -6); ctx.lineTo(6, -1);
-  ctx.stroke();
-  ctx.beginPath();
-  ctx.moveTo(-12, 20); ctx.lineTo(-4, 15); ctx.lineTo(4, 20); ctx.lineTo(12, 15);
-  ctx.stroke();
-  ctx.restore();
-  // shavings trailing behind
-  if (Math.random() < 0.25) {
-    addFx({ type: 'burst', x: b.x + rand(Math.random, -30, 30), y: b.y + rand(Math.random, 30, 55), r1: 10, drops: 2, color: '#e3d3d0' });
-  }
-  // hp bar above
-  const w = 96, hpw = Math.max(0, b.hp / b.maxHp) * w;
-  ctx.fillStyle = 'rgba(28,28,26,0.35)';
-  ctx.fillRect(b.x - w / 2, b.y - 78, w, 9);
-  ctx.fillStyle = '#e6392a';
-  ctx.fillRect(b.x - w / 2, b.y - 78, hpw, 9);
-  ctx.strokeStyle = '#1c1c1a';
-  ctx.lineWidth = 1.6;
-  ctx.strokeRect(b.x - w / 2, b.y - 78, w, 9);
-}
-
 /* Esc / LEAVE MATCH open a confirm instead of quitting outright:
    resume, restart the same setup, or actually leave. A hard pause. */
 function setPauseMenu(on) {
@@ -549,9 +504,10 @@ function update(dt) {
         game.pickups.splice(i, 1);
         if (pk.type === 'weapon') {
           if (!f.isPlayer) { game.pickups.splice(i, 0, pk); continue; }   // heroes only
-          f.weapon = ADV_WEAPON;
-          $('#weapon-note').innerHTML = `<b>${ADV_WEAPON.name}</b> &mdash; ${L('the legendary sprayer')}`;
-          pushToast(L('You found the RAINBOW BLASTER!'), 'warn');
+          const w = pk.weapon || ADV_WEAPON;
+          f.weapon = w;
+          $('#weapon-note').innerHTML = `<b>${w.name}</b> &mdash; ${L(w.blurb)}`;
+          pushToast(L('You found the {w}!', { w: w.name.toUpperCase() }), 'warn');
           addFx({ type: 'burst', x: pk.x, y: pk.y, r1: 60, drops: 10, dur: 0.5, color: '#f0b41c' });
         } else if (pk.type === 'boots') {
           f.boostT = 8;
@@ -611,10 +567,19 @@ function update(dt) {
     pr.life -= dt;
     let dead = false;
 
+    const boomW = pr.owner && pr.owner.weapon && pr.owner.weapon.boomSplash;
     if (game.adv && pr.team === game.player.team &&
         advHitEnemies(game, pr.x, pr.y, 6, pr.dmg)) {
-      splat(pr.x, pr.y, rand(Math.random, pr.sMin * 0.7, pr.sMax * 0.7), pr.team);
-      addFx({ type: 'burst', x: pr.x, y: pr.y, r1: 24, color: TEAMS[pr.team].color });
+      if (boomW) {
+        advHitEnemies(game, pr.x, pr.y, pr.owner.weapon.boomRadius, pr.owner.weapon.boomSplash);
+        splat(pr.x, pr.y, pr.owner.weapon.boomRadius, pr.team);
+        addFx({ type: 'burst', x: pr.x, y: pr.y, r1: pr.owner.weapon.boomRadius, drops: 8, dur: 0.4, color: TEAMS[pr.team].color });
+        addShake(3);
+        SFX.play('boom');
+      } else {
+        splat(pr.x, pr.y, rand(Math.random, pr.sMin * 0.7, pr.sMax * 0.7), pr.team);
+        addFx({ type: 'burst', x: pr.x, y: pr.y, r1: 24, color: TEAMS[pr.team].color });
+      }
       dead = true;
     } else if (pointBlocked(pr.x, pr.y)) {
       dead = true; // buildings eat shots, no splat on walls
@@ -965,7 +930,7 @@ function render() {
     drawAdventureGuide(ctx, game);
     for (const m of game.adv.minions) m.draw(ctx);
     if (game.adv.boss && game.adv.boss.hp > 0 && game.adv.boss.awake) {
-      drawEraserBoss(game.adv.boss);
+      drawAdvBoss(ctx, game, game.adv.boss);
     }
     drawAdvShots(ctx, game);
   }
@@ -1347,6 +1312,13 @@ function boot() {
     startAdventureLevel(clamp(Number(params.get('adv')) || 0, 0, ADV_LEVELS.length - 1));
     if (params.has('px')) game.player.x = Number(params.get('px')) || game.player.x;
     if (params.has('py')) game.player.y = Number(params.get('py')) || game.player.y;
+    if (params.has('bosswake') && game.adv && game.adv.boss) {
+      game.adv.zoneIdx = ADV_LEVELS[game.adv.level].route.length - 1;
+      game.adv.minions = [];
+      game.adv.boss.awake = true;
+      game.player.x = game.adv.boss.x + 280;
+      game.player.y = game.adv.boss.y + 40;
+    }
     const aff = Number(params.get('ff')) || 0;
     for (let i = 0; i < aff * 30; i++) update(1 / 30);
   }

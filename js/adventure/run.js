@@ -34,7 +34,7 @@ function startAdventureLevel(idx) {
   const adv = game.adv = { level: idx, zoneIdx: 0, minions: [], shots: [], boss: null, done: false };
   lvl.route.forEach((zone, zi) => {
     for (let k = 0; k < zone.foes; k++) {
-      const m = new AdvMinion(zone, lvl.tier, rng);
+      const m = new AdvMinion(zone, lvl.tier, rng, advMinionKind(lvl.tier, rng));
       m.zoneIdx = zi;
       adv.minions.push(m);
     }
@@ -48,10 +48,11 @@ function startAdventureLevel(idx) {
   game.player.y = start.y;
   SPAWNS[team] = { x: start.x, y: start.y };   // deaths return to progress, not a corner
 
-  // the legendary weapon waits somewhere along the way
+  // a legendary weapon waits somewhere along the way — levels
+  // cycle through the arsenal so runs feel different
   const mid = lvl.route[Math.floor(lvl.route.length / 2)];
   const ws = collideWorld(mid.x + rand(rng, -mid.r, mid.r) * 0.5, mid.y + rand(rng, -mid.r, mid.r) * 0.5, 20);
-  game.pickups.push({ x: ws.x, y: ws.y, type: 'weapon', bob: 0 });
+  game.pickups.push({ x: ws.x, y: ws.y, type: 'weapon', weapon: ADV_WEAPONS[idx % ADV_WEAPONS.length], bob: 0 });
 
   Adventure.markStarted(idx);
   game.newBest = false;

@@ -14,12 +14,32 @@
    levels have no boss; the last one is the ERASER itself.
    ============================================================ */
 
-/* the mid-run super weapon — strictly better than any loadout */
-const ADV_WEAPON = {
-  name: 'Rainbow Blaster', blurb: 'the legendary sprayer',
-  sound: 'shoot', fireInterval: 0.085, inkCost: 1.1, range: 430,
-  projSpeed: 660, damage: 26, pellets: 1, spread: 0.05, splatMin: 20, splatMax: 32,
-};
+/* mid-run super weapons — every one outguns any starting loadout.
+   Levels cycle through them so runs feel different. */
+const ADV_WEAPONS = [
+  { name: 'Rainbow Blaster', blurb: 'the legendary sprayer',
+    sound: 'shoot', fireInterval: 0.085, inkCost: 1.1, range: 430,
+    projSpeed: 660, damage: 26, pellets: 1, spread: 0.05, splatMin: 20, splatMax: 32 },
+  { name: 'Triple Splasher', blurb: 'three streams, one trigger',
+    sound: 'scatter', fireInterval: 0.16, inkCost: 2.6, range: 390,
+    projSpeed: 600, damage: 16, pellets: 3, spread: 0.18, splatMin: 16, splatMax: 26 },
+  { name: 'Boom Brush', blurb: 'slow strokes that explode',
+    sound: 'roller', fireInterval: 0.5, inkCost: 5.5, range: 470,
+    projSpeed: 520, damage: 55, pellets: 1, spread: 0.03, splatMin: 34, splatMax: 46,
+    boomSplash: 35, boomRadius: 95 },
+];
+const ADV_WEAPON = ADV_WEAPONS[0];   // legacy alias
+
+/* which minion breed spawns, by tier — variety ramps up with the
+   chapter: shooters everywhere, chargers from tier 1, lobbers
+   from tier 2 */
+function advMinionKind(tier, rng) {
+  const roll = rng();
+  if (tier === 0) return 'shooter';
+  if (tier === 1) return roll < 0.28 ? 'charger' : 'shooter';
+  if (tier === 2) return roll < 0.3 ? 'charger' : roll < 0.52 ? 'lobber' : 'shooter';
+  return roll < 0.34 ? 'charger' : roll < 0.62 ? 'lobber' : 'shooter';
+}
 
 /* Enemy tuning per level tier. Shots stay slow and sparse on
    purpose: the player outruns them (175-235 px/s) with room to
@@ -64,7 +84,7 @@ const ADV_LEVELS = [
     route: [
       { x: 600,  y: 500,  r: 250, foes: 3 },
       { x: 1750, y: 1150, r: 250, foes: 4 },
-      { x: 1200, y: 800,  r: 300, foes: 0, boss: { hp: 500, speed: 90, radius: 44, volley: 3, volleyEvery: 2.8, chargeEvery: 9 } },
+      { x: 1200, y: 800,  r: 300, foes: 0, boss: { kind: 'shadow', hp: 560, speed: 95, radius: 44, volley: 3, volleyEvery: 2.4, chargeEvery: 8, telegraph: 0.9, skillEvery: 9 } },
     ],
   },
   {
@@ -111,7 +131,7 @@ const ADV_LEVELS = [
       { x: 500,  y: 350,  r: 240, foes: 3 },
       { x: 1350, y: 300,  r: 240, foes: 4 },
       { x: 2050, y: 450,  r: 240, foes: 4 },
-      { x: 1200, y: 750,  r: 300, foes: 0, boss: { hp: 800, speed: 100, radius: 48, volley: 4, volleyEvery: 2.4, chargeEvery: 7.5 } },
+      { x: 1200, y: 750,  r: 300, foes: 0, boss: { kind: 'smudge', hp: 900, speed: 104, radius: 48, volley: 4, volleyEvery: 2.1, chargeEvery: 6.5, telegraph: 0.8, skillEvery: 11 } },
     ],
   },
   {
@@ -147,7 +167,7 @@ const ADV_LEVELS = [
       { x: 1700, y: 400,  r: 240, foes: 5 },
       { x: 600,  y: 1150, r: 240, foes: 5 },
       { x: 1900, y: 1250, r: 240, foes: 5 },
-      { x: 1300, y: 1050, r: 320, foes: 0, boss: { hp: 1150, speed: 110, radius: 52, volley: 5, volleyEvery: 2.2, chargeEvery: 6.5 } },
+      { x: 1300, y: 1050, r: 320, foes: 0, boss: { kind: 'prime', hp: 1300, speed: 112, radius: 52, volley: 5, volleyEvery: 1.9, chargeEvery: 5.5, telegraph: 0.7, skillEvery: 9 } },
     ],
   },
 ];
