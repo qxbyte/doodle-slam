@@ -16,7 +16,7 @@
 <!-- ===== In-match HUD ===== -->
 <div id="hud" class="hidden">
   <div id="coverage-panel" class="card">
-    <div class="panel-title">COVERAGE</div>
+    <div id="panel-title" class="panel-title">COVERAGE</div>
     <div class="cov-rows"></div>
   </div>
 
@@ -28,6 +28,7 @@
     <div class="bar-row"><span class="bar-label">HP</span><div class="bar"><div id="hp-fill" class="bar-fill hp"></div></div></div>
     <div class="bar-row"><span class="bar-label">INK</span><div class="bar"><div id="ink-fill" class="bar-fill ink"></div></div></div>
     <div id="bomb-hint" class="dashed-box">PAINT BOMB &times;<span id="bomb-count">0</span> &mdash; right-click to throw!</div>
+    <div id="skill-hint" class="dashed-box skill">Q &middot; <span id="skill-name">Skill</span> &times;<span id="skill-count">2</span></div>
     <div id="weapon-note" class="weapon-note"><b>SketchBlaster</b> &mdash; move faster and refill ink on your own paint</div>
   </div>
 
@@ -54,7 +55,8 @@
   <div class="swatches" aria-hidden="true"><i style="--c:#2f66e0"></i><i style="--c:#e6392a"></i><i style="--c:#f0b41c"></i><i style="--c:#3ba24f"></i></div>
   <div id="title-record"></div>
   <button id="play-btn" class="big-btn">PLAY</button>
-  <div class="controls-hint">WASD move &nbsp;&middot;&nbsp; hold Left Click to spray &nbsp;&middot;&nbsp; Right Click throws Paint Bombs &nbsp;&middot;&nbsp; B browses the map &nbsp;&middot;&nbsp; M mutes</div>
+  <button id="daily-btn" class="pill-btn">DAILY RUN</button>
+  <div class="controls-hint">WASD move &nbsp;&middot;&nbsp; hold Left Click to spray &nbsp;&middot;&nbsp; Right Click throws Paint Bombs &nbsp;&middot;&nbsp; Q fires your skill &nbsp;&middot;&nbsp; B browses the map &nbsp;&middot;&nbsp; M mutes</div>
   <div class="footnote">Fan project inspired by Splatoon. Not affiliated with Nintendo.</div>
 </div>
 
@@ -87,6 +89,12 @@
   <div class="menu-blobs"></div>
   <h2 class="select-title">Pick Your Fighter</h2>
   <div id="fighter-cards"></div>
+  <div id="mode-row">
+    <span class="diff-label">MODE</span>
+    <button class="mode-pill selected" data-mode="turf">TURF WAR</button>
+    <button class="mode-pill" data-mode="splat">SPLAT HUNT</button>
+    <button class="mode-pill" data-mode="zones">ZONE CONTROL</button>
+  </div>
   <div id="difficulty-row">
     <span class="diff-label">BOT DIFFICULTY</span>
     <button class="diff-pill" data-diff="easy">EASY</button>
@@ -102,6 +110,7 @@
   <div class="menu-blobs"></div>
   <h2 class="select-title">TIME'S UP!</h2>
   <div id="winner-line"></div>
+  <div id="star-earned"></div>
   <div id="replay-box">
     <div class="replay-label">TURF REPLAY</div>
     <canvas id="replay-canvas" width="330" height="220"></canvas>
@@ -109,6 +118,8 @@
   <div id="result-rows"></div>
   <div class="result-btns">
     <button id="again-btn" class="big-btn">PLAY AGAIN</button>
+    <button id="share-btn" class="pill-btn">SHARE CARD</button>
+    <button id="export-btn" class="pill-btn">EXPORT WEBM</button>
     <button id="menu-btn" class="pill-btn gray">BACK TO MENU</button>
   </div>
   <div class="footnote">Fan project inspired by Splatoon. Not affiliated with Nintendo.</div>
@@ -145,6 +156,12 @@
 <script src="js/systems/paint.js"></script>
 <script src="js/systems/replay.js"></script>
 <script src="js/systems/records.js"></script>
+<script src="js/systems/modes.js"></script>
+<script src="js/systems/skills.js"></script>
+<script src="js/systems/challenges.js"></script>
+<script src="js/systems/daily.js"></script>
+<script src="js/systems/sharecard.js"></script>
+<script src="js/systems/ambient.js"></script>
 <script src="js/systems/entities.js"></script>
 <script src="js/ui/hud.js"></script>
 <script src="js/ui/vignettes.js"></script>

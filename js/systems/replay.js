@@ -91,5 +91,48 @@ const Replay = (() => {
     raf = null;
   }
 
-  return { reset, tick, snap, start, stop };
+  /* the final turf frame, for the share card */
+  function drawFinal(c, w, h) {
+    if (frames.length) drawFrame(c, frames[frames.length - 1], w, h, 1);
+  }
+
+  /* render the timelapse into a WebM download via MediaRecorder */
+  function exportWebM(onDone) {
+    if (!frames.length || typeof MediaRecorder === 'undefined') {
+      pushToast('Video export is not supported in this browser.');
+      if (onDone) onDone(false);
+      return;
+    }
+    const cv = document.createElement('canvas');
+    cv.width = 660; cv.height = 440;
+    const c = cv.getContext('2d');
+    const stream = cv.captureStream(30);
+    const mime = MediaRecorder.isTypeSupported('video/webm;codecs=vp9')
+      ? 'video/webm;codecs=vp9' : 'video/webm';
+    const rec = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 4e6 });
+    const chunks = [];
+    rec.ondataavailable = e => { if (e.data.size) chunks.push(e.data); };
+    rec.onstop = () => {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob(chunks, { type: 'video/webm' }));
+      a.download = `doodle-slam-replay-${Date.now()}.webm`;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+      if (onDone) onDone(true);
+    };
+    rec.start();
+    let t0 = null;
+    const step = now => {
+      if (t0 === null) t0 = now;
+      const t = now - t0;
+      const k = clamp(t / PLAY_MS, 0, 1);
+      const idx = Math.min(frames.length - 1, Math.round(k * (frames.length - 1)));
+      drawFrame(c, frames[idx], cv.width, cv.height, k);
+      if (t < PLAY_MS + 800) requestAnimationFrame(step);
+      else rec.stop();
+    };
+    requestAnimationFrame(step);
+  }
+
+  return { reset, tick, snap, start, stop, drawFinal, exportWebM };
 })();

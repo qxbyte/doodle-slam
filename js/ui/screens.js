@@ -26,10 +26,14 @@ function buildStageCards() {
     cv.width = 232; cv.height = 150;
     drawStageVignette(cv, stage.vignette);
     card.appendChild(cv);
+    const prog = Campaign.stageStars(i);
+    const locked = !Campaign.stageUnlocked(i);
+    if (locked) card.classList.add('locked');
     card.insertAdjacentHTML('beforeend', `
-      <div class="s-label">${stage.label}</div>
+      <div class="s-label">${stage.label}<span class="s-stars">★ ${prog.got}/${prog.total}</span></div>
       <div class="s-name">${stage.name}</div>
-      <div class="s-desc">${stage.desc}</div>`);
+      <div class="s-desc">${locked ? 'Locked — earn a star in the previous stage.' : stage.desc}</div>
+      ${locked ? '<div class="s-lock">🔒</div>' : ''}`);
     wrap.appendChild(card);
   });
 }
@@ -112,9 +116,13 @@ function buildMapCards(stageIdx = null) {
     cv.width = 264; cv.height = 176;
     drawMapPreview(cv, map);
     card.appendChild(cv);
+    const stars = Campaign.stars(map.name);
+    const chs = Campaign.descs(map.name);
     card.insertAdjacentHTML('beforeend', `
-      <div class="m-name">${map.name}</div>
-      <div class="m-desc">${map.desc}</div>`);
+      <div class="m-name">${map.name} <span class="m-stars">${stars.map(s => s ? '★' : '☆').join('')}</span></div>
+      <div class="m-desc">${map.desc}</div>
+      <ul class="m-ch">${chs.map((d, k) =>
+        `<li class="${stars[k] ? 'done' : ''}">${stars[k] ? '★' : '☆'} ${d}</li>`).join('')}</ul>`);
     wrap.appendChild(card);
   });
 }
@@ -232,6 +240,13 @@ function initTitleArt() {
 
 /* ---------------- title career line ---------------- */
 
+function updateDailyButton() {
+  const btn = $('#daily-btn');
+  const best = Daily.best();
+  btn.innerHTML = `DAILY RUN &middot; ${MAPS[Daily.mapIdx()].name}` +
+    (best !== null ? ` &middot; best ${best.toFixed(1)}` : '');
+}
+
 function updateTitleRecord() {
   const el = $('#title-record');
   const r = Records.get();
@@ -243,15 +258,21 @@ function updateTitleRecord() {
 /* ---------------- results ---------------- */
 
 function showResults(game) {
-  const cov = game.lastCoverage;
-  const order = [0, 1, 2, 3].sort((a, b) => cov[b] - cov[a]);
+  const mode = currentMode();
+  const scores = mode.scores(game);
+  const order = [0, 1, 2, 3].sort((a, b) => scores[b] - scores[a]);
   const winner = TEAMS[order[0]];
   const playerWon = order[0] === game.player.team;
 
   $('#winner-line').innerHTML =
-    `<span style="color:${winner.color}">${winner.name}</span> takes the town!` +
+    `<span style="color:${winner.color}">${winner.name}</span> ${mode.winnerLine}` +
     (playerWon ? ' 🎉 That’s you!' : '') +
-    (game.newBest ? ' <span class="record-badge">NEW BEST TURF!</span>' : '');
+    (game.newBest ? ' <span class="record-badge">NEW BEST TURF!</span>' : '') +
+    (game.daily ? `<div class="daily-line">DAILY SCORE: ${(game.lastCoverage[game.player.team] * 100).toFixed(1)}${game.dailyBest ? ' — new daily best!' : ''}</div>` : '');
+
+  const starWrap = $('#star-earned');
+  starWrap.innerHTML = game.newStars
+    .map(d => `<div class="star-earn">★ NEW STAR — ${d}</div>`).join('');
 
   const wrap = $('#result-rows');
   wrap.innerHTML = '';
@@ -269,7 +290,7 @@ function showResults(game) {
           <span class="r-name">${t.name}${you}</span>
           <span class="r-stats">${bits.join(' · ')}</span>
         </span>
-        <span class="r-pct" style="color:${t.dark}">${(cov[tid] * 100).toFixed(1)}%</span>
+        <span class="r-pct" style="color:${t.dark}">${mode.fmt(scores[tid])}</span>
       </div>`);
   });
 

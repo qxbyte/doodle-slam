@@ -11,6 +11,7 @@ registerMap({
   seed: 20260711,
   palette: 'chalk',
   ground: 'chalk',
+  ambient: 'fireflies',
   roadStyle: 'chalk',
   plaza: { x: 600, y: 1300, r: 130 },
   plazaStyle: 'stage',

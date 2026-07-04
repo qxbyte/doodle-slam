@@ -1,0 +1,70 @@
+'use strict';
+
+/* ============================================================
+   Match modes. Each mode defines how the score panel reads,
+   how teams are scored, and how the winner line is phrased.
+   The sim (painting, fighting, events) is shared by all modes.
+   ============================================================ */
+
+const MODES = {
+  turf: {
+    key: 'turf', name: 'TURF WAR', blurb: 'most ground painted wins',
+    panel: 'COVERAGE', winnerLine: 'takes the town!',
+    scores: g => g.lastCoverage.map(c => c * 100),
+    fmt: v => `${v.toFixed(1)}%`,
+  },
+  splat: {
+    key: 'splat', name: 'SPLAT HUNT', blurb: 'most splats wins',
+    panel: 'SPLATS', winnerLine: 'out-splatted everyone!',
+    scores: g => g.stats.map(s => s.splats),
+    fmt: v => `${v}`,
+  },
+  zones: {
+    key: 'zones', name: 'ZONE CONTROL', blurb: 'hold the three zones',
+    panel: 'ZONE PTS', winnerLine: 'holds the zones!',
+    scores: g => g.zoneScores.slice(),
+    fmt: v => `${v}`,
+  },
+};
+
+function currentMode() {
+  return MODES[game.mode] || MODES.turf;
+}
+
+/* zones: the plaza plus two deterministic open spots, spread apart */
+function computeZones(map) {
+  const rng = makeRng(map.seed + 4242);
+  const zones = [{ x: map.plaza.x, y: map.plaza.y, r: 110, owner: -1 }];
+  let guard = 0;
+  while (zones.length < 3 && guard++ < 400) {
+    const x = 160 + rng() * (WORLD.w - 320);
+    const y = 160 + rng() * (WORLD.h - 320);
+    if (OBSTACLES.some(b => circleRectHit(x, y, 130, b.x, b.y, b.w, b.h))) continue;
+    if (zones.some(z => dist(x, y, z.x, z.y) < 550)) continue;
+    zones.push({ x, y, r: 110, owner: -1 });
+  }
+  return zones;
+}
+
+/* who owns a zone right now: the team with the most painted cells
+   inside it (strictly ahead, and at least some paint) */
+function zoneOwner(z) {
+  const counts = [0, 0, 0, 0];
+  const gr = Math.ceil(z.r / CELL);
+  const gx0 = Math.floor(z.x / CELL), gy0 = Math.floor(z.y / CELL);
+  for (let gy = gy0 - gr; gy <= gy0 + gr; gy++) {
+    for (let gx = gx0 - gr; gx <= gx0 + gr; gx++) {
+      if (gx < 0 || gy < 0 || gx >= GRID_W || gy >= GRID_H) continue;
+      const cx = gx * CELL + CELL / 2, cy = gy * CELL + CELL / 2;
+      if (dist(z.x, z.y, cx, cy) > z.r) continue;
+      const v = grid[gy * GRID_W + gx];
+      if (v >= 0) counts[v]++;
+    }
+  }
+  let best = 0, owner = -1, tie = false;
+  counts.forEach((c, i) => {
+    if (c > best) { best = c; owner = i; tie = false; }
+    else if (c === best && c > 0) tie = true;
+  });
+  return tie ? -1 : owner;
+}

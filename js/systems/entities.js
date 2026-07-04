@@ -36,6 +36,8 @@ class Fighter {
     this.firingVisual = 0;
     this.vx = 0;           // carried momentum, only matters on ice
     this.vy = 0;
+    this.skillUses = 2;    // active skill charges (Q)
+    this.dashT = 0;        // Ram Dash time remaining
     const s = SPAWNS[teamId];
     this.x = s.x; this.y = s.y;
     // bot brain
@@ -236,6 +238,11 @@ class Fighter {
     if (this.bombs > 0 && foe && foeD > 120 && Math.random() < diff.bombProb) {
       this.throwBomb(game, foe.x, foe.y);
       game.toast(`${this.name} threw a Paint Bomb!`);
+    }
+
+    // sometimes burn a skill charge when engaged
+    if (this.skillUses > 0 && foe && Math.random() < 0.002) {
+      Skills.cast(game, this);
     }
   }
 }

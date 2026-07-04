@@ -9,6 +9,7 @@ registerMap({
   stage: 4,
   seed: 20260710,
   ground: 'snow',
+  ambient: 'snow',
   plaza: { x: 1150, y: 1250, r: 140 },
   plazaStyle: 'campfire',
   buildings: [

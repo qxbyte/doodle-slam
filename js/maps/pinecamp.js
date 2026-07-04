@@ -10,6 +10,7 @@ registerMap({
   seed: 20260705,
   plaza: { x: 1200, y: 1000, r: 140 },
   plazaStyle: 'campfire',
+  ambient: 'leaves',
   roadStyle: 'dirt',
   buildings: [
     { x: 300,  y: 250,  w: 150, h: 150, kind: 'tower' },

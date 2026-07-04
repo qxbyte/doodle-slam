@@ -43,20 +43,27 @@ function updateHUD(game) {
   ui.timer.textContent = formatTime(game.timeLeft);
   ui.timer.classList.toggle('urgent', game.timeLeft <= 30);
 
-  // coverage
-  const cov = game.lastCoverage;
+  // score panel adapts to the match mode
+  const mode = currentMode();
+  $('#panel-title').textContent = mode.panel;
+  const scores = mode.scores(game);
+  const top = Math.max(1, ...scores);
   for (let i = 0; i < 4; i++) {
-    const pct = cov[i] * 100;
-    ui.covRows[i].querySelector('.c-fill').style.width = `${Math.min(100, pct * 2.4)}%`;
-    ui.covRows[i].querySelector('.c-pct').textContent = `${pct.toFixed(1)}%`;
+    const w = mode.key === 'turf'
+      ? Math.min(100, scores[i] * 2.4)
+      : (scores[i] / top) * 100;
+    ui.covRows[i].querySelector('.c-fill').style.width = `${w}%`;
+    ui.covRows[i].querySelector('.c-pct').textContent = mode.fmt(scores[i]);
   }
 
-  // player bars
+  // player bars + skill charges
   const p = game.player;
   ui.hpFill.style.width = `${p.hp}%`;
   ui.inkFill.style.width = `${p.ink}%`;
   ui.bombCount.textContent = p.bombs;
   ui.bombHint.style.opacity = p.bombs > 0 ? 1 : 0.35;
+  $('#skill-count').textContent = p.skillUses;
+  $('#skill-hint').style.opacity = p.skillUses > 0 ? 1 : 0.35;
 }
 
 /* red vignette pulse when the player takes damage */
@@ -73,6 +80,7 @@ function setWeaponNote(teamId) {
   const w = WEAPONS[teamId];
   $('#weapon-note').innerHTML =
     `<b>${w.name}</b> &mdash; ${w.blurb}. Move faster and refill ink on your own paint.`;
+  $('#skill-name').textContent = SKILLS[teamId].name;
 }
 
 /* big centre banner when SLAM TIME hits */

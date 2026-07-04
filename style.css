@@ -360,6 +360,58 @@ html, body {
   100% { transform: scale(1); opacity: 0; }
 }
 
+/* stars, locks & campaign bits */
+.s-stars {
+  float: right;
+  color: var(--yellow);
+  -webkit-text-stroke: 0.5px var(--ink);
+  letter-spacing: 0.04em;
+}
+.stage-card { position: relative; }
+.stage-card.locked { filter: grayscale(0.9); opacity: 0.62; }
+.stage-card .s-lock {
+  position: absolute;
+  top: 10px; right: 12px;
+  font-size: 26px;
+}
+.stage-card.deny { animation: deny-shake 0.35s ease; }
+@keyframes deny-shake {
+  0%, 100% { translate: 0 0; }
+  25% { translate: -6px 0; }
+  50% { translate: 6px 0; }
+  75% { translate: -4px 0; }
+}
+.m-stars { color: var(--yellow); -webkit-text-stroke: 0.5px var(--ink); font-size: 16px; }
+.m-ch {
+  list-style: none;
+  margin-top: 8px;
+  padding-top: 7px;
+  border-top: 1.5px dashed #d8d6cf;
+}
+.m-ch li { font-size: 11px; font-weight: 700; color: #9a9a96; line-height: 1.55; }
+.m-ch li.done { color: #b5830f; }
+
+#star-earned { display: flex; flex-direction: column; gap: 6px; z-index: 1; }
+.star-earn {
+  background: var(--yellow);
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  box-shadow: 0 3px 0 rgba(28,28,26,0.8);
+  padding: 5px 18px;
+  font-size: 13px;
+  font-weight: 900;
+  animation: badge-pop 0.5s ease backwards;
+}
+.daily-line {
+  font-family: var(--font-body);
+  font-style: normal;
+  font-size: 15px;
+  font-weight: 900;
+  color: var(--red);
+  margin-top: 6px;
+}
+#daily-btn { z-index: 1; }
+
 /* ================= map cards ================= */
 
 #map-cards {
@@ -580,6 +632,11 @@ html, body {
   padding: 6px 9px;
   margin: 9px 0 7px;
 }
+.dashed-box.skill {
+  border-color: var(--blue);
+  color: var(--blue);
+  margin-top: 0;
+}
 .weapon-note { font-size: 10.5px; font-weight: 600; color: #8a8a86; line-height: 1.4; }
 
 #minimap {
@@ -646,7 +703,30 @@ html, body {
   100% { transform: translate(-50%, -50%) scale(1.05); opacity: 0; }
 }
 
-/* ================= difficulty pills ================= */
+/* ================= mode & difficulty pills ================= */
+
+#mode-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  z-index: 1;
+}
+.mode-pill {
+  font-family: var(--font-body);
+  font-weight: 900;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  padding: 6px 16px;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  background: #fff;
+  color: #9a9a96;
+  cursor: pointer;
+  box-shadow: 0 3px 0 rgba(28,28,26,0.85);
+  transition: transform 0.08s ease;
+}
+.mode-pill:hover { transform: translateY(-2px); }
+.mode-pill.selected { background: var(--blue); border-color: var(--ink); color: #fff; }
 
 #difficulty-row {
   display: flex;

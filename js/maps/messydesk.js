@@ -10,6 +10,7 @@ registerMap({
   stage: 6,
   seed: 20260707,
   ground: 'desk',
+  ambient: 'dust',
   roadStyle: 'tape',
   plaza: { x: 950, y: 1000, r: 140 },
   plazaStyle: 'ink',

@@ -8,7 +8,7 @@
 - `js/core/` — 与玩法无关的基础层（数学、常量、手绘绘制原语）。不得反向依赖上层。
 - `js/maps/` — 每张地图一个**纯数据**文件，调用 `registerMap({...})`；schema 见 `registry.js` 顶部注释。地图文件里不写渲染/玩法逻辑。
 - `js/world/` — 地图数据 → 世界。`render.js` 是**插件核心**（grounds/roadStyles/features/plazas/obstacles 五个注册表），`themes/*.js` 每主题一个文件向核心注册绘制器；`collision.js` 阻挡查询 + 冰面 `onIce`。新地图元素 = schema 加字段 + 对应主题文件里 `registerFeature/registerObstacles`；新主题 = 新 theme 文件 + index.html 一行 script，核心零改动。
-- `js/systems/` — 玩法系统（paint 归属网格、entities/bot AI）。新玩法机制加新文件，不往 game.js 堆。
+- `js/systems/` — 玩法系统，一职责一文件：paint 归属网格、entities/bot、modes 比赛模式、skills 主动技能、challenges 战役、daily 每日、sharecard 分享卡、ambient 环境粒子、replay 回放/导出、records 战绩、audio 音效。新机制加新文件，不往 game.js 堆。
 - `js/ui/` — DOM HUD 与菜单屏幕。
 - `js/game.js` — 只做状态机、输入、相机、主循环的编排；具体逻辑下放到 systems。
 

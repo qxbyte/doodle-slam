@@ -9,6 +9,7 @@ registerMap({
   stage: 7,
   seed: 20260708,
   ground: 'moon',
+  ambient: 'stars',
   roadStyle: 'dirt',
   plaza: { x: 1200, y: 800, r: 150 },
   plazaStyle: 'crater',

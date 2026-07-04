@@ -2,6 +2,8 @@
 
 一个手绘涂鸦画风的 Splatoon 式地盘泼漆对战小游戏（fan project，复刻自 Higgsfield 上的一个演示视频）。
 
+**在线试玩：https://qxbyte.github.io/doodle-slam/**
+
 纯静态网页：HTML + CSS + 原生 JavaScript + Canvas 2D，**零依赖、无构建步骤**。
 
 ## 运行
@@ -20,6 +22,12 @@ python3 -m http.server 8080
 ## 玩法
 
 - 流程：**选阶段**（STAGE 1 城市 / STAGE 2 野外）→ **选地图** → **选 Fighter**（ZURI 蓝 / JAX 红 / NIA 黄 / KOBI 绿）→ 与 3 个 bot 对战
+- **战役**：每张地图 3 个星级挑战（获胜/覆盖率/击杀等），旅程线上一站拿到星星才解锁下一站
+- **三种模式**：TURF WAR 覆盖率 / SPLAT HUNT 击杀数 / ZONE CONTROL 三点占领计分
+- **角色技能（Q，每局 2 次）**：ZURI 涂漆无人机 / JAX 冲撞突进 / NIA 全图贯穿狙 / KOBI 漆墙
+- **DAILY RUN**：每天固定地图+角色，比拼覆盖率分数，本地记录当日最佳
+- **分享与导出**：结算页一键生成战报 PNG 分享卡、TURF REPLAY 导出 WebM 视频
+- **环境粒子**：雪原飘雪 / 深海气泡 / 黑板萤火虫 / 林间落叶 / 书桌浮尘 / 月面流星
 - 八大阶段：城市 DOWNTOWN/RIVERSIDE · 野外 PINE CAMP/FERN HOLLOW · 海滨 SUNNY SHORE · 深海 THE DEEP · 雪山 POWDER PEAKS · 午夜游乐园 MIDNIGHT FAIR（黑板粉笔反色）· 书桌 MESSY DESK · 月球 CRATER FIELD
 - **冰面机制**（POWDER PEAKS）：冰湖可通行可涂色但打滑——惯性滑行、转向迟缓、停不下来
 - **洋流机制**（THE DEEP）：踩进洋流带会被持续冲走，借流赶路或被冲进敌阵
@@ -71,8 +79,14 @@ js/
       deep.js         海床地面、洋流/海带/鱼群/水母、巨蚌广场、沉船/珊瑚/铁锚等
   systems/             玩法系统
     audio.js          WebAudio 合成音效（射击/爆炸/事件/UI，零音频文件）
-    replay.js         涂色回放：比赛网格快照 + 结算页 timelapse 播放
+    replay.js         涂色回放：网格快照 + timelapse 播放 + WebM 导出
     records.js        localStorage 生涯战绩（场次/胜场/最佳覆盖率）
+    modes.js          比赛模式（turf/splat/zones 计分与胜负、占领区计算）
+    skills.js         角色主动技能（Q）：无人机/冲撞/贯穿狙/漆墙
+    challenges.js     战役星级挑战、进度存储、阶段解锁
+    daily.js          每日挑战（日期种子定地图与角色）
+    sharecard.js      战报分享卡 PNG 生成与下载
+    ambient.js        环境粒子层（≤46 粒子，屏幕空间，逐图配置）
     paint.js          泼漆画布 + 归属网格（覆盖率/小地图/踩漆判定）
     entities.js       角色、武器、弹丸、炸弹、道具、bot AI（三档难度）
   ui/
@@ -89,7 +103,7 @@ js/
 
 ## 调试参数
 
-- `?auto=N` 跳过菜单直接以队伍 N（0-3）开局；`&map=M` 指定地图（0-9）
+- `?auto=N` 跳过菜单直接以队伍 N（0-3）开局；`&map=M` 指定地图（0-9）；`&mode=turf|splat|zones` 指定模式
 - `&ff=S` 开局快进 S 秒；`&mx=X&my=Y` 固定鼠标位置（配合边缘平移测试）
 - `?screen=stages` / `?screen=maps` / `?screen=select` 直接打开某个菜单
 

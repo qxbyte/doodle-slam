@@ -11,6 +11,7 @@ registerMap({
   seed: 20260712,
   palette: 'deep',
   ground: 'seabed',
+  ambient: 'bubbles',
   plaza: { x: 800, y: 950, r: 130 },
   plazaStyle: 'clam',
   buildings: [

@@ -20,6 +20,8 @@ const game = {
   state: 'title',        // title | stages | maps | select | match | results
   demo: false,           // attract mode: bots play behind the menus
   browse: false,         // sightseeing: free camera, fighter stands idle
+  daily: false,          // this match is today's Daily Run
+  mode: 'turf',          // turf | splat | zones (see systems/modes.js)
   stageIdx: 0,           // chosen on the stage-select screen
   mapIdx: 0,             // chosen on the map-select screen
   difficulty: 'normal',  // bot tuning, chosen on the fighter-select screen
@@ -30,6 +32,10 @@ const game = {
   pickups: [],
   rockets: [],
   fx: [],                // transient juice: impact bursts, SPLAT! text
+  skillFx: [],           // ongoing skill effects (paint drones)
+  zones: [],             // zone-control capture circles
+  zoneScores: [0, 0, 0, 0],
+  newStars: [],          // campaign stars earned this match
   shake: 0,              // screen shake magnitude, decays fast
   slam: false,           // SLAM TIME reached
   lastTickAt: -1,
@@ -95,6 +101,9 @@ addEventListener('keydown', e => {
     if (game.browse) setBrowse(false);   // Space exits sightseeing
   }
   if (e.code === 'KeyB' && game.state === 'match') setBrowse(!game.browse);
+  if (e.code === 'KeyQ' && game.state === 'match' && !game.browse && !game.demo) {
+    Skills.cast(game, game.player);
+  }
   if (e.code === 'KeyM') {
     pushToast(SFX.toggleMute() ? 'Sound off' : 'Sound on');
   }
@@ -143,6 +152,9 @@ function resetMatchState() {
   game.slam = false;
   game.lastTickAt = -1;
   game.stats = TEAMS.map(() => ({ splats: 0, downs: 0, buttons: 0 }));
+  game.skillFx = [];
+  game.zoneScores = [0, 0, 0, 0];
+  game.newStars = [];
   for (let i = 0; i < 4; i++) spawnPickup();
 }
 
@@ -196,8 +208,10 @@ const demoCam = { x: WORLD.w / 2, y: WORLD.h / 2, tx: WORLD.w / 2, ty: WORLD.h /
 
 function startDemoMatch() {
   game.demo = true;
+  game.zones = [];
   game.mapIdx = Math.floor(Math.random() * MAPS.length);
   setMap(game.mapIdx);
+  Ambient.set(CURRENT_MAP.ambient);
   initPaint();
   game.fighters = TEAMS.map(t => new Fighter(t.id, false));
   game.player = game.fighters[0];
@@ -211,8 +225,11 @@ function startDemoMatch() {
 function startMatch(playerTeam) {
   Replay.stop();
   game.demo = false;
+  game.daily = false;
   setMap(game.mapIdx);   // builds the sketch layers, sets OBSTACLES/PLAZA
+  Ambient.set(CURRENT_MAP.ambient);
   initPaint();
+  game.zones = game.mode === 'zones' ? computeZones(CURRENT_MAP) : [];
   game.fighters = TEAMS.map(t => new Fighter(t.id, t.id === playerTeam));
   game.player = game.fighters[playerTeam];
   resetMatchState();
@@ -224,13 +241,24 @@ function startMatch(playerTeam) {
   game.state = 'match';
   showScreen(null);
   SFX.play('start');
-  pushToast('Cover the most turf before time runs out!');
+  pushToast(`${currentMode().name} — ${currentMode().blurb}!`);
+}
+
+/* today's fixed setup: same map and fighter for everyone */
+function startDailyMatch() {
+  game.mode = 'turf';
+  game.mapIdx = Daily.mapIdx();
+  startMatch(Daily.team());
+  game.daily = true;
 }
 
 function leaveMatch() {
   Replay.stop();
   game.state = 'title';
   updateTitleRecord();
+  updateDailyButton();
+  buildStageCards();       // star counts / unlocks may have changed
+  buildMapCards(game.stageIdx);
   showScreen('#screen-title');
   if (!prefersReducedMotion()) startDemoMatch();
 }
@@ -243,11 +271,16 @@ function endMatch() {
   if (game.demo) { startDemoMatch(); return; }   // attract mode just loops
   game.lastCoverage = coverage();
   Replay.snap();   // capture the true final frame
-  const order = [0, 1, 2, 3].sort((a, b) => game.lastCoverage[b] - game.lastCoverage[a]);
+  const scores = currentMode().scores(game);
+  const order = [0, 1, 2, 3].sort((a, b) => scores[b] - scores[a]);
   game.newBest = Records.addMatch({
     won: order[0] === game.player.team,
     coverage: game.lastCoverage[game.player.team] * 100,
   });
+  game.newStars = Campaign.evaluate(game);
+  if (game.daily) {
+    game.dailyBest = Daily.submit(Number((game.lastCoverage[game.player.team] * 100).toFixed(1)));
+  }
   game.state = 'results';
   SFX.play('end');
   showResults(game);
@@ -431,6 +464,9 @@ function update(dt) {
     }
   }
 
+  // ongoing skill effects (drones, dashes)
+  Skills.update(game, dt);
+
   // transient fx + screen shake decay
   for (let i = game.fx.length - 1; i >= 0; i--) {
     game.fx[i].t += dt;
@@ -450,6 +486,11 @@ function update(dt) {
   if (game.covTimer > 0.5) {
     game.covTimer = 0;
     game.lastCoverage = coverage();
+    // zone control: each tick the leading team in a zone scores a point
+    for (const z of game.zones) {
+      z.owner = zoneOwner(z);
+      if (z.owner >= 0) game.zoneScores[z.owner]++;
+    }
   }
 
   // turf replay snapshots
@@ -512,6 +553,26 @@ function render() {
   ctx.drawImage(groundLayer, 0, 0);
   ctx.drawImage(paintCanvas, 0, 0);
   ctx.drawImage(topLayer, 0, 0);
+
+  // zone-control capture circles, tinted by their current owner
+  for (const z of game.zones) {
+    const col = z.owner >= 0 ? TEAMS[z.owner].color : INK_LIGHT;
+    ctx.fillStyle = z.owner >= 0 ? TEAMS[z.owner].color + '22' : 'rgba(128,128,128,0.06)';
+    ctx.beginPath(); ctx.arc(z.x, z.y, z.r, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = col;
+    ctx.lineWidth = 3;
+    ctx.setLineDash([12, 10]);
+    ctx.beginPath(); ctx.arc(z.x, z.y, z.r, 0, Math.PI * 2); ctx.stroke();
+    ctx.setLineDash([]);
+    // little zone flag
+    ctx.strokeStyle = INK;
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(z.x, z.y + 6); ctx.lineTo(z.x, z.y - 20); ctx.stroke();
+    ctx.fillStyle = col;
+    ctx.beginPath();
+    ctx.moveTo(z.x, z.y - 20); ctx.lineTo(z.x + 15, z.y - 15); ctx.lineTo(z.x, z.y - 10);
+    ctx.closePath(); ctx.fill(); ctx.stroke();
+  }
 
   // pickups: bomb in a dashed circle (bobbing freezes while paused)
   for (const pk of game.pickups) {
@@ -597,10 +658,22 @@ function render() {
     ctx.fillText(label, f.x, f.y - 31.5);
   }
 
+  // skill drones
+  Skills.draw(ctx, game);
+
   // transient juice: impact bursts + SPLAT! comic text
   for (const f of game.fx) {
     const k = f.t / f.dur;
-    if (f.type === 'burst') {
+    if (f.type === 'line') {
+      ctx.globalAlpha = 1 - k;
+      ctx.strokeStyle = f.color;
+      ctx.lineWidth = 6 * (1 - k) + 1;
+      ctx.beginPath();
+      ctx.moveTo(f.x1, f.y1);
+      ctx.lineTo(f.x2, f.y2);
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+    } else if (f.type === 'burst') {
       const ease = 1 - (1 - k) * (1 - k);
       ctx.globalAlpha = 1 - k;
       ctx.strokeStyle = f.color;
@@ -638,6 +711,9 @@ function render() {
 
   ctx.restore();
 
+  // ambient weather overlay (screen space)
+  Ambient.draw(ctx);
+
   // crosshair (drawn last, in screen space; hidden while sightseeing)
   if (game.state === 'match' && !game.browse) {
     const mx = input.mouseX, my = input.mouseY;
@@ -657,6 +733,7 @@ function frame(now) {
   const dt = Math.min((now - lastT) / 1000, 0.05);
   lastT = now;
   update(dt);
+  if (game.state === 'match' || game.state === 'results' || game.demo) Ambient.update(dt);
   render();
   requestAnimationFrame(frame);
 }
@@ -672,6 +749,7 @@ function boot() {
   attachSplatFX($('#screen-stages'));
   attachSplatFX($('#screen-title'));
   updateTitleRecord();
+  updateDailyButton();
 
   // flow: title -> stage select -> map select -> fighter select -> match
   $('#play-btn').addEventListener('click', () => {
@@ -681,7 +759,14 @@ function boot() {
   $('#stage-cards').addEventListener('click', e => {
     const card = e.target.closest('.stage-card');
     if (!card) return;
-    game.stageIdx = Number(card.dataset.stage);
+    const idx = Number(card.dataset.stage);
+    if (!Campaign.stageUnlocked(idx)) {
+      card.classList.remove('deny');
+      void card.offsetWidth;
+      card.classList.add('deny');
+      return;
+    }
+    game.stageIdx = idx;
     buildMapCards(game.stageIdx);
     game.state = 'maps';
     showScreen('#screen-maps');
@@ -709,6 +794,14 @@ function boot() {
     const card = e.target.closest('.fighter-card');
     if (card) startMatch(Number(card.dataset.team));
   });
+  $('#mode-row').addEventListener('click', e => {
+    const pill = e.target.closest('.mode-pill');
+    if (!pill) return;
+    game.mode = pill.dataset.mode;
+    for (const m of document.querySelectorAll('.mode-pill')) {
+      m.classList.toggle('selected', m === pill);
+    }
+  });
   $('#difficulty-row').addEventListener('click', e => {
     const pill = e.target.closest('.diff-pill');
     if (!pill) return;
@@ -719,6 +812,17 @@ function boot() {
   });
   $('#leave-btn').addEventListener('click', leaveMatch);
   $('#browse-btn').addEventListener('click', () => setBrowse(!game.browse));
+  $('#daily-btn').addEventListener('click', startDailyMatch);
+  $('#share-btn').addEventListener('click', () => downloadShareCard(game));
+  $('#export-btn').addEventListener('click', () => {
+    const btn = $('#export-btn');
+    btn.disabled = true;
+    btn.textContent = 'RECORDING…';
+    Replay.exportWebM(() => {
+      btn.disabled = false;
+      btn.textContent = 'EXPORT WEBM';
+    });
+  });
   $('#again-btn').addEventListener('click', () => startMatch(game.player.team));
   $('#menu-btn').addEventListener('click', leaveMatch);
   attachDragScroll($('#stage-path'));
@@ -741,6 +845,7 @@ function boot() {
   // debug hooks: ?auto=N jumps into a match as team N (?map=M picks the map),
   // ?ff=S fast-forwards S seconds, ?mx/?my pin the mouse, ?screen=X opens a menu
   const params = new URLSearchParams(location.search);
+  if (params.has('mode') && MODES[params.get('mode')]) game.mode = params.get('mode');
   if (params.has('map')) {
     game.mapIdx = clamp(Number(params.get('map')) || 0, 0, MAPS.length - 1);
     game.stageIdx = MAPS[game.mapIdx].stage;

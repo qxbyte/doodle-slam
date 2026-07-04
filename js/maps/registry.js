@@ -86,6 +86,7 @@ function registerMap(def) {
     bunting: [], chalkstars: [],                      // fair scenery
     currents: [], kelp: [], fishes: [], jellies: [],  // deep scenery
     plazaStyle: 'fountain', roadStyle: 'asphalt',
+    ambient: null,        // snow | bubbles | fireflies | leaves | dust | stars
   }, def));
 }
 
