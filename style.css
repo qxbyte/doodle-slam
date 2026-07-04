@@ -990,8 +990,8 @@ body.touch .weapon-note { display: none; }
 #play-bang.mode-adventure #play-btn { background: var(--blue); color: #fff; }
 
 #mode-dot {
-  width: 48px;
-  height: 48px;
+  width: 62px;
+  height: 62px;
   border: 3px solid var(--ink);
   border-radius: 50%;
   background: var(--yellow);
@@ -1004,9 +1004,9 @@ body.touch .weapon-note { display: none; }
   content: '';
   position: absolute;
   left: 50%; top: 50%;
-  width: 11px; height: 11px;
-  border-right: 3.5px solid currentColor;
-  border-bottom: 3.5px solid currentColor;
+  width: 14px; height: 14px;
+  border-right: 4px solid currentColor;
+  border-bottom: 4px solid currentColor;
   transform: translate(-50%, -32%) rotate(-135deg);   /* chevron up */
   transition: transform 0.2s ease;
   color: var(--ink);
@@ -1040,9 +1040,9 @@ body.touch .weapon-note { display: none; }
 .fan-career { background: var(--yellow); color: var(--ink); }
 .fan-adventure { background: var(--blue); color: #fff; }
 #play-bang.open .fan-opt { opacity: 1; pointer-events: auto; }
-#play-bang.open .fan-career { transform: translate(-30px, -66px) rotate(-6deg) scale(1); }
+#play-bang.open .fan-career { transform: translate(52px, -60px) rotate(5deg) scale(1); }
 #play-bang.open .fan-adventure {
-  transform: translate(6px, -128px) rotate(4deg) scale(1);
+  transform: translate(96px, -118px) rotate(9deg) scale(1);
   transition-delay: 0.05s;
 }
 .fan-opt.selected::before {
