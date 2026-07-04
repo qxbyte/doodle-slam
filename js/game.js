@@ -65,9 +65,7 @@ const input = {
 };
 
 const cam = { x: 0, y: 0, zoom: 1 };
-const camPan = { x: 0, y: 0 };      // extra offset from edge-of-screen scouting
-const EDGE_MARGIN = 36;             // px from the window edge that triggers panning
-const EDGE_PAN_SPEED = 520;         // world px/s
+const EDGE_MARGIN = 36;   // px from the window edge that moves the browse camera
 
 /* Big windows zoom in so the visible slice of the town stays ~1400x900
    world px — otherwise the camera has no room to move on large screens */
@@ -94,8 +92,7 @@ addEventListener('keydown', e => {
   if (e.code === 'Escape' && game.state === 'match') leaveMatch();
   if (e.code === 'Space' && game.state === 'match') {
     e.preventDefault();
-    if (game.browse) setBrowse(false);   // Space also exits sightseeing
-    camPan.x = camPan.y = 0;             // snap the camera back onto the player
+    if (game.browse) setBrowse(false);   // Space exits sightseeing
   }
   if (e.code === 'KeyB' && game.state === 'match') setBrowse(!game.browse);
   if (e.code === 'KeyM') {
@@ -166,8 +163,6 @@ function setBrowse(on) {
     browseCam.y = game.player.y;
     browseCam.vx = browseCam.vy = 0;
     if (!was) pushToast('Match paused — fly around with WASD or the screen edges. B returns.');
-  } else {
-    camPan.x = camPan.y = 0;
   }
 }
 
@@ -223,7 +218,6 @@ function startMatch(playerTeam) {
   resetMatchState();
   game.newBest = false;
   Replay.reset();
-  camPan.x = camPan.y = 0;
   ui.feed.innerHTML = '';
   setWeaponNote(playerTeam);
   setBrowse(false);
@@ -479,40 +473,13 @@ function update(dt) {
     return;   // no HUD, no player camera while in the menus
   }
 
+  // the camera simply keeps the player centred — free looking lives in
+  // browse mode. It may look past the paper edge (desk shows) so the
+  // player stays centred even in map corners.
   cam.zoom = camZoom();
   const vw = innerWidth / cam.zoom, vh = innerHeight / cam.zoom;   // world px in view
-  let ex = 0, ey = 0;
-  if (input.mouseInside) {
-    if (input.mouseX < EDGE_MARGIN) ex = -1;
-    else if (input.mouseX > innerWidth - EDGE_MARGIN) ex = 1;
-    if (input.mouseY < EDGE_MARGIN) ey = -1;
-    else if (input.mouseY > innerHeight - EDGE_MARGIN) ey = 1;
-  }
-
-  // camera follows player; mouse at the window edge pans it to scout,
-  // and it eases back once the mouse leaves the edge (Space snaps back)
-  if (ex || ey) {
-    camPan.x += ex * EDGE_PAN_SPEED * dt;
-    camPan.y += ey * EDGE_PAN_SPEED * dt;
-  } else {
-    const ease = Math.min(1, dt * 6);
-    camPan.x = lerp(camPan.x, 0, ease);
-    camPan.y = lerp(camPan.y, 0, ease);
-  }
-
-  // scouting range is capped so the player can never leave the screen
-  camPan.x = clamp(camPan.x, -vw * 0.42, vw * 0.42);
-  camPan.y = clamp(camPan.y, -vh * 0.42, vh * 0.42);
-
-  // the camera may look past the paper edge (desk shows), so the player
-  // stays centred even in map corners; only the screen centre is bounded
-  const camMinX = -vw / 2, camMaxX = WORLD.w - vw / 2;
-  const camMinY = -vh / 2, camMaxY = WORLD.h - vh / 2;
-  // keep the pan offset within what the camera can actually show
-  camPan.x = clamp(camPan.x, camMinX - (game.player.x - vw / 2), camMaxX - (game.player.x - vw / 2));
-  camPan.y = clamp(camPan.y, camMinY - (game.player.y - vh / 2), camMaxY - (game.player.y - vh / 2));
-  cam.x = clamp(game.player.x - vw / 2 + camPan.x, camMinX, camMaxX);
-  cam.y = clamp(game.player.y - vh / 2 + camPan.y, camMinY, camMaxY);
+  cam.x = clamp(game.player.x - vw / 2, -vw / 2, WORLD.w - vw / 2);
+  cam.y = clamp(game.player.y - vh / 2, -vh / 2, WORLD.h - vh / 2);
 
   updateHUD(game);
   renderMinimap(game);
