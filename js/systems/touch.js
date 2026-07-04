@@ -22,8 +22,8 @@ const Touch = (() => {
     if (!active) return;
     document.body.classList.add('touch');
     // hints assume a mouse otherwise
-    $('#bomb-hint').innerHTML = 'PAINT BOMB &times;<span id="bomb-count">0</span> &mdash; tap &#128163;';
-    $('#skill-hint').innerHTML = '<span id="skill-name">Skill</span> &times;<span id="skill-count">2</span> &mdash; tap Q';
+    $('#bomb-hint').innerHTML = L('PAINT BOMB &times;{s} &mdash; tap &#128163;', { s: '<span id="bomb-count">0</span>' });
+    $('#skill-hint').innerHTML = L('{s1} &times;{s2} &mdash; tap Q', { s1: '<span id="skill-name">Skill</span>', s2: '<span id="skill-count">2</span>' });
     ui.bombCount = $('#bomb-count');   // the rewrite replaced the cached span
     els = {
       stick: $('#stick-base'),

@@ -32,7 +32,7 @@ function buildStageCards() {
     card.insertAdjacentHTML('beforeend', `
       <div class="s-label">${stage.label}<span class="s-stars">★ ${prog.got}/${prog.total}</span></div>
       <div class="s-name">${stage.name}</div>
-      <div class="s-desc">${locked ? 'Locked — earn a star in the previous stage.' : stage.desc}</div>
+      <div class="s-desc">${locked ? L('Locked — earn a star in the previous stage.') : L(stage.desc)}</div>
       ${locked ? '<div class="s-lock">🔒</div>' : ''}`);
     wrap.appendChild(card);
   });
@@ -120,7 +120,7 @@ function buildMapCards(stageIdx = null) {
     const chs = Campaign.descs(map.name);
     card.insertAdjacentHTML('beforeend', `
       <div class="m-name">${map.name} <span class="m-stars">${stars.map(s => s ? '★' : '☆').join('')}</span></div>
-      <div class="m-desc">${map.desc}</div>
+      <div class="m-desc">${L(map.desc)}</div>
       <ul class="m-ch">${chs.map((d, k) =>
         `<li class="${stars[k] ? 'done' : ''}">${stars[k] ? '★' : '☆'} ${d}</li>`).join('')}</ul>`);
     wrap.appendChild(card);
@@ -216,7 +216,7 @@ function buildFighterCards() {
     card.insertAdjacentHTML('beforeend', `
       <div class="f-name" style="color:${team.color}">${team.name}</div>
       <div class="f-weapon">${w.name}</div>
-      <div class="f-desc">${team.desc} ${w.blurb[0].toUpperCase() + w.blurb.slice(1)}.</div>`);
+      <div class="f-desc">${L(team.desc)} ${(b => b[0].toUpperCase() + b.slice(1))(L(w.blurb))}.</div>`);
     wrap.appendChild(card);
   }
 }
@@ -243,8 +243,8 @@ function initTitleArt() {
 function updateDailyButton() {
   const btn = $('#daily-btn');
   const best = Daily.best();
-  btn.innerHTML = `DAILY RUN &middot; ${MAPS[Daily.mapIdx()].name}` +
-    (best !== null ? ` &middot; best ${best.toFixed(1)}` : '');
+  btn.innerHTML = `${L('DAILY RUN')} &middot; ${MAPS[Daily.mapIdx()].name}` +
+    (best !== null ? ` &middot; ${L('best {b}', { b: best.toFixed(1) })}` : '');
 }
 
 function updateTitleRecord() {
@@ -252,7 +252,7 @@ function updateTitleRecord() {
   const r = Records.get();
   if (!r.plays) { el.textContent = ''; return; }
   el.textContent =
-    `${r.plays} match${r.plays > 1 ? 'es' : ''} · ${r.wins} win${r.wins === 1 ? '' : 's'} · best turf ${r.best.toFixed(1)}%`;
+    L('{p} matches · {w} wins · best turf {b}%', { p: r.plays, w: r.wins, b: r.best.toFixed(1) });
 }
 
 /* ---------------- results ---------------- */
@@ -265,23 +265,26 @@ function showResults(game) {
   const playerWon = order[0] === game.player.team;
 
   $('#winner-line').innerHTML =
-    `<span style="color:${winner.color}">${winner.name}</span> ${mode.winnerLine}` +
-    (playerWon ? ' 🎉 That’s you!' : '') +
-    (game.newBest ? ' <span class="record-badge">NEW BEST TURF!</span>' : '') +
-    (game.daily ? `<div class="daily-line">DAILY SCORE: ${(game.lastCoverage[game.player.team] * 100).toFixed(1)}${game.dailyBest ? ' — new daily best!' : ''}</div>` : '');
+    `<span style="color:${winner.color}">${winner.name}</span> ${L(mode.winnerLine)}` +
+    (playerWon ? L(' 🎉 That’s you!') : '') +
+    (game.newBest ? ` <span class="record-badge">${L('NEW BEST TURF!')}</span>` : '') +
+    (game.daily ? `<div class="daily-line">${L('DAILY SCORE: {v}', { v: (game.lastCoverage[game.player.team] * 100).toFixed(1) })}${game.dailyBest ? L(' — new daily best!') : ''}</div>` : '');
 
   const starWrap = $('#star-earned');
   starWrap.innerHTML = game.newStars
-    .map(d => `<div class="star-earn">★ NEW STAR — ${d}</div>`).join('');
+    .map(d => `<div class="star-earn">${L('★ NEW STAR — {d}', { d })}</div>`).join('');
 
   const wrap = $('#result-rows');
   wrap.innerHTML = '';
   order.forEach((tid, i) => {
     const t = TEAMS[tid];
     const s = game.stats[tid];
-    const you = tid === game.player.team ? ' (YOU)' : ' [bot]';
-    const bits = [`${s.splats} splat${s.splats === 1 ? '' : 's'}`, `${s.downs} down${s.downs === 1 ? '' : 's'}`];
-    if (s.buttons) bits.push(`${s.buttons} button${s.buttons === 1 ? '' : 's'}`);
+    const you = tid === game.player.team ? ` ${L('(YOU)')}` : ' [bot]';
+    const bits = [
+      L(s.splats === 1 ? '{v} splat' : '{v} splats', { v: s.splats }),
+      L(s.downs === 1 ? '{v} down' : '{v} downs', { v: s.downs }),
+    ];
+    if (s.buttons) bits.push(L(s.buttons === 1 ? '{v} button' : '{v} buttons', { v: s.buttons }));
     wrap.insertAdjacentHTML('beforeend', `
       <div class="result-row">
         <span class="r-rank">${i + 1}</span>

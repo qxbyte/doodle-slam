@@ -99,7 +99,7 @@ const Replay = (() => {
   /* render the timelapse into a WebM download via MediaRecorder */
   function exportWebM(onDone) {
     if (!frames.length || typeof MediaRecorder === 'undefined') {
-      pushToast('Video export is not supported in this browser.');
+      pushToast(L('Video export is not supported in this browser.'));
       if (onDone) onDone(false);
       return;
     }

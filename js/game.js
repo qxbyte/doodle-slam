@@ -113,7 +113,7 @@ addEventListener('keydown', e => {
     Settings.set('sfx', !anyOn);
     Settings.set('music', !anyOn);
     renderSettingsPanel();
-    pushToast(anyOn ? 'Sound off' : 'Sound on');
+    pushToast(L(anyOn ? 'Sound off' : 'Sound on'));
   }
 });
 addEventListener('keyup', e => input.keys.delete(e.code));
@@ -131,7 +131,7 @@ addEventListener('mousedown', e => {
   if (e.button === 2) {
     const p = game.player;
     if (p.alive && p.throwBomb(game, worldMouseX(), worldMouseY())) {
-      pushToast(`${p.name} threw a Paint Bomb!`);
+      pushToast(L('{n} threw a Paint Bomb!', { n: p.name }));
     }
   }
 });
@@ -176,13 +176,13 @@ function setBrowse(on) {
   const was = game.browse;
   game.browse = on;
   const btn = $('#browse-btn');
-  btn.textContent = on ? 'BACK TO BATTLE' : 'BROWSE MAP';
+  btn.textContent = on ? L('BACK TO BATTLE') : L('BROWSE MAP');
   btn.classList.toggle('active', on);
   if (on) {
     browseCam.x = game.player.x;
     browseCam.y = game.player.y;
     browseCam.vx = browseCam.vy = 0;
-    if (!was) pushToast('Match paused — fly around with WASD or the screen edges. B returns.');
+    if (!was) pushToast(L('Match paused — fly around with WASD or the screen edges. B returns.'));
   }
 }
 
@@ -249,7 +249,7 @@ function startMatch(playerTeam) {
   game.state = 'match';
   showScreen(null);
   SFX.play('start');
-  pushToast(`${currentMode().name} — ${currentMode().blurb}!`);
+  pushToast(L('{m} — {b}!', { m: L(currentMode().name), b: L(currentMode().blurb) }));
 }
 
 /* today's fixed setup: same map and fighter for everyone */
@@ -325,7 +325,7 @@ function update(dt) {
     if (!game.demo) {
       SFX.play('slam');
       showSlamBanner();
-      pushToast('SLAM TIME! Splats hit bigger!', 'danger');
+      pushToast(L('SLAM TIME! Splats hit bigger!'), 'danger');
     }
   }
   // final-10s countdown ticks
@@ -373,13 +373,13 @@ function update(dt) {
         game.pickups.splice(i, 1);
         if (pk.type === 'boots') {
           f.boostT = 8;
-          pushToast(`${f.name} grabbed Speed Boots!`);
+          pushToast(L('{n} grabbed Speed Boots!', { n: f.name }));
         } else if (pk.type === 'shield') {
           f.shieldT = 5;
-          pushToast(`${f.name} popped a Bubble Shield!`);
+          pushToast(L('{n} popped a Bubble Shield!', { n: f.name }));
         } else {
           f.bombs = Math.min(f.bombs + 1, 3);
-          pushToast(`${f.name} picked up a Paint Bomb!`);
+          pushToast(L('{n} picked up a Paint Bomb!', { n: f.name }));
         }
         if (f.isPlayer) SFX.play('pickup');
       }
@@ -392,8 +392,8 @@ function update(dt) {
       game.stats[f.team].buttons++;
       SFX.play('button');
       SFX.play('rocketWarn');
-      pushToast(`${f.name} hit the RED BUTTON!`, 'warn');
-      pushToast('ROCKET STRIKE incoming!', 'danger');
+      pushToast(L('{n} hit the RED BUTTON!', { n: f.name }), 'warn');
+      pushToast(L('ROCKET STRIKE incoming!'), 'danger');
       for (let i = 0; i < ROCKET_COUNT; i++) {
         const s = randomOpenSpot(100);
         game.rockets.push({
@@ -409,7 +409,7 @@ function update(dt) {
   // red button appearance
   if (!game.button.active && game.elapsed >= game.button.nextAt) {
     game.button.active = true;
-    pushToast('RED BUTTON appeared at the plaza!', 'warn');
+    pushToast(L('RED BUTTON appeared at the plaza!'), 'warn');
   }
 
   // projectiles
@@ -790,12 +790,28 @@ function frame(now) {
 
 function renderSettingsPanel() {
   for (const el of document.querySelectorAll('#settings-panel .tgl')) {
+    if (!el.dataset.key) continue;
     const on = !!Settings.data[el.dataset.key];
     el.classList.toggle('on', on);
-    el.textContent = on ? 'ON' : 'OFF';
+    el.textContent = L(on ? 'ON' : 'OFF');
   }
+  const lt = $('#lang-tgl');
+  lt.textContent = Settings.data.lang === 'zh' ? '中文' : 'EN';
   const ub = $('#unlock-all-btn');
-  ub.textContent = Campaign.unlockAll() ? 'RE-LOCK STAGES' : 'UNLOCK ALL STAGES';
+  ub.textContent = L(Campaign.unlockAll() ? 'RE-LOCK STAGES' : 'UNLOCK ALL STAGES');
+}
+
+/* re-render every piece of UI text in the active language */
+function refreshLanguage() {
+  setLang(Settings.data.lang);
+  applyStaticI18n();
+  buildStageCards();
+  buildMapCards(game.stageIdx);
+  buildFighterCards();
+  updateDailyButton();
+  updateTitleRecord();
+  renderSettingsPanel();
+  $('#browse-btn').textContent = L(game.browse ? 'BACK TO BATTLE' : 'BROWSE MAP');
 }
 
 function initSettingsUI() {
@@ -807,8 +823,13 @@ function initSettingsUI() {
   $('#settings-close').addEventListener('click', () => panel.classList.add('hidden'));
   panel.addEventListener('click', e => {
     if (e.target === panel) panel.classList.add('hidden');
+    if (e.target.id === 'lang-tgl') {
+      Settings.set('lang', Settings.data.lang === 'zh' ? 'en' : 'zh');
+      refreshLanguage();
+      return;
+    }
     const tgl = e.target.closest('.tgl');
-    if (tgl) {
+    if (tgl && tgl.dataset.key) {
       Settings.set(tgl.dataset.key, !Settings.data[tgl.dataset.key]);
       renderSettingsPanel();
     }
@@ -836,6 +857,8 @@ function boot() {
   initHUD();
   Touch.init();
   Settings.apply();
+  setLang(Settings.data.lang);
+  applyStaticI18n();
   initSettingsUI();
 
   // background music unlocks on the first gesture (autoplay policy)
@@ -929,10 +952,10 @@ function boot() {
   $('#export-btn').addEventListener('click', () => {
     const btn = $('#export-btn');
     btn.disabled = true;
-    btn.textContent = 'RECORDING…';
+    btn.textContent = L('RECORDING…');
     Replay.exportWebM(() => {
       btn.disabled = false;
-      btn.textContent = 'EXPORT WEBM';
+      btn.textContent = L('EXPORT WEBM');
     });
   });
   $('#again-btn').addEventListener('click', () => startMatch(game.player.team));
@@ -957,6 +980,7 @@ function boot() {
   // debug hooks: ?auto=N jumps into a match as team N (?map=M picks the map),
   // ?ff=S fast-forwards S seconds, ?mx/?my pin the mouse, ?screen=X opens a menu
   const params = new URLSearchParams(location.search);
+  if (params.has('lang')) { Settings.data.lang = params.get('lang'); refreshLanguage(); }
   if (params.has('mode') && MODES[params.get('mode')]) game.mode = params.get('mode');
   if (params.has('map')) {
     game.mapIdx = clamp(Number(params.get('map')) || 0, 0, MAPS.length - 1);

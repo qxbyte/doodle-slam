@@ -41,7 +41,7 @@
 
   <canvas id="minimap" width="176" height="118"></canvas>
 
-  <button id="leave-btn" class="pill-btn">LEAVE MATCH</button>
+  <button id="leave-btn" class="pill-btn" data-i18n="LEAVE MATCH"></button>
   <button id="browse-btn" class="pill-btn">BROWSE MAP</button>
 
   <div id="hurt-flash"></div>
@@ -63,24 +63,25 @@
       <span class="logo-line"><span class="ch" style="--i:6">S</span><span class="ch" style="--i:7">L</span><span class="ch" style="--i:8">A</span><span class="ch" style="--i:9">M</span><span class="ch" style="--i:10">!</span></span>
     </h1>
   </div>
-  <p class="tagline">Splat the town. Own the turf. 3 minutes on the clock.</p>
+  <p class="tagline" data-i18n="Splat the town. Own the turf. 3 minutes on the clock."></p>
   <div class="swatches" aria-hidden="true"><i style="--c:#2f66e0"></i><i style="--c:#e6392a"></i><i style="--c:#f0b41c"></i><i style="--c:#3ba24f"></i></div>
   <div id="title-record"></div>
-  <button id="play-btn" class="big-btn">PLAY</button>
+  <button id="play-btn" class="big-btn" data-i18n="PLAY"></button>
   <button id="daily-btn" class="pill-btn">DAILY RUN</button>
-  <button id="settings-btn" class="pill-btn corner" aria-label="Settings">&#9881; SETTINGS</button>
-  <div class="controls-hint">WASD move &nbsp;&middot;&nbsp; hold Left Click to spray &nbsp;&middot;&nbsp; Right Click throws Paint Bombs &nbsp;&middot;&nbsp; Q fires your skill &nbsp;&middot;&nbsp; B browses the map &nbsp;&middot;&nbsp; M mutes</div>
-  <div class="footnote">Fan project inspired by Splatoon. Not affiliated with Nintendo.</div>
+  <button id="settings-btn" class="pill-btn corner" aria-label="Settings" data-i18n="settingsBtn"></button>
+  <div class="controls-hint" data-i18n="controlsHint"></div>
+  <div class="footnote" data-i18n="Fan project inspired by Splatoon. Not affiliated with Nintendo."></div>
 </div>
 
 <!-- ===== Settings overlay ===== -->
 <div id="settings-panel" class="hidden">
   <div class="settings-card card">
     <div id="settings-title" class="panel-title big">SETTINGS</div>
-    <div class="set-row"><span>Background music</span><button class="tgl" data-key="music">ON</button></div>
-    <div class="set-row"><span>Sound effects</span><button class="tgl" data-key="sfx">ON</button></div>
-    <div class="set-row"><span>Screen shake</span><button class="tgl" data-key="shake">ON</button></div>
-    <div class="set-row"><span>Ambient particles</span><button class="tgl" data-key="ambient">ON</button></div>
+    <div class="set-row"><span data-i18n="Background music"></span><button class="tgl" data-key="music">ON</button></div>
+    <div class="set-row"><span data-i18n="Sound effects"></span><button class="tgl" data-key="sfx">ON</button></div>
+    <div class="set-row"><span data-i18n="Screen shake"></span><button class="tgl" data-key="shake">ON</button></div>
+    <div class="set-row"><span data-i18n="Ambient particles"></span><button class="tgl" data-key="ambient">ON</button></div>
+    <div class="set-row"><span data-i18n="Language"></span><button id="lang-tgl" class="tgl on">EN</button></div>
     <button id="unlock-all-btn" class="pill-btn danger hidden">UNLOCK ALL STAGES</button>
     <button id="settings-close" class="pill-btn gray">CLOSE</button>
   </div>
@@ -89,71 +90,72 @@
 <!-- ===== Stage select ===== -->
 <div id="screen-stages" class="screen hidden">
   <div class="menu-blobs"></div>
-  <h2 class="select-title">Pick Your Stage</h2>
+  <h2 class="select-title" data-i18n="Pick Your Stage"></h2>
   <div id="stage-path">
     <div id="stage-track">
       <div class="path-line"></div>
       <div id="stage-cards"></div>
     </div>
   </div>
-  <button id="stages-back-btn" class="pill-btn gray">BACK</button>
-  <div class="hint-line">Tip: click the blank paper.</div>
-  <div class="footnote">Fan project inspired by Splatoon. Not affiliated with Nintendo.</div>
+  <button id="stages-back-btn" class="pill-btn gray" data-i18n="BACK"></button>
+  <div class="hint-line" data-i18n="Tip: click the blank paper."></div>
+  <div class="footnote" data-i18n="Fan project inspired by Splatoon. Not affiliated with Nintendo."></div>
 </div>
 
 <!-- ===== Map select ===== -->
 <div id="screen-maps" class="screen hidden">
   <div class="menu-blobs"></div>
-  <h2 class="select-title">Pick Your Turf</h2>
+  <h2 class="select-title" data-i18n="Pick Your Turf"></h2>
   <div id="map-cards"></div>
-  <button id="maps-back-btn" class="pill-btn gray">BACK</button>
-  <div class="footnote">Fan project inspired by Splatoon. Not affiliated with Nintendo.</div>
+  <button id="maps-back-btn" class="pill-btn gray" data-i18n="BACK"></button>
+  <div class="footnote" data-i18n="Fan project inspired by Splatoon. Not affiliated with Nintendo."></div>
 </div>
 
 <!-- ===== Character select ===== -->
 <div id="screen-select" class="screen hidden">
   <div class="menu-blobs"></div>
-  <h2 class="select-title">Pick Your Fighter</h2>
+  <h2 class="select-title" data-i18n="Pick Your Fighter"></h2>
   <div id="fighter-cards"></div>
   <div id="mode-row">
-    <span class="diff-label">MODE</span>
-    <button class="mode-pill selected" data-mode="turf">TURF WAR</button>
-    <button class="mode-pill" data-mode="splat">SPLAT HUNT</button>
-    <button class="mode-pill" data-mode="zones">ZONE CONTROL</button>
+    <span class="diff-label" data-i18n="MODE"></span>
+    <button class="mode-pill selected" data-mode="turf" data-i18n="TURF WAR"></button>
+    <button class="mode-pill" data-mode="splat" data-i18n="SPLAT HUNT"></button>
+    <button class="mode-pill" data-mode="zones" data-i18n="ZONE CONTROL"></button>
   </div>
   <div id="difficulty-row">
-    <span class="diff-label">BOT DIFFICULTY</span>
-    <button class="diff-pill" data-diff="easy">EASY</button>
-    <button class="diff-pill selected" data-diff="normal">NORMAL</button>
-    <button class="diff-pill" data-diff="hard">HARD</button>
+    <span class="diff-label" data-i18n="BOT DIFFICULTY"></span>
+    <button class="diff-pill" data-diff="easy" data-i18n="EASY"></button>
+    <button class="diff-pill selected" data-diff="normal" data-i18n="NORMAL"></button>
+    <button class="diff-pill" data-diff="hard" data-i18n="HARD"></button>
   </div>
-  <button id="back-btn" class="pill-btn gray">BACK</button>
-  <div class="footnote">Fan project inspired by Splatoon. Not affiliated with Nintendo.</div>
+  <button id="back-btn" class="pill-btn gray" data-i18n="BACK"></button>
+  <div class="footnote" data-i18n="Fan project inspired by Splatoon. Not affiliated with Nintendo."></div>
 </div>
 
 <!-- ===== Results ===== -->
 <div id="screen-results" class="screen hidden">
   <div class="menu-blobs"></div>
-  <h2 class="select-title">TIME'S UP!</h2>
+  <h2 class="select-title" data-i18n="TIME'S UP!"></h2>
   <div id="winner-line"></div>
   <div id="star-earned"></div>
   <div id="replay-box">
-    <div class="replay-label">TURF REPLAY</div>
+    <div class="replay-label" data-i18n="TURF REPLAY"></div>
     <canvas id="replay-canvas" width="330" height="220"></canvas>
   </div>
   <div id="result-rows"></div>
   <div class="result-btns">
-    <button id="again-btn" class="big-btn">PLAY AGAIN</button>
-    <button id="share-btn" class="pill-btn">SHARE CARD</button>
-    <button id="export-btn" class="pill-btn">EXPORT WEBM</button>
-    <button id="menu-btn" class="pill-btn gray">BACK TO MENU</button>
+    <button id="again-btn" class="big-btn" data-i18n="PLAY AGAIN"></button>
+    <button id="share-btn" class="pill-btn" data-i18n="SHARE CARD"></button>
+    <button id="export-btn" class="pill-btn" data-i18n="EXPORT WEBM"></button>
+    <button id="menu-btn" class="pill-btn gray" data-i18n="BACK TO MENU"></button>
   </div>
-  <div class="footnote">Fan project inspired by Splatoon. Not affiliated with Nintendo.</div>
+  <div class="footnote" data-i18n="Fan project inspired by Splatoon. Not affiliated with Nintendo."></div>
 </div>
 
 <!-- classic scripts share one global scope; load order matters:
      core -> maps (registry first) -> world -> systems -> ui -> game -->
 <script src="js/core/util.js"></script>
+<script src="js/core/i18n.js"></script>
 <script src="js/core/teams.js"></script>
 <script src="js/core/sketch.js"></script>
 <script src="js/maps/registry.js"></script>

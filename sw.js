@@ -6,7 +6,7 @@
    (CI reminder lives in CLAUDE.md).
    ============================================================ */
 
-const VERSION = 'doodle-slam-v5';
+const VERSION = 'doodle-slam-v6';
 
 const SHELL = [
   './',
@@ -16,7 +16,7 @@ const SHELL = [
   './assets/icon-192.png',
   './assets/icon-512.png',
   './assets/apple-touch-icon.png',
-  './js/core/util.js', './js/core/teams.js', './js/core/sketch.js',
+  './js/core/util.js', './js/core/i18n.js', './js/core/teams.js', './js/core/sketch.js',
   './js/maps/registry.js', './js/maps/downtown.js', './js/maps/riverside.js',
   './js/maps/pinecamp.js', './js/maps/fernhollow.js', './js/maps/sunnyshore.js',
   './js/maps/thedeep.js', './js/maps/powderpeaks.js', './js/maps/midnightfair.js',

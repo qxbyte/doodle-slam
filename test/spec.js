@@ -327,3 +327,22 @@ t('unlock-all flag opens every stage and relocks cleanly', () => {
   Campaign.setUnlockAll(false);
   ok(!Campaign.stageUnlocked(5), 'locked again');
 });
+
+
+/* ---------------- i18n ---------------- */
+
+t('L falls back to English and substitutes vars', () => {
+  setLang('en');
+  eq(L('Win the match'), 'Win the match');
+  eq(L('Cover {v}% of the ground', { v: 26 }), 'Cover 26% of the ground');
+  eq(L('totally unknown key'), 'totally unknown key');
+});
+
+t('L translates known keys in zh and challenge descs follow', () => {
+  setLang('zh');
+  eq(L('Win the match'), '赢下比赛');
+  eq(L('Cover {v}% of the ground', { v: 26 }), '覆盖 26% 的地面');
+  ok(Campaign.descs('DOWNTOWN')[0].includes('赢下'), 'challenge descs localized');
+  setLang('en');
+  ok(Campaign.descs('DOWNTOWN')[0].includes('Win'), 'and back to English');
+});

@@ -45,7 +45,7 @@ function updateHUD(game) {
 
   // score panel adapts to the match mode
   const mode = currentMode();
-  $('#panel-title').textContent = mode.panel;
+  $('#panel-title').textContent = L(mode.panel);
   const scores = mode.scores(game);
   const top = Math.max(1, ...scores);
   for (let i = 0; i < 4; i++) {
@@ -79,7 +79,7 @@ function flashHurt() {
 function setWeaponNote(teamId) {
   const w = WEAPONS[teamId];
   $('#weapon-note').innerHTML =
-    `<b>${w.name}</b> &mdash; ${w.blurb}. Move faster and refill ink on your own paint.`;
+    `<b>${w.name}</b> &mdash; ` + L('{b} — Move faster and refill ink on your own paint.', { b: L(w.blurb) });
   $('#skill-name').textContent = SKILLS[teamId].name;
 }
 

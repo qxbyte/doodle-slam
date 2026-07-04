@@ -9,11 +9,11 @@
    ============================================================ */
 
 const CHALLENGE_TYPES = {
-  win:      { desc: () => 'Win the match',                    check: (r) => r.rank === 0 },
-  coverage: { desc: v => `Cover ${v}% of the ground`,         check: (r, v) => r.cov >= v },
-  splats:   { desc: v => `Splat ${v} rivals`,                 check: (r, v) => r.splats >= v },
-  nodeath:  { desc: () => 'Finish without getting splatted',  check: (r) => r.downs === 0 },
-  buttons:  { desc: v => `Hit the red button ${v}×`,     check: (r, v) => r.buttons >= v },
+  win:      { desc: () => L('Win the match'),                       check: (r) => r.rank === 0 },
+  coverage: { desc: v => L('Cover {v}% of the ground', { v }),      check: (r, v) => r.cov >= v },
+  splats:   { desc: v => L('Splat {v} rivals', { v }),              check: (r, v) => r.splats >= v },
+  nodeath:  { desc: () => L('Finish without getting splatted'),     check: (r) => r.downs === 0 },
+  buttons:  { desc: v => L('Hit the red button {v}×', { v }),  check: (r, v) => r.buttons >= v },
 };
 
 /* [type, target] x3 per map, keyed by map name */

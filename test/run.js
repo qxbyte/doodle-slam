@@ -81,6 +81,7 @@ vm.createContext(sandbox);
 /* files under test — pure logic only, no ui/game loop */
 const FILES = [
   'js/core/util.js',
+  'js/core/i18n.js',
   'js/core/teams.js',
   'js/core/sketch.js',
   'js/maps/registry.js',

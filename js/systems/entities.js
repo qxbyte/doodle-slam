@@ -158,7 +158,7 @@ class Fighter {
       addFx({ type: 'text', x: this.x, y: this.y - 24, text: 'SPLAT!', color: TEAMS[attacker.team].color });
       addShake(this.isPlayer ? 9 : 4);
       SFX.play('splatted');
-      game.toast(`${attacker.name} splatted ${this.name}!`, attacker.team === game.player.team ? '' : 'warn');
+      game.toast(L('{a} splatted {b}!', { a: attacker.name, b: this.name }), attacker.team === game.player.team ? '' : 'warn');
     }
   }
 
@@ -244,7 +244,7 @@ class Fighter {
     // lob a bomb at clumps of enemies or big enemy turf
     if (this.bombs > 0 && foe && foeD > 120 && Math.random() < diff.bombProb) {
       this.throwBomb(game, foe.x, foe.y);
-      game.toast(`${this.name} threw a Paint Bomb!`);
+      game.toast(L('{n} threw a Paint Bomb!', { n: this.name }));
     }
 
     // sometimes burn a skill charge when engaged

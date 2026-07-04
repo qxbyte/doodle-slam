@@ -15,7 +15,7 @@ const Settings = (() => {
   }
 
   const data = Object.assign(
-    { music: true, sfx: true, shake: true, ambient: true },
+    { music: true, sfx: true, shake: true, ambient: true, lang: 'en' },
     load()
   );
 

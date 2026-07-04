@@ -67,7 +67,7 @@ const Skills = {
     f.skillUses--;
     SKILLS[f.team].cast(game, f);
     SFX.play('skill');
-    game.toast(`${f.name} used ${SKILLS[f.team].name}!`);
+    game.toast(L('{n} used {s}!', { n: f.name, s: SKILLS[f.team].name }));
     return true;
   },
 
