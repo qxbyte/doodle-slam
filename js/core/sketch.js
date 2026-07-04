@@ -345,6 +345,52 @@ function drawBombIcon(ctx, x, y, s = 1) {
   ctx.restore();
 }
 
+/* Speed boots pickup: a winged sneaker doodle */
+function drawBootsIcon(ctx, x, y) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.lineWidth = 1.6;
+  ctx.strokeStyle = INK;
+  ctx.fillStyle = '#f0b41c';
+  ctx.beginPath();
+  ctx.moveTo(-8, -6);
+  ctx.lineTo(-8, 4);
+  ctx.quadraticCurveTo(-8, 7, -4, 7);
+  ctx.lineTo(9, 7);
+  ctx.quadraticCurveTo(12, 7, 11, 3);
+  ctx.quadraticCurveTo(10, 0, 4, -1);
+  ctx.lineTo(-2, -2);
+  ctx.lineTo(-2, -6);
+  ctx.closePath();
+  ctx.fill(); ctx.stroke();
+  ctx.fillStyle = '#fff';
+  ctx.beginPath(); ctx.rect(-8, 4, 19, 3); ctx.fill(); ctx.stroke();
+  // wing
+  ctx.strokeStyle = INK;
+  ctx.fillStyle = '#fff';
+  ctx.beginPath();
+  ctx.moveTo(-8, -4);
+  ctx.quadraticCurveTo(-15, -8, -13, -1);
+  ctx.quadraticCurveTo(-11, 1, -8, 0);
+  ctx.closePath();
+  ctx.fill(); ctx.stroke();
+  ctx.restore();
+}
+
+/* Shield pickup: a bubble with a sheen */
+function drawShieldIcon(ctx, x, y) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.lineWidth = 1.8;
+  ctx.strokeStyle = '#2f66e0';
+  ctx.fillStyle = 'rgba(120,170,230,0.3)';
+  ctx.beginPath(); ctx.arc(0, 0, 9, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+  ctx.strokeStyle = 'rgba(255,255,255,0.9)';
+  ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.arc(0, 0, 5.5, -2.2, -0.9); ctx.stroke();
+  ctx.restore();
+}
+
 /* The big red button on its pedestal */
 function drawRedButton(ctx, x, y, t) {
   ctx.save();

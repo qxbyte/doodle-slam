@@ -26,6 +26,7 @@ python3 -m http.server 8080
 - **三种模式**：TURF WAR 覆盖率 / SPLAT HUNT 击杀数 / ZONE CONTROL 三点占领计分
 - **角色技能（Q，每局 2 次）**：ZURI 涂漆无人机 / JAX 冲撞突进 / NIA 全图贯穿狙 / KOBI 漆墙
 - **DAILY RUN**：每天固定地图+角色，比拼覆盖率分数，本地记录当日最佳
+- **道具**：涂料炸弹 / 加速鞋（8s ×1.45）/ 泡泡护盾（5s 免伤）
 - **分享与导出**：结算页一键生成战报 PNG 分享卡、TURF REPLAY 导出 WebM 视频
 - **环境粒子**：雪原飘雪 / 深海气泡 / 黑板萤火虫 / 林间落叶 / 书桌浮尘 / 月面流星
 - 八大阶段：城市 DOWNTOWN/RIVERSIDE · 野外 PINE CAMP/FERN HOLLOW · 海滨 SUNNY SHORE · 深海 THE DEEP · 雪山 POWDER PEAKS · 午夜游乐园 MIDNIGHT FAIR（黑板粉笔反色）· 书桌 MESSY DESK · 月球 CRATER FIELD

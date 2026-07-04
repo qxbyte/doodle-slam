@@ -289,7 +289,9 @@ function endMatch() {
 function spawnPickup() {
   if (game.pickups.length >= MAX_PICKUPS) return;
   const s = randomOpenSpot(80);
-  game.pickups.push({ x: s.x, y: s.y, bob: Math.random() * Math.PI * 2 });
+  const roll = Math.random();
+  const type = roll < 0.5 ? 'bomb' : roll < 0.75 ? 'boots' : 'shield';
+  game.pickups.push({ x: s.x, y: s.y, type, bob: Math.random() * Math.PI * 2 });
 }
 
 /* ---------------- update ---------------- */
@@ -354,9 +356,17 @@ function update(dt) {
       const pk = game.pickups[i];
       if (dist(f.x, f.y, pk.x, pk.y) < FIGHTER_RADIUS + 14) {
         game.pickups.splice(i, 1);
-        f.bombs = Math.min(f.bombs + 1, 3);
+        if (pk.type === 'boots') {
+          f.boostT = 8;
+          pushToast(`${f.name} grabbed Speed Boots!`);
+        } else if (pk.type === 'shield') {
+          f.shieldT = 5;
+          pushToast(`${f.name} popped a Bubble Shield!`);
+        } else {
+          f.bombs = Math.min(f.bombs + 1, 3);
+          pushToast(`${f.name} picked up a Paint Bomb!`);
+        }
         if (f.isPlayer) SFX.play('pickup');
-        pushToast(`${f.name} picked up a Paint Bomb!`);
       }
     }
 
@@ -585,7 +595,9 @@ function render() {
     ctx.arc(pk.x, pk.y, 22, 0, Math.PI * 2);
     ctx.stroke();
     ctx.setLineDash([]);
-    drawBombIcon(ctx, pk.x, pk.y + oy);
+    if (pk.type === 'boots') drawBootsIcon(ctx, pk.x, pk.y + oy);
+    else if (pk.type === 'shield') drawShieldIcon(ctx, pk.x, pk.y + oy);
+    else drawBombIcon(ctx, pk.x, pk.y + oy);
   }
 
   // red button
@@ -637,6 +649,25 @@ function render() {
   // fighters (draw dead ones as ghosts at spawn? just skip)
   for (const f of game.fighters) {
     if (!f.alive) continue;
+    // active buffs: bubble shield ring, speed lines
+    if (f.shieldT > 0) {
+      ctx.strokeStyle = 'rgba(120,170,230,0.85)';
+      ctx.fillStyle = 'rgba(150,200,240,0.15)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(f.x, f.y - 2, 24 + Math.sin(game.elapsed * 6) * 1.5, 0, Math.PI * 2);
+      ctx.fill(); ctx.stroke();
+    }
+    if (f.boostT > 0) {
+      ctx.strokeStyle = 'rgba(240,180,28,0.8)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      for (const off of [-8, 0, 8]) {
+        ctx.moveTo(f.x - 18, f.y + 10 + off * 0.4);
+        ctx.lineTo(f.x - 28, f.y + 10 + off * 0.4);
+      }
+      ctx.stroke();
+    }
     drawCharacter(ctx, f.team, f.x, f.y, {
       walk: f.walkPhase,
       aim: f.aim,

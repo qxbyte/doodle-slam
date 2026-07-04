@@ -38,6 +38,8 @@ class Fighter {
     this.vy = 0;
     this.skillUses = 2;    // active skill charges (Q)
     this.dashT = 0;        // Ram Dash time remaining
+    this.boostT = 0;       // speed boots buff
+    this.shieldT = 0;      // bubble shield buff
     const s = SPAWNS[teamId];
     this.x = s.x; this.y = s.y;
     // bot brain
@@ -48,9 +50,8 @@ class Fighter {
 
   get speed() {
     const p = paintAt(this.x, this.y);
-    if (p === this.team) return OWN_PAINT_SPEED;
-    if (p >= 0) return ENEMY_PAINT_SPEED;
-    return BASE_SPEED;
+    const base = p === this.team ? OWN_PAINT_SPEED : p >= 0 ? ENEMY_PAINT_SPEED : BASE_SPEED;
+    return this.boostT > 0 ? base * 1.45 : base;
   }
 
   /* ocean currents sweep anyone standing in them */
@@ -139,6 +140,10 @@ class Fighter {
 
   hurt(game, amount, attacker) {
     if (!this.alive) return;
+    if (this.shieldT > 0) {
+      addFx({ type: 'burst', x: this.x, y: this.y, r1: 26, drops: 0, color: '#7ab4e6' });
+      return;   // the bubble soaks it
+    }
     this.hp -= amount;
     if (this.isPlayer && !game.demo) {
       SFX.play('hurt');
@@ -166,6 +171,8 @@ class Fighter {
   }
 
   updateRegen(dt) {
+    this.boostT = Math.max(0, this.boostT - dt);
+    this.shieldT = Math.max(0, this.shieldT - dt);
     const onOwn = paintAt(this.x, this.y) === this.team;
     this.ink = clamp(this.ink + (onOwn ? INK_REGEN_OWN : INK_REGEN) * dt, 0, 100);
     this.hp = clamp(this.hp + 2.5 * dt, 0, 100);
