@@ -21,7 +21,7 @@ const game = {
   demo: false,           // attract mode: bots play behind the menus
   browse: false,         // sightseeing: free camera, fighter stands idle
   daily: false,          // this match is today's Daily Run
-  mode: 'turf',          // turf | splat | zones (see systems/modes.js)
+  mode: 'classic',       // the one mode: coverage + splats (systems/modes.js)
   stageIdx: 0,           // chosen on the stage-select screen
   mapIdx: 0,             // chosen on the map-select screen
   difficulty: 'normal',  // bot tuning, chosen on the fighter-select screen
@@ -33,6 +33,7 @@ const game = {
   rockets: [],
   fx: [],                // transient juice: impact bursts, SPLAT! text
   skillFx: [],           // ongoing skill effects (paint drones)
+  adventure: null,       // { level, boss, … } while a story level runs
   zones: [],             // zone-control capture circles
   zoneScores: [0, 0, 0, 0],
   newStars: [],          // campaign stars earned this match
@@ -244,11 +245,12 @@ function startMatch(playerTeam) {
   Replay.stop();
   game.demo = false;
   game.daily = false;
+  game.adventure = null;
   setMap(game.mapIdx);   // builds the sketch layers, sets OBSTACLES/PLAZA
   Ambient.set(Settings.data.ambient ? CURRENT_MAP.ambient : null);
   Music.setMood(CURRENT_MAP.mood);
   initPaint();
-  game.zones = game.mode === 'zones' ? computeZones(CURRENT_MAP) : [];
+  game.zones = [];
   game.fighters = TEAMS.map(t => new Fighter(t.id, t.id === playerTeam));
   game.player = game.fighters[playerTeam];
   resetMatchState();
@@ -265,7 +267,6 @@ function startMatch(playerTeam) {
 
 /* today's fixed setup: same map and fighter for everyone */
 function startDailyMatch() {
-  game.mode = 'turf';
   game.mapIdx = Daily.mapIdx();
   startMatch(Daily.team());
   game.daily = true;
@@ -292,7 +293,7 @@ function enterEggWorld(name) {
   game.button.x = PLAZA.x;
   game.button.y = PLAZA.y;
   game.button.nextAt = game.elapsed + 30;
-  game.zones = game.mode === 'zones' ? computeZones(CURRENT_MAP) : [];
+  game.zones = [];
   for (const f of game.fighters) {
     const s = SPAWNS[f.team];
     f.x = s.x;
@@ -309,6 +310,169 @@ function enterEggWorld(name) {
   pushToast(L('WELCOME TO THE OTHER SIDE.'));
 }
 
+/* ---------------- adventure mode ---------------- */
+
+function startAdventureLevel(idx) {
+  const lvl = ADV_LEVELS[idx];
+  const mapIdx = MAPS.findIndex(m => m.name === lvl.map);
+  if (mapIdx < 0) return;
+  Replay.stop();
+  game.demo = false;
+  game.daily = false;
+  game.mapIdx = mapIdx;
+  game.difficulty = lvl.difficulty;
+  setMap(mapIdx);
+  Ambient.set(Settings.data.ambient ? CURRENT_MAP.ambient : null);
+  Music.setMood(lvl.boss ? 'volcano' : CURRENT_MAP.mood);   // boss fight = tense
+  initPaint();
+  const team = Adventure.team;
+  game.fighters = TEAMS.map(t => new Fighter(t.id, t.id === team));
+  game.player = game.fighters[team];
+  resetMatchState();
+  game.adventure = { level: idx, boss: null };
+  game.timeLeft = lvl.time;
+  // only lvl.enemies minions take the field; the rest sit out
+  const foes = TEAMS.map(t => t.id).filter(id => id !== team).slice(0, lvl.enemies);
+  for (const f of game.fighters) {
+    if (!f.isPlayer && !foes.includes(f.team)) {
+      f.alive = false;
+      f.respawnTimer = Infinity;
+    }
+  }
+  if (lvl.boss) {
+    game.adventure.boss = {
+      x: PLAZA.x, y: PLAZA.y,
+      hp: lvl.boss.hp, maxHp: lvl.boss.hp,
+      speed: lvl.boss.speed, radius: lvl.boss.radius,
+      hitT: 0, eraseT: 0,
+    };
+  }
+  // the legendary weapon is always out there, waiting
+  const ws = randomOpenSpot(120);
+  game.pickups.push({ x: ws.x, y: ws.y, type: 'weapon', bob: 0 });
+  Adventure.markStarted(idx);
+  game.newBest = false;
+  Replay.reset();
+  ui.feed.innerHTML = '';
+  setWeaponNote(team);
+  setBrowse(false);
+  game.state = 'match';
+  showScreen(null);
+  SFX.play('start');
+  pushToast(`${L('LEVEL')} ${idx + 1} · ${lvl.name}`);
+}
+
+function updateAdventure(dt) {
+  const adv = game.adventure;
+  const boss = adv.boss;
+  if (boss && boss.hp > 0) {
+    // it slides toward the hero, erasing everything it crosses
+    const p = game.player;
+    const a = Math.atan2(p.y - boss.y, p.x - boss.x);
+    boss.x = clamp(boss.x + Math.cos(a) * boss.speed * dt, 50, WORLD.w - 50);
+    boss.y = clamp(boss.y + Math.sin(a) * boss.speed * dt, 50, WORLD.h - 50);
+    boss.eraseT -= dt;
+    if (boss.eraseT <= 0) {
+      boss.eraseT = 0.12;
+      erasePaint(boss.x, boss.y, boss.radius * 1.2);
+    }
+    boss.hitT = Math.max(0, boss.hitT - dt);
+    // contact grinds fighters down
+    for (const f of game.fighters) {
+      if (!f.alive) continue;
+      const d = dist(f.x, f.y, boss.x, boss.y);
+      if (d < boss.radius + FIGHTER_RADIUS) {
+        // shove them out while it hurts
+        const push = (boss.radius + FIGHTER_RADIUS - d) + 40 * dt;
+        const na = Math.atan2(f.y - boss.y, f.x - boss.x);
+        const fixed = collideWorld(f.x + Math.cos(na) * push, f.y + Math.sin(na) * push, FIGHTER_RADIUS);
+        f.x = fixed.x; f.y = fixed.y;
+        if (f.shieldT <= 0) {
+          f.hp -= 40 * dt;
+          f.lavaTick -= dt;
+          if (f.lavaTick <= 0) {
+            f.lavaTick = 0.4;
+            if (f.isPlayer && !game.demo) { SFX.play('hurt'); flashHurt(); }
+          }
+          if (f.hp <= 0) {
+            f.alive = false;
+            f.respawnTimer = 2.5;
+            game.stats[f.team].downs++;
+            addFx({ type: 'text', x: f.x, y: f.y - 24, text: 'ERASED!', color: '#8a8a86' });
+            addShake(f.isPlayer ? 9 : 4);
+            SFX.play('splatted');
+            pushToast(L('{n} was erased!', { n: f.name }));
+          }
+        }
+      }
+    }
+    if (boss.hp <= 0) {
+      // it crumbles into shavings
+      for (let k = 0; k < 5; k++) {
+        addFx({ type: 'burst', x: boss.x + rand(Math.random, -40, 40), y: boss.y + rand(Math.random, -40, 40), r1: 60, drops: 8, dur: 0.5, color: '#f2e3e0' });
+      }
+      splat(boss.x, boss.y, 120, game.player.team);
+      addShake(12);
+      SFX.play('rocketBoom');
+    }
+  }
+  if (advGoalMet(game)) endAdventureLevel(true);
+}
+
+function endAdventureLevel(win) {
+  if (win) Adventure.markCleared(game.adventure.level);
+  game.state = 'results';
+  setBrowse(false);
+  setPauseMenu(false);
+  SFX.play(win ? 'slam' : 'end');
+  showLevelEnd(win);
+}
+
+/* the boss: a giant eraser dragged across the town */
+function drawEraserBoss(b) {
+  ctx.save();
+  ctx.translate(b.x, b.y);
+  ctx.rotate(-0.16 + Math.sin(game.elapsed * 3.2) * 0.06);
+  ctx.strokeStyle = '#1c1c1a';
+  ctx.lineWidth = 3;
+  // rubber body
+  ctx.fillStyle = b.hitT > 0 ? '#ffffff' : '#f2e3e0';
+  ctx.beginPath(); ctx.roundRect(-38, -56, 76, 112, 10); ctx.fill(); ctx.stroke();
+  // paper sleeve
+  ctx.fillStyle = '#5a78b8';
+  ctx.beginPath(); ctx.roundRect(-38, -56, 76, 42, [10, 10, 0, 0]); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = '#fdfdf8';
+  ctx.font = "italic 900 15px 'Archivo', sans-serif";
+  ctx.textAlign = 'center';
+  ctx.fillText('ERASE', 0, -30);
+  // the angry face on the rubber
+  ctx.fillStyle = '#1c1c1a';
+  ctx.beginPath(); ctx.arc(-13, 4, 4, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(13, 4, 4, 0, Math.PI * 2); ctx.fill();
+  ctx.lineWidth = 2.6;
+  ctx.beginPath();
+  ctx.moveTo(-22, -6); ctx.lineTo(-6, -1);
+  ctx.moveTo(22, -6); ctx.lineTo(6, -1);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(-12, 20); ctx.lineTo(-4, 15); ctx.lineTo(4, 20); ctx.lineTo(12, 15);
+  ctx.stroke();
+  ctx.restore();
+  // shavings trailing behind
+  if (Math.random() < 0.25) {
+    addFx({ type: 'burst', x: b.x + rand(Math.random, -30, 30), y: b.y + rand(Math.random, 30, 55), r1: 10, drops: 2, color: '#e3d3d0' });
+  }
+  // hp bar above
+  const w = 96, hpw = Math.max(0, b.hp / b.maxHp) * w;
+  ctx.fillStyle = 'rgba(28,28,26,0.35)';
+  ctx.fillRect(b.x - w / 2, b.y - 78, w, 9);
+  ctx.fillStyle = '#e6392a';
+  ctx.fillRect(b.x - w / 2, b.y - 78, hpw, 9);
+  ctx.strokeStyle = '#1c1c1a';
+  ctx.lineWidth = 1.6;
+  ctx.strokeRect(b.x - w / 2, b.y - 78, w, 9);
+}
+
 /* Esc / LEAVE MATCH open a confirm instead of quitting outright:
    resume, restart the same setup, or actually leave. A hard pause. */
 function setPauseMenu(on) {
@@ -320,6 +484,9 @@ function setPauseMenu(on) {
 function leaveMatch() {
   Replay.stop();
   Music.setMood('default');
+  game.adventure = null;
+  $('#story-panel').classList.add('hidden');
+  $('#level-end-panel').classList.add('hidden');
   game.state = 'title';
   updateTitleRecord();
   updateDailyButton();
@@ -351,7 +518,6 @@ function endMatch() {
     splats: ps.splats,
     downs: ps.downs,
     buttons: ps.buttons,
-    mode: game.mode,
     daily: game.daily,
     egg: !!game.eggEntered,
     eggEnd: !!CURRENT_MAP.hidden,
@@ -388,7 +554,10 @@ function update(dt) {
 
   game.elapsed += dt;
   game.timeLeft -= dt;
-  if (game.timeLeft <= 0) { endMatch(); return; }
+  if (game.timeLeft <= 0) {
+    game.adventure ? endAdventureLevel(false) : endMatch();
+    return;
+  }
 
   // SLAM TIME: the endgame comeback window
   if (!game.slam && game.timeLeft <= SLAM_AT) {
@@ -429,7 +598,7 @@ function update(dt) {
     // the hidden door: only the player can find it, once per match
     // (not in daily runs — everyone's score must share the same map)
     const egg = CURRENT_MAP.egg;
-    if (egg && !game.eggEntered && !game.demo && !game.daily && p.alive &&
+    if (egg && !game.eggEntered && !game.demo && !game.daily && !game.adventure && p.alive &&
         p.x > egg.x - 6 && p.x < egg.x + egg.w + 6 &&
         p.y > egg.y - 6 && p.y < egg.y + egg.h + 6) {
       enterEggWorld(egg.map);
@@ -493,7 +662,13 @@ function update(dt) {
       const pk = game.pickups[i];
       if (dist(f.x, f.y, pk.x, pk.y) < FIGHTER_RADIUS + 14) {
         game.pickups.splice(i, 1);
-        if (pk.type === 'boots') {
+        if (pk.type === 'weapon') {
+          if (!f.isPlayer) { game.pickups.splice(i, 0, pk); continue; }   // heroes only
+          f.weapon = ADV_WEAPON;
+          $('#weapon-note').innerHTML = `<b>${ADV_WEAPON.name}</b> &mdash; ${L('the legendary sprayer')}`;
+          pushToast(L('You found the RAINBOW BLASTER!'), 'warn');
+          addFx({ type: 'burst', x: pk.x, y: pk.y, r1: 60, drops: 10, dur: 0.5, color: '#f0b41c' });
+        } else if (pk.type === 'boots') {
           f.boostT = 8;
           pushToast(L('{n} grabbed Speed Boots!', { n: f.name }));
         } else if (pk.type === 'shield') {
@@ -531,6 +706,12 @@ function update(dt) {
   // fighters never stack — overlapping pairs get nudged apart
   separateFighters(game.fighters);
 
+  // adventure: boss brain + objective check
+  if (game.adventure) {
+    updateAdventure(dt);
+    if (game.state !== 'match') return;   // the level just ended
+  }
+
   // red button appearance
   if (!game.button.active && game.elapsed >= game.button.nextAt) {
     game.button.active = true;
@@ -545,7 +726,15 @@ function update(dt) {
     pr.life -= dt;
     let dead = false;
 
-    if (pointBlocked(pr.x, pr.y)) {
+    const boss = game.adventure && game.adventure.boss;
+    if (boss && boss.hp > 0 && pr.team === game.player.team &&
+        dist(pr.x, pr.y, boss.x, boss.y) < boss.radius) {
+      boss.hp -= pr.dmg;
+      boss.hitT = 0.15;
+      addFx({ type: 'burst', x: pr.x, y: pr.y, r1: 24, color: TEAMS[pr.team].color });
+      if (pr.owner.isPlayer) SFX.play('hit');
+      dead = true;
+    } else if (pointBlocked(pr.x, pr.y)) {
       dead = true; // buildings eat shots, no splat on walls
     } else {
       for (const f of game.fighters) {
@@ -586,6 +775,11 @@ function update(dt) {
           if (f.team !== b.team && f.alive && dist(f.x, f.y, bx, by) < 110) {
             f.hurt(game, 55, b.owner);
           }
+        }
+        const bboss = game.adventure && game.adventure.boss;
+        if (bboss && bboss.hp > 0 && dist(bboss.x, bboss.y, bx, by) < 110 + bboss.radius) {
+          bboss.hp -= 60;
+          bboss.hitT = 0.2;
         }
         addFx({ type: 'burst', x: bx, y: by, r1: 110, drops: 8, dur: 0.4, color: TEAMS[b.team].color });
         addShake(6);
@@ -744,6 +938,7 @@ function render() {
     ctx.setLineDash([]);
     if (pk.type === 'boots') drawBootsIcon(ctx, pk.x, pk.y + oy);
     else if (pk.type === 'shield') drawShieldIcon(ctx, pk.x, pk.y + oy);
+    else if (pk.type === 'weapon') drawSuperWeaponIcon(ctx, pk.x, pk.y + oy, game.elapsed);
     else drawBombIcon(ctx, pk.x, pk.y + oy);
   }
 
@@ -885,6 +1080,11 @@ function render() {
       ctx.restore();
       ctx.globalAlpha = 1;
     }
+  }
+
+  // the adventure boss rides above everything on the field
+  if (game.adventure && game.adventure.boss && game.adventure.boss.hp > 0) {
+    drawEraserBoss(game.adventure.boss);
   }
 
   ctx.restore();
@@ -1050,11 +1250,57 @@ function boot() {
   updateTitleRecord();
   updateDailyButton();
 
-  // flow: title -> stage select -> map select -> fighter select -> match
-  $('#play-btn').addEventListener('click', () => {
-    game.state = 'stages';
-    showScreen('#screen-stages');
+  // flow: title -> (career | adventure), picked by the selector under PLAY
+  let homeMode = 'career';
+  $('#home-modes').addEventListener('click', e => {
+    const btn = e.target.closest('.home-mode');
+    if (!btn) return;
+    homeMode = btn.dataset.home;
+    for (const b of document.querySelectorAll('.home-mode')) {
+      b.classList.toggle('selected', b === btn);
+    }
   });
+  $('#play-btn').addEventListener('click', () => {
+    if (homeMode === 'adventure') {
+      buildAdventureScreen();
+      game.state = 'adventure';
+      showScreen('#screen-adventure');
+    } else {
+      game.state = 'stages';
+      showScreen('#screen-stages');
+    }
+  });
+
+  // adventure screen
+  $('#adv-continue').addEventListener('click', () => showStory(Adventure.lastLevel()));
+  $('#adv-restart').addEventListener('click', () => {
+    Adventure.reset();
+    buildAdventureScreen();
+  });
+  $('#adv-back').addEventListener('click', () => {
+    game.state = 'title';
+    showScreen('#screen-title');
+  });
+  $('#story-start').addEventListener('click', () => {
+    $('#story-panel').classList.add('hidden');
+    startAdventureLevel(storyLevel);
+  });
+  $('#story-back').addEventListener('click', () => {
+    $('#story-panel').classList.add('hidden');
+    if (game.state === 'results') { leaveMatch(); return; }
+    buildAdventureScreen();
+    game.state = 'adventure';
+    showScreen('#screen-adventure');
+  });
+  $('#level-next').addEventListener('click', () => {
+    $('#level-end-panel').classList.add('hidden');
+    showStory(game.adventure.level + 1);
+  });
+  $('#level-retry').addEventListener('click', () => {
+    $('#level-end-panel').classList.add('hidden');
+    showStory(game.adventure.level);
+  });
+  $('#level-menu').addEventListener('click', leaveMatch);
   $('#stage-cards').addEventListener('click', e => {
     const card = e.target.closest('.stage-card');
     if (!card) return;
@@ -1095,14 +1341,6 @@ function boot() {
     const card = e.target.closest('.fighter-card');
     if (card) startMatch(Number(card.dataset.team));
   });
-  $('#mode-row').addEventListener('click', e => {
-    const pill = e.target.closest('.mode-pill');
-    if (!pill) return;
-    game.mode = pill.dataset.mode;
-    for (const m of document.querySelectorAll('.mode-pill')) {
-      m.classList.toggle('selected', m === pill);
-    }
-  });
   $('#difficulty-row').addEventListener('click', e => {
     const pill = e.target.closest('.diff-pill');
     if (!pill) return;
@@ -1115,7 +1353,8 @@ function boot() {
   $('#pause-resume').addEventListener('click', () => setPauseMenu(false));
   $('#pause-restart').addEventListener('click', () => {
     setPauseMenu(false);
-    if (game.daily) startDailyMatch();
+    if (game.adventure) startAdventureLevel(game.adventure.level);
+    else if (game.daily) startDailyMatch();
     else startMatch(game.player.team);
   });
   $('#pause-quit').addEventListener('click', () => {
@@ -1157,7 +1396,6 @@ function boot() {
   // ?ff=S fast-forwards S seconds, ?mx/?my pin the mouse, ?screen=X opens a menu
   const params = new URLSearchParams(location.search);
   if (params.has('lang')) { Settings.data.lang = params.get('lang'); refreshLanguage(); }
-  if (params.has('mode') && MODES[params.get('mode')]) game.mode = params.get('mode');
   if (params.has('map')) {
     game.mapIdx = clamp(Number(params.get('map')) || 0, 0, MAPS.length - 1);
     game.stageIdx = MAPS[game.mapIdx].stage;
@@ -1181,6 +1419,12 @@ function boot() {
     if (params.has('scroll')) $('#stage-path').scrollLeft = Number(params.get('scroll')) || 0;
   }
   if (params.get('screen') === 'badges') { buildBadgeWall(); $('#badges-panel').classList.remove('hidden'); }
+  if (params.get('screen') === 'adventure') { buildAdventureScreen(); game.state = 'adventure'; showScreen('#screen-adventure'); }
+  if (params.has('adv')) {
+    startAdventureLevel(clamp(Number(params.get('adv')) || 0, 0, ADV_LEVELS.length - 1));
+    const aff = Number(params.get('ff')) || 0;
+    for (let i = 0; i < aff * 30; i++) update(1 / 30);
+  }
 
   // attract mode behind the menus (skipped for reduced motion / debug runs)
   if (auto === null && !prefersReducedMotion() && !params.has('nodemo')) {

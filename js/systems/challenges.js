@@ -82,7 +82,7 @@ const Campaign = {
   /* called at the end of a real turf match; returns the descriptions
      of any newly earned stars */
   evaluate(game) {
-    if (game.demo || game.daily || game.mode !== 'turf') return [];
+    if (game.demo || game.daily) return [];
     // a match that wandered into the hidden world still credits the
     // map it started on
     const map = game.originMapName || CURRENT_MAP.name;

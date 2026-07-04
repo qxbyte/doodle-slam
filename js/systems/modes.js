@@ -6,29 +6,21 @@
    The sim (painting, fighting, events) is shared by all modes.
    ============================================================ */
 
+/* One mode: paint the ground AND splat rivals — score is coverage%
+   plus 2 points per splat, so both halves of the fight count. */
+const SPLAT_POINTS = 2;
+
 const MODES = {
-  turf: {
-    key: 'turf', name: 'TURF WAR', blurb: 'most ground painted wins',
-    panel: 'COVERAGE', winnerLine: 'takes the town!',
-    scores: g => g.lastCoverage.map(c => c * 100),
-    fmt: v => `${v.toFixed(1)}%`,
-  },
-  splat: {
-    key: 'splat', name: 'SPLAT HUNT', blurb: 'most splats wins',
-    panel: 'SPLATS', winnerLine: 'out-splatted everyone!',
-    scores: g => g.stats.map(s => s.splats),
-    fmt: v => `${v}`,
-  },
-  zones: {
-    key: 'zones', name: 'ZONE CONTROL', blurb: 'hold the three zones',
-    panel: 'ZONE PTS', winnerLine: 'holds the zones!',
-    scores: g => g.zoneScores.slice(),
-    fmt: v => `${v}`,
+  classic: {
+    key: 'classic', name: 'TURF SLAM', blurb: 'paint the town, splat the rest',
+    panel: 'SCORE', winnerLine: 'takes the town!',
+    scores: g => g.lastCoverage.map((c, i) => c * 100 + g.stats[i].splats * SPLAT_POINTS),
+    fmt: v => v.toFixed(1),
   },
 };
 
 function currentMode() {
-  return MODES[game.mode] || MODES.turf;
+  return MODES.classic;
 }
 
 /* zones: the plaza plus two deterministic open spots, spread apart */

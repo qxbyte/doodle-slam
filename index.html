@@ -36,6 +36,7 @@
     <div class="bar-row"><span class="bar-label">INK</span><div class="bar"><div id="ink-fill" class="bar-fill ink"></div></div></div>
     <div id="bomb-hint" class="dashed-box">PAINT BOMB &times;<span id="bomb-count">0</span> &mdash; right-click to throw!</div>
     <div id="skill-hint" class="dashed-box skill">Q &middot; <span id="skill-name">Skill</span> &middot; <span id="skill-count">OK</span></div>
+    <div id="objective-note" class="dashed-box objective hidden"></div>
     <div id="weapon-note" class="weapon-note"><b>SketchBlaster</b> &mdash; move faster and refill ink on your own paint</div>
   </div>
 
@@ -67,6 +68,16 @@
   <div class="swatches" aria-hidden="true"><i style="--c:#2f66e0"></i><i style="--c:#e6392a"></i><i style="--c:#f0b41c"></i><i style="--c:#3ba24f"></i></div>
   <div id="title-record"></div>
   <button id="play-btn" class="big-btn" data-i18n="PLAY"></button>
+  <div id="home-modes">
+    <button class="home-mode selected" data-home="career">
+      <span class="hm-name" data-i18n="CAREER"></span>
+      <span class="hm-desc" data-i18n="Stages, stars and unlocks"></span>
+    </button>
+    <button class="home-mode" data-home="adventure">
+      <span class="hm-name" data-i18n="ADVENTURE"></span>
+      <span class="hm-desc" data-i18n="The story of the Eraser"></span>
+    </button>
+  </div>
   <button id="daily-btn" class="pill-btn">DAILY RUN</button>
   <div class="corner-btns">
     <button id="badges-btn" class="pill-btn" aria-label="Badges" data-i18n="badgesBtn"></button>
@@ -110,6 +121,46 @@
   </div>
 </div>
 
+<!-- ===== Adventure (story) select ===== -->
+<div id="screen-adventure" class="screen hidden">
+  <div class="menu-blobs"></div>
+  <h2 class="select-title" data-i18n="ADVENTURE"></h2>
+  <p class="adv-blurb" data-i18n="advBlurb"></p>
+  <div id="adv-heroes"></div>
+  <div id="adv-nodes-wrap">
+    <div class="adv-line"></div>
+    <div id="adv-nodes"></div>
+  </div>
+  <div class="adv-btns">
+    <button id="adv-continue" class="big-btn"></button>
+    <button id="adv-restart" class="pill-btn" data-i18n="RESTART STORY"></button>
+    <button id="adv-coop" class="pill-btn" disabled data-i18n="CO-OP — COMING SOON"></button>
+    <button id="adv-back" class="pill-btn gray" data-i18n="BACK"></button>
+  </div>
+</div>
+
+<!-- ===== Adventure story card ===== -->
+<div id="story-panel" class="hidden">
+  <div class="story-card card">
+    <div id="story-title" class="panel-title big"></div>
+    <canvas id="story-portrait" width="200" height="180"></canvas>
+    <div id="story-text"></div>
+    <button id="story-start" class="big-btn" data-i18n="GO!"></button>
+    <button id="story-back" class="pill-btn gray" data-i18n="BACK"></button>
+  </div>
+</div>
+
+<!-- ===== Adventure level end ===== -->
+<div id="level-end-panel" class="hidden">
+  <div class="story-card card">
+    <div id="level-end-title" class="panel-title big"></div>
+    <div id="level-end-story"></div>
+    <button id="level-next" class="big-btn" data-i18n="NEXT LEVEL"></button>
+    <button id="level-retry" class="big-btn" data-i18n="RETRY"></button>
+    <button id="level-menu" class="pill-btn gray" data-i18n="BACK TO MENU"></button>
+  </div>
+</div>
+
 <!-- ===== Stage select ===== -->
 <div id="screen-stages" class="screen hidden">
   <div class="menu-blobs"></div>
@@ -137,12 +188,6 @@
   <div class="menu-blobs"></div>
   <h2 class="select-title" data-i18n="Pick Your Fighter"></h2>
   <div id="fighter-cards"></div>
-  <div id="mode-row">
-    <span class="diff-label" data-i18n="MODE"></span>
-    <button class="mode-pill selected" data-mode="turf" data-i18n="TURF WAR"></button>
-    <button class="mode-pill" data-mode="splat" data-i18n="SPLAT HUNT"></button>
-    <button class="mode-pill" data-mode="zones" data-i18n="ZONE CONTROL"></button>
-  </div>
   <div id="difficulty-row">
     <span class="diff-label" data-i18n="BOT DIFFICULTY"></span>
     <button class="diff-pill" data-diff="easy" data-i18n="EASY"></button>
@@ -214,6 +259,7 @@
 <script src="js/systems/challenges.js"></script>
 <script src="js/systems/achievements.js"></script>
 <script src="js/systems/daily.js"></script>
+<script src="js/systems/adventure.js"></script>
 <script src="js/systems/sharecard.js"></script>
 <script src="js/systems/ambient.js"></script>
 <script src="js/systems/touch.js"></script>

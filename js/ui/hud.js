@@ -58,9 +58,7 @@ function updateHUD(game) {
   const scores = mode.scores(game);
   const top = Math.max(1, ...scores);
   for (let i = 0; i < 4; i++) {
-    const w = mode.key === 'turf'
-      ? Math.min(100, scores[i] * 2.4)
-      : (scores[i] / top) * 100;
+    const w = Math.min(100, (scores[i] / top) * 100);
     hudSet(`cw${i}`, Math.round(w * 10), v => {
       ui.covRows[i].querySelector('.c-fill').style.width = `${v / 10}%`;
     });
@@ -80,6 +78,13 @@ function updateHUD(game) {
   hudSet('skill', p.skillCd > 0 ? Math.ceil(p.skillCd) : 0, v => {
     $('#skill-count').textContent = v > 0 ? `${v}s` : 'OK';
     $('#skill-hint').style.opacity = v > 0 ? 0.35 : 1;
+  });
+
+  // adventure objective line
+  hudSet('obj', game.adventure ? advGoalText(game) : '', v => {
+    const el = $('#objective-note');
+    el.textContent = v;
+    el.classList.toggle('hidden', !v);
   });
 }
 
@@ -180,6 +185,17 @@ function renderMinimap(game) {
     c.fillStyle = TEAMS[f.team].color;
     c.beginPath();
     c.arc(f.x / WORLD.w * mw, f.y / WORLD.h * mh, f.isPlayer ? 3.4 : 2.6, 0, Math.PI * 2);
+    c.fill(); c.stroke();
+  }
+
+  // adventure boss: a fat dark blip
+  const ab = game.adventure && game.adventure.boss;
+  if (ab && ab.hp > 0) {
+    c.fillStyle = '#5a78b8';
+    c.strokeStyle = '#1c1c1a';
+    c.lineWidth = 1.2;
+    c.beginPath();
+    c.arc(ab.x / WORLD.w * mw, ab.y / WORLD.h * mh, 4.4, 0, Math.PI * 2);
     c.fill(); c.stroke();
   }
 

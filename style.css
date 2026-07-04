@@ -976,3 +976,171 @@ body.touch .weapon-note { display: none; }
   color: #8a8a86;
 }
 .badge-earn { color: #7a4dbf; }
+
+/* ===== home mode selector (career / adventure) ===== */
+#home-modes {
+  display: flex;
+  gap: 14px;
+  z-index: 1;
+}
+.home-mode {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  width: 190px;
+  padding: 10px 14px;
+  border: 2.5px solid var(--ink);
+  border-radius: 14px;
+  background: #fff;
+  cursor: pointer;
+  box-shadow: var(--card-shadow);
+  opacity: 0.6;
+  transition: transform 0.08s ease, opacity 0.08s ease;
+}
+.home-mode:hover { transform: translateY(-2px); }
+.home-mode.selected {
+  opacity: 1;
+  background: #fdf3d7;
+  border-width: 3px;
+}
+.home-mode .hm-name {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 900;
+  font-size: 17px;
+}
+.home-mode .hm-desc {
+  font-size: 11px;
+  font-weight: 700;
+  color: #8a8a86;
+}
+
+/* ===== adventure screen ===== */
+.adv-blurb {
+  font-family: var(--font-hand);
+  font-size: 19px;
+  color: var(--pencil);
+  z-index: 1;
+}
+#adv-heroes {
+  display: flex;
+  gap: 10px;
+  z-index: 1;
+}
+.adv-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  padding: 6px 8px 4px;
+  border: 2.5px solid var(--ink);
+  border-radius: 12px;
+  background: #fff;
+  cursor: pointer;
+  box-shadow: var(--card-shadow);
+  opacity: 0.55;
+}
+.adv-hero.selected { opacity: 1; background: #fdf3d7; border-width: 3px; }
+.adv-hero .ah-name { font-size: 10.5px; font-weight: 900; }
+#adv-nodes-wrap {
+  position: relative;
+  z-index: 1;
+  padding: 18px 10px;
+}
+.adv-line {
+  position: absolute;
+  left: 24px; right: 24px; top: 50%;
+  border-top: 2.5px dashed var(--pencil);
+  opacity: 0.55;
+}
+#adv-nodes {
+  position: relative;
+  display: flex;
+  gap: 64px;
+}
+.adv-node {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  width: 118px;
+  padding: 12px 8px;
+  border: 2.5px solid var(--ink);
+  border-radius: 16px;
+  background: #fff;
+  cursor: pointer;
+  box-shadow: var(--card-shadow);
+  transition: transform 0.08s ease;
+}
+.adv-node:hover { transform: translateY(-4px) rotate(-1deg); }
+.adv-node.locked { opacity: 0.45; cursor: default; }
+.adv-node.locked:hover { transform: none; }
+.adv-node.boss { background: #fbe3df; }
+.adv-node .adv-num {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px; height: 40px;
+  border: 2.5px solid var(--ink);
+  border-radius: 50%;
+  background: var(--yellow);
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 900;
+  font-size: 19px;
+}
+.adv-node.boss .adv-num { background: var(--red); color: #fff; font-size: 21px; }
+.adv-node .adv-name {
+  font-size: 11.5px;
+  font-weight: 900;
+  text-align: center;
+  line-height: 1.2;
+}
+.adv-node .adv-state { font-size: 10px; font-weight: 800; color: #8a8a86; }
+.adv-btns {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  z-index: 1;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+#adv-continue { font-size: 20px; padding: 11px 42px; }
+#adv-coop[disabled] { opacity: 0.5; cursor: default; }
+
+/* ===== story + level-end cards ===== */
+#story-panel, #level-end-panel {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(28, 28, 26, 0.4);
+}
+#story-panel.hidden, #level-end-panel.hidden { display: none; }
+.story-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  width: min(420px, 90vw);
+  padding: 22px 26px;
+  text-align: center;
+}
+.story-card .panel-title.big { font-size: 15px; letter-spacing: 0.16em; }
+#story-portrait { width: 100px; height: 90px; }
+#story-text, #level-end-story {
+  font-family: var(--font-hand);
+  font-size: 18px;
+  line-height: 1.45;
+  color: var(--pencil);
+}
+#story-start, #level-next, #level-retry { font-size: 20px; padding: 11px 46px; }
+
+.dashed-box.objective {
+  border-color: var(--green);
+  color: #256b34;
+  font-weight: 900;
+}

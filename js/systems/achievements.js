@@ -26,9 +26,9 @@ const ACHIEVEMENTS = [
   { id: 'buttonMasher', icon: 'button',   name: 'Button Masher',
     desc: 'Hit the red button 3 times in one match.',
     check: c => c.match.buttons >= 3 },
-  { id: 'modeHopper',   icon: 'loop',     name: 'Mode Hopper',
-    desc: 'Win in all three match modes.',
-    check: c => c.counters.modeWins.turf > 0 && c.counters.modeWins.splat > 0 && c.counters.modeWins.zones > 0 },
+  { id: 'doubleThreat', icon: 'loop',     name: 'Double Threat',
+    desc: 'Win with 30% coverage and 5 splats in one match.',
+    check: c => c.match.won && c.match.cov >= 30 && c.match.splats >= 5 },
   { id: 'risingStar',   icon: 'star',     name: 'Rising Star',
     desc: 'Earn 5 campaign stars.',
     check: c => c.starsTotal >= 5 },
@@ -44,7 +44,7 @@ const ACHIEVEMENTS = [
   { id: 'champion',     icon: 'trophy',   name: 'Champion',
     desc: 'Win 10 matches.',
     check: c => c.records.wins >= 10 },
-  /* secret badges — shown as ??? on the wall until unlocked */
+  /* secret badges — greyed out like any locked badge until earned */
   { id: 'doorFinder',   icon: 'door',     name: 'Through the Little Door',
     desc: 'Find the way into another world.', secret: true,
     check: c => c.match.egg },
@@ -60,10 +60,10 @@ const Achieve = (() => {
     try {
       const d = JSON.parse(localStorage.getItem(KEY)) || {};
       d.unlocked = d.unlocked || {};
-      d.counters = Object.assign({ splats: 0, dailyPlays: 0, modeWins: { turf: 0, splat: 0, zones: 0 } }, d.counters);
+      d.counters = Object.assign({ splats: 0, dailyPlays: 0 }, d.counters);
       return d;
     } catch {
-      return { unlocked: {}, counters: { splats: 0, dailyPlays: 0, modeWins: { turf: 0, splat: 0, zones: 0 } } };
+      return { unlocked: {}, counters: { splats: 0, dailyPlays: 0 } };
     }
   }
 
@@ -79,15 +79,12 @@ const Achieve = (() => {
   }
 
   return {
-    /* match = { won, cov, splats, downs, buttons, mode, daily } —
+    /* match = { won, cov, splats, downs, buttons, daily, egg… } —
        updates counters, then returns freshly unlocked defs */
     evaluate(match) {
       const d = load();
       d.counters.splats += match.splats;
       if (match.daily) d.counters.dailyPlays++;
-      if (match.won && d.counters.modeWins[match.mode] !== undefined) {
-        d.counters.modeWins[match.mode]++;
-      }
       const ctx = {
         match,
         counters: d.counters,

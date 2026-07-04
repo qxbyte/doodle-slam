@@ -35,6 +35,27 @@ function initPaint() {
   }
 }
 
+/* The boss's trade: wipe paint back to blank paper */
+function erasePaint(x, y, r) {
+  paintCtx.save();
+  paintCtx.globalCompositeOperation = 'destination-out';
+  paintCtx.beginPath();
+  paintCtx.arc(x, y, r, 0, Math.PI * 2);
+  paintCtx.fill();
+  paintCtx.restore();
+  const gr = Math.ceil(r / CELL);
+  const gx0 = Math.floor(x / CELL), gy0 = Math.floor(y / CELL);
+  for (let gy = gy0 - gr; gy <= gy0 + gr; gy++) {
+    for (let gx = gx0 - gr; gx <= gx0 + gr; gx++) {
+      if (gx < 0 || gy < 0 || gx >= GRID_W || gy >= GRID_H) continue;
+      const cx = gx * CELL + CELL / 2, cy = gy * CELL + CELL / 2;
+      if (dist(x, y, cx, cy) <= r && grid[gy * GRID_W + gx] >= 0) {
+        grid[gy * GRID_W + gx] = -1;
+      }
+    }
+  }
+}
+
 /* Land a splat: draw it and claim grid cells under the blob */
 function splat(x, y, r, teamId) {
   drawSplat(paintCtx, paintRng, x, y, r, TEAMS[teamId].color);

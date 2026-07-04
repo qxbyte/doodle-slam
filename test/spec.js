@@ -246,7 +246,6 @@ t('campaign ignores demo, daily and non-turf matches', () => {
   };
   eq(Campaign.evaluate({ ...base, demo: true, daily: false, mode: 'turf' }).length, 0);
   eq(Campaign.evaluate({ ...base, demo: false, daily: true, mode: 'turf' }).length, 0);
-  eq(Campaign.evaluate({ ...base, demo: false, daily: false, mode: 'zones' }).length, 0);
 });
 
 t('daily is stable within a day and in range', () => {
@@ -376,11 +375,11 @@ t('achievements unlock once and persist counters', () => {
   fresh = Achieve.evaluate({ ...base, won: true, downs: 0 });
   ok(fresh.some(a => a.id === 'untouchable'), 'untouchable unlocks');
 
-  // mode hopper needs a win in each mode
-  Achieve.evaluate({ ...base, won: true, mode: 'splat' });
-  ok(!Achieve.all().find(a => a.id === 'modeHopper').unlocked, 'two modes are not enough');
-  fresh = Achieve.evaluate({ ...base, won: true, mode: 'zones' });
-  ok(fresh.some(a => a.id === 'modeHopper'), 'third mode win completes the set');
+  // double threat needs the win AND both halves of the score
+  Achieve.evaluate({ ...base, won: true, cov: 35, splats: 3 });
+  ok(!Achieve.all().find(a => a.id === 'doubleThreat').unlocked, 'coverage alone is not enough');
+  fresh = Achieve.evaluate({ ...base, won: true, cov: 35, splats: 6 });
+  ok(fresh.some(a => a.id === 'doubleThreat'), 'coverage + splats + win completes it');
 
   // daily counter
   Achieve.evaluate({ ...base, daily: true });
@@ -477,4 +476,54 @@ t('overlapping fighters get pushed apart, distant ones stay put', () => {
   separateFighters([a, b]);
   eq(b.x, 1001, 'dead fighter not shoved');
   b.alive = true;
+});
+
+
+/* ---------------- adventure mode ---------------- */
+
+t('adventure progress saves, gates and resets', () => {
+  localStorage.removeItem('doodleSlam.adventure');
+  ok(Adventure.unlocked(0), 'level 1 open from the start');
+  ok(!Adventure.unlocked(1), 'level 2 gated');
+  Adventure.markCleared(0);
+  ok(Adventure.unlocked(1), 'clearing 1 opens 2');
+  eq(Adventure.lastLevel(), 1, 'continue points at the next level');
+  Adventure.markCleared(2);
+  eq(Adventure.lastLevel(), 2, 'last level clamps to the final node');
+  Adventure.reset();
+  ok(!Adventure.unlocked(1), 'reset relocks');
+  localStorage.removeItem('doodleSlam.adventure');
+});
+
+t('adventure levels are well-formed and maps exist', () => {
+  eq(ADV_LEVELS.length, 3, 'two normal levels plus the boss');
+  for (const lvl of ADV_LEVELS) {
+    ok(MAPS.some(m => m.name === lvl.map), `${lvl.map} exists`);
+    ok(lvl.time > 60 && lvl.enemies >= 0 && lvl.goal, 'sane level tuning');
+  }
+  ok(ADV_LEVELS[2].boss && ADV_LEVELS[2].goal.boss, 'level 3 is the boss');
+});
+
+t('the Rainbow Blaster outclasses the starting loadout', () => {
+  const base = WEAPONS[0];   // SketchBlaster, the hero default
+  ok(ADV_WEAPON.damage > base.damage, 'hits harder');
+  ok(ADV_WEAPON.fireInterval < base.fireInterval, 'fires faster');
+  ok(ADV_WEAPON.range > base.range, 'reaches further');
+  ok(ADV_WEAPON.splatMin > base.splatMin && ADV_WEAPON.splatMax > base.splatMax, 'paints bigger');
+  ok(ADV_WEAPON.inkCost < base.inkCost, 'sips ink');
+});
+
+t('erasePaint wipes cells back to blank but never obstacles', () => {
+  applyMap(MAPS[0]);
+  initPaint();
+  splat(1000, 500, 60, 2);
+  const idx = Math.floor(500 / CELL) * GRID_W + Math.floor(1000 / CELL);
+  eq(grid[idx], 2, 'cell painted');
+  erasePaint(1000, 500, 80);
+  eq(grid[idx], -1, 'cell erased to blank');
+  // obstacle cells stay -2
+  const b = MAPS[0].buildings[0];
+  const ox = Math.floor((b.x + b.w / 2) / CELL), oy = Math.floor((b.y + b.h / 2) / CELL);
+  erasePaint(b.x + b.w / 2, b.y + b.h / 2, 60);
+  eq(grid[oy * GRID_W + ox], -2, 'obstacle cells untouched');
 });

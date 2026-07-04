@@ -698,3 +698,37 @@ function drawRocket(ctx, x, y, color) {
   ctx.stroke();
   ctx.restore();
 }
+
+/* Adventure pickup: the Rainbow Blaster, glowing on its pedestal */
+function drawSuperWeaponIcon(ctx, x, y, t = 0) {
+  ctx.save();
+  ctx.translate(x, y);
+  // rainbow halo
+  const cols = ['#e6392a', '#f0b41c', '#3ba24f', '#2f66e0'];
+  for (let i = 0; i < 4; i++) {
+    ctx.strokeStyle = cols[i];
+    ctx.globalAlpha = 0.7;
+    ctx.lineWidth = 2.4;
+    ctx.beginPath();
+    ctx.arc(0, 2, 14 + i * 3.5, Math.PI + 0.35, -0.35);
+    ctx.stroke();
+  }
+  ctx.globalAlpha = 1;
+  // the blaster itself
+  ctx.rotate(-0.5 + Math.sin(t * 3) * 0.08);
+  ctx.strokeStyle = INK;
+  ctx.lineWidth = 1.6;
+  ctx.fillStyle = '#fdfdf8';
+  ctx.beginPath(); ctx.roundRect(-9, -4, 15, 8, 2.4); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = '#f0b41c';
+  ctx.beginPath(); ctx.roundRect(4.5, -2.6, 5, 5.2, 1.6); ctx.fill(); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(-6, 4); ctx.lineTo(-8, 9); ctx.stroke();
+  // sparkle
+  ctx.strokeStyle = '#f0b41c';
+  ctx.lineWidth = 1.4;
+  ctx.beginPath();
+  ctx.moveTo(10, -8); ctx.lineTo(14, -8);
+  ctx.moveTo(12, -10); ctx.lineTo(12, -6);
+  ctx.stroke();
+  ctx.restore();
+}
