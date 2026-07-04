@@ -8,7 +8,7 @@ const MATCH_SECONDS = 180;
 const MAX_PICKUPS = 6;
 const BUTTON_FIRST_AT = 35;   // seconds into the match
 const BUTTON_INTERVAL = 45;
-const ROCKET_COUNT = 8;
+const ROCKET_COUNT = 5;
 
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
@@ -98,7 +98,8 @@ resize();
 
 addEventListener('keydown', e => {
   input.keys.add(e.code);
-  if (e.code === 'Escape' && game.state === 'match') leaveMatch();
+  if (e.code === 'Escape' && game.state === 'match') setPauseMenu(!game.pausedMenu);
+  if (game.pausedMenu) return;   // the pause dialog swallows match keys
   if (e.code === 'Space' && game.state === 'match') {
     e.preventDefault();
     if (game.browse) setBrowse(false);   // Space exits sightseeing
@@ -166,6 +167,7 @@ function resetMatchState() {
   game.zoneScores = [0, 0, 0, 0];
   game.newStars = [];
   game.eggEntered = false;
+  game.pausedMenu = false;
   game.originMapName = CURRENT_MAP.name;   // campaign credit survives the egg world
   for (let i = 0; i < 4; i++) spawnPickup();
 }
@@ -306,6 +308,14 @@ function enterEggWorld(name) {
   pushToast(L('WELCOME TO THE OTHER SIDE.'));
 }
 
+/* Esc / LEAVE MATCH open a confirm instead of quitting outright:
+   resume, restart the same setup, or actually leave. A hard pause. */
+function setPauseMenu(on) {
+  if (game.state !== 'match' && on) return;
+  game.pausedMenu = on;
+  $('#pause-panel').classList.toggle('hidden', !on);
+}
+
 function leaveMatch() {
   Replay.stop();
   Music.setMood('default');
@@ -365,6 +375,7 @@ function spawnPickup() {
 
 function update(dt) {
   if (game.state !== 'match' && !game.demo) return;
+  if (game.pausedMenu && game.state === 'match') return;   // pause dialog up
 
   // browse mode is a full pause: nothing simulates, only the camera flies
   if (game.browse && game.state === 'match') {
@@ -589,9 +600,9 @@ function update(dt) {
     if (r.delay > 0) { r.delay -= dt; continue; }
     r.fall -= dt;
     if (r.fall <= 0) {
-      splat(r.x, r.y, rand(Math.random, 120, 160) * slamMul(), r.team);
+      splat(r.x, r.y, rand(Math.random, 85, 115) * slamMul(), r.team);
       for (const f of game.fighters) {
-        if (f.team !== r.team && f.alive && dist(f.x, f.y, r.x, r.y) < 130) {
+        if (f.team !== r.team && f.alive && dist(f.x, f.y, r.x, r.y) < 105) {
           f.hurt(game, 70, game.fighters[r.team]);
         }
       }
@@ -1077,7 +1088,17 @@ function boot() {
       p.classList.toggle('selected', p === pill);
     }
   });
-  $('#leave-btn').addEventListener('click', leaveMatch);
+  $('#leave-btn').addEventListener('click', () => setPauseMenu(true));
+  $('#pause-resume').addEventListener('click', () => setPauseMenu(false));
+  $('#pause-restart').addEventListener('click', () => {
+    setPauseMenu(false);
+    if (game.daily) startDailyMatch();
+    else startMatch(game.player.team);
+  });
+  $('#pause-quit').addEventListener('click', () => {
+    setPauseMenu(false);
+    leaveMatch();
+  });
   $('#browse-btn').addEventListener('click', () => setBrowse(!game.browse));
   $('#daily-btn').addEventListener('click', startDailyMatch);
   $('#share-btn').addEventListener('click', () => downloadShareCard(game));
@@ -1127,6 +1148,7 @@ function boot() {
     if (params.has('py')) game.player.y = Number(params.get('py')) || game.player.y;
     const ff = Number(params.get('ff')) || 0;
     for (let i = 0; i < ff * 30; i++) update(1 / 30);
+    if (params.has('pause')) setPauseMenu(true);
   }
   if (params.get('screen') === 'select') { game.state = 'select'; showScreen('#screen-select'); }
   if (params.has('stage')) game.stageIdx = clamp(Number(params.get('stage')) || 0, 0, STAGES.length - 1);

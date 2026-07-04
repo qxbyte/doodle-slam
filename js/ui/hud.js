@@ -62,8 +62,8 @@ function updateHUD(game) {
   ui.inkFill.style.width = `${p.ink}%`;
   ui.bombCount.textContent = p.bombs;
   ui.bombHint.style.opacity = p.bombs > 0 ? 1 : 0.35;
-  $('#skill-count').textContent = p.skillUses;
-  $('#skill-hint').style.opacity = p.skillUses > 0 ? 1 : 0.35;
+  $('#skill-count').textContent = p.skillCd > 0 ? `${Math.ceil(p.skillCd)}s` : 'OK';
+  $('#skill-hint').style.opacity = p.skillCd > 0 ? 0.35 : 1;
 }
 
 /* red vignette pulse when the player takes damage */

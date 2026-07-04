@@ -78,7 +78,7 @@ class Fighter {
     this.firingVisual = 0;
     this.vx = 0;           // carried momentum, only matters on ice
     this.vy = 0;
-    this.skillUses = 2;    // active skill charges (Q)
+    this.skillCd = 0;      // active skill cooldown (Q), seconds left
     this.dashT = 0;        // Ram Dash time remaining
     this.boostT = 0;       // speed boots buff
     this.shieldT = 0;      // bubble shield buff
@@ -228,6 +228,7 @@ class Fighter {
     this.ink = clamp(this.ink + (onOwn ? INK_REGEN_OWN : INK_REGEN) * dt, 0, 100);
     this.hp = clamp(this.hp + 2.5 * dt, 0, 100);
     this.firingVisual = Math.max(0, this.firingVisual - dt);
+    this.skillCd = Math.max(0, this.skillCd - dt);
   }
 
   /* ------------- bot brain ------------- */
@@ -341,7 +342,7 @@ class Fighter {
     }
 
     // sometimes burn a skill charge when engaged
-    if (this.skillUses > 0 && foe && Math.random() < 0.002) {
+    if (this.skillCd <= 0 && foe && Math.random() < 0.002) {
       Skills.cast(game, this);
     }
   }

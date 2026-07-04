@@ -166,14 +166,18 @@ const I18N_ZH = {
   'out-splatted everyone!': '击倒全场！',
   'holds the zones!': '掌控了据点！',
 
+  /* ---- pause dialog ---- */
+  'PAUSED': '已暂停',
+  'RESUME': '继续游戏',
+  'RESTART MATCH': '重新开始',
+
   /* ---- HUD & toasts ---- */
   'LEAVE MATCH': '退出比赛',
   'BROWSE MAP': '浏览地图',
   'BACK TO BATTLE': '返回战斗',
   'PAINT BOMB &times;{s} &mdash; right-click to throw!': '涂料炸弹 &times;{s} &mdash; 右键投掷！',
   'PAINT BOMB &times;{s} &mdash; tap &#128163;': '涂料炸弹 &times;{s} &mdash; 点 &#128163;',
-  'Q &middot; {s1} &times;{s2}': 'Q &middot; {s1} &times;{s2}',
-  '{s1} &times;{s2} &mdash; tap Q': '{s1} &times;{s2} &mdash; 点 Q',
+  '{s1} &middot; {s2} &mdash; tap Q': '{s1} &middot; {s2} &mdash; 点 Q',
   '{b} — Move faster and refill ink on your own paint.': '{b}。踩自己颜色上移动更快、回墨更快。',
   '{m} — {b}!': '{m} —— {b}！',
   '{n} picked up a Paint Bomb!': '{n} 捡到了涂料炸弹！',

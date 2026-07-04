@@ -1,11 +1,14 @@
 'use strict';
 
 /* ============================================================
-   Active skills — one per fighter, 2 uses per match, key Q.
+   Active skills — one per fighter, key Q, on a cooldown
+   (SKILL_COOLDOWN seconds) instead of limited charges.
    Effects reuse the paint/fx systems; ongoing effects (drone,
    dash) live in game.skillFx / fighter fields and are advanced
    by Skills.update().
    ============================================================ */
+
+const SKILL_COOLDOWN = 18;   // seconds between casts
 
 const SKILLS = [
   {
@@ -63,8 +66,8 @@ const SKILLS = [
 
 const Skills = {
   cast(game, f) {
-    if (!f || !f.alive || f.skillUses <= 0) return false;
-    f.skillUses--;
+    if (!f || !f.alive || f.skillCd > 0) return false;
+    f.skillCd = SKILL_COOLDOWN;
     SKILLS[f.team].cast(game, f);
     SFX.play('skill');
     game.toast(L('{n} used {s}!', { n: f.name, s: SKILLS[f.team].name }));

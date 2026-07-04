@@ -35,7 +35,7 @@
     <div class="bar-row"><span class="bar-label">HP</span><div class="bar"><div id="hp-fill" class="bar-fill hp"></div></div></div>
     <div class="bar-row"><span class="bar-label">INK</span><div class="bar"><div id="ink-fill" class="bar-fill ink"></div></div></div>
     <div id="bomb-hint" class="dashed-box">PAINT BOMB &times;<span id="bomb-count">0</span> &mdash; right-click to throw!</div>
-    <div id="skill-hint" class="dashed-box skill">Q &middot; <span id="skill-name">Skill</span> &times;<span id="skill-count">2</span></div>
+    <div id="skill-hint" class="dashed-box skill">Q &middot; <span id="skill-name">Skill</span> &middot; <span id="skill-count">OK</span></div>
     <div id="weapon-note" class="weapon-note"><b>SketchBlaster</b> &mdash; move faster and refill ink on your own paint</div>
   </div>
 
@@ -97,6 +97,16 @@
     <div id="badge-count"></div>
     <div id="badge-grid"></div>
     <button id="badges-close" class="pill-btn gray" data-i18n="CLOSE"></button>
+  </div>
+</div>
+
+<!-- ===== Pause / leave confirm ===== -->
+<div id="pause-panel" class="hidden">
+  <div class="pause-card card">
+    <div class="panel-title big" data-i18n="PAUSED"></div>
+    <button id="pause-resume" class="big-btn" data-i18n="RESUME"></button>
+    <button id="pause-restart" class="pill-btn" data-i18n="RESTART MATCH"></button>
+    <button id="pause-quit" class="pill-btn gray" data-i18n="BACK TO MENU"></button>
   </div>
 </div>
 

@@ -898,6 +898,30 @@ body.touch .weapon-note { display: none; }
   color: #fff;
 }
 
+/* ===== pause dialog ===== */
+#pause-panel {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(28, 28, 26, 0.35);
+}
+#pause-panel.hidden { display: none; }
+.pause-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: min(300px, 86vw);
+  padding: 22px;
+  text-align: center;
+}
+.pause-card .panel-title.big {
+  font-size: 14px;
+  letter-spacing: 0.18em;
+}
+
 /* ===== badge wall ===== */
 #badges-panel {
   position: fixed;
