@@ -8,9 +8,11 @@
   --green: #3ba24f;
   --desk: #f4d9d5;
   --card-shadow: 0 4px 0 rgba(28, 28, 26, 0.85);
-  --font-display: 'Archivo', 'Arial Black', sans-serif;
-  --font-body: 'Nunito', 'Avenir Next', sans-serif;
-  --font-hand: 'Patrick Hand', 'Chalkboard SE', cursive;
+  /* Latin faces first; Chinese glyphs fall through to LXGW WenKai,
+     an open-source kai/handwriting face that matches the doodle art */
+  --font-display: 'Archivo', 'LXGW WenKai Screen', 'Arial Black', sans-serif;
+  --font-body: 'Nunito', 'LXGW WenKai Screen', 'Avenir Next', sans-serif;
+  --font-hand: 'Patrick Hand', 'LXGW WenKai Screen', 'Chalkboard SE', cursive;
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
