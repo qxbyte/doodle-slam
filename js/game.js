@@ -476,7 +476,7 @@ function update(dt) {
 
     if (!f.isPlayer || game.demo) f.botUpdate(game, dt);
 
-    // pickups
+    // pickups (separation runs after this loop — see below)
     for (let i = game.pickups.length - 1; i >= 0; i--) {
       const pk = game.pickups[i];
       if (dist(f.x, f.y, pk.x, pk.y) < FIGHTER_RADIUS + 14) {
@@ -515,6 +515,9 @@ function update(dt) {
       }
     }
   }
+
+  // fighters never stack — overlapping pairs get nudged apart
+  separateFighters(game.fighters);
 
   // red button appearance
   if (!game.button.active && game.elapsed >= game.button.nextAt) {

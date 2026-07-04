@@ -19,6 +19,35 @@ const DIFFICULTY = {
   hard:   { aimNoise: 0.05, detect: 400, burstWindow: 1.4, bombProb: 0.022 },
 };
 
+/* Fighters never stack: overlapping pairs get shoved apart a little
+   each frame (walls respected). Without this, a chasing bot rides
+   on top of its target forever — same position, same speed. */
+function separateFighters(fighters) {
+  const min = FIGHTER_RADIUS * 1.7;
+  for (let i = 0; i < fighters.length; i++) {
+    for (let j = i + 1; j < fighters.length; j++) {
+      const a = fighters[i], b = fighters[j];
+      if (!a.alive || !b.alive) continue;
+      const d = dist(a.x, a.y, b.x, b.y);
+      if (d >= min) continue;
+      let nx, ny;
+      if (d < 0.01) {   // perfectly stacked: pick any direction
+        const ang = Math.random() * Math.PI * 2;
+        nx = Math.cos(ang);
+        ny = Math.sin(ang);
+      } else {
+        nx = (b.x - a.x) / d;
+        ny = (b.y - a.y) / d;
+      }
+      const push = (min - d) / 2;
+      const pa = collideWorld(a.x - nx * push, a.y - ny * push, FIGHTER_RADIUS);
+      const pb = collideWorld(b.x + nx * push, b.y + ny * push, FIGHTER_RADIUS);
+      a.x = pa.x; a.y = pa.y;
+      b.x = pb.x; b.y = pb.y;
+    }
+  }
+}
+
 /* Bot personalities — one is rolled per bot per match, so every
    lobby plays out differently. Multipliers stack on DIFFICULTY.
      rusher:  hunts the nearest fighter and trades paint eagerly

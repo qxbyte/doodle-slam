@@ -452,3 +452,29 @@ t('secret badges unlock from egg flags only', () => {
   ok(fresh.some(a => a.id === 'otherSide'), 'winning in the hidden world unlocks otherSide');
   localStorage.removeItem('doodleSlam.achievements');
 });
+
+
+/* ---------------- fighter separation ---------------- */
+
+t('overlapping fighters get pushed apart, distant ones stay put', () => {
+  applyMap(MAPS[0]);
+  const a = new Fighter(0, true), b = new Fighter(1, false);
+  a.x = 1000; a.y = 500;
+  b.x = 1002; b.y = 500;    // nearly stacked
+  separateFighters([a, b]);
+  ok(dist(a.x, a.y, b.x, b.y) > 10, 'stacked pair separates');
+  // fully identical position still resolves (random direction)
+  a.x = b.x = 1000; a.y = b.y = 500;
+  separateFighters([a, b]);
+  ok(dist(a.x, a.y, b.x, b.y) > 5, 'perfectly stacked pair separates');
+  // far apart: untouched
+  a.x = 300; a.y = 300; b.x = 900; b.y = 900;
+  separateFighters([a, b]);
+  eq(a.x, 300, 'distant fighters unmoved');
+  // dead fighters are left alone (their splat spot is meaningful)
+  a.x = 1000; a.y = 500; b.x = 1001; b.y = 500;
+  b.alive = false;
+  separateFighters([a, b]);
+  eq(b.x, 1001, 'dead fighter not shoved');
+  b.alive = true;
+});

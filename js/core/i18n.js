@@ -27,6 +27,7 @@ function L(key, vars) {
 const I18N_EN = {
   controlsHint: 'WASD move &nbsp;&middot;&nbsp; hold Left Click to spray &nbsp;&middot;&nbsp; Right Click throws Paint Bombs &nbsp;&middot;&nbsp; Q fires your skill &nbsp;&middot;&nbsp; B browses the map &nbsp;&middot;&nbsp; M mutes',
   settingsBtn: '&#9881; SETTINGS',
+  badgesBtn: '&#127941; BADGES',
 };
 
 function applyStaticI18n() {
@@ -61,7 +62,7 @@ const I18N_ZH = {
   'Sound on': '声音已开启',
 
   /* ---- badges ---- */
-  'BADGES': '成就',
+  badgesBtn: '&#127941; 成就',
   'BADGE WALL': '成就徽章墙',
   '{got}/{total} unlocked': '已解锁 {got}/{total}',
   '🏅 BADGE UNLOCKED — {n}': '🏅 解锁成就 —— {n}',
