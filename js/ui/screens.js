@@ -68,6 +68,36 @@ function attachSplatFX(screenEl) {
   });
 }
 
+/* drag (or vertical-wheel) to scroll the journey line sideways;
+   a real drag swallows the click so cards don't mis-fire */
+function attachDragScroll(el) {
+  let down = false, startX = 0, startLeft = 0, moved = 0;
+  el.addEventListener('mousedown', e => {
+    down = true; moved = 0;
+    startX = e.clientX; startLeft = el.scrollLeft;
+  });
+  addEventListener('mousemove', e => {
+    if (!down) return;
+    const dx = e.clientX - startX;
+    moved = Math.max(moved, Math.abs(dx));
+    el.scrollLeft = startLeft - dx;
+  });
+  addEventListener('mouseup', () => { down = false; });
+  el.addEventListener('click', e => {
+    if (moved > 6) {
+      e.stopPropagation();
+      e.preventDefault();
+      moved = 0;
+    }
+  }, true);
+  el.addEventListener('wheel', e => {
+    if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+      el.scrollLeft += e.deltaY;
+      e.preventDefault();
+    }
+  }, { passive: false });
+}
+
 /* ---------------- map select (filtered by stage) ---------------- */
 
 function buildMapCards(stageIdx = null) {

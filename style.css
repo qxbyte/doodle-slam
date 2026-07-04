@@ -254,25 +254,41 @@ html, body {
 
 /* ================= stage select ================= */
 
+/* one journey line, all stops on it; overflow scrolls sideways */
 #stage-path {
   position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 30px 0;
+  width: min(1380px, 96vw);
+  overflow-x: auto;
+  overflow-y: hidden;
   z-index: 1;
-  width: min(1180px, 96vw);
+  scrollbar-width: thin;
+  scrollbar-color: rgba(28,28,26,0.3) transparent;
+  cursor: grab;
+}
+#stage-path:active { cursor: grabbing; }
+#stage-path::-webkit-scrollbar { height: 8px; }
+#stage-path::-webkit-scrollbar-thumb {
+  background: rgba(28,28,26,0.25);
+  border-radius: 4px;
+}
+#stage-path::-webkit-scrollbar-track { background: transparent; }
+
+#stage-track {
+  position: relative;
+  width: max-content;
+  margin: 0 auto;              /* centres when everything fits */
+  padding: 36px 52px 22px;
 }
 
-/* the hand-drawn journey line the two stops sit on */
+/* the hand-drawn journey line the stops sit on */
 .path-line {
   position: absolute;
-  left: 2%;
-  right: 2%;
+  left: 14px;
+  right: 14px;
   top: 50%;
   height: 0;
   border-top: 3px dashed #8d8d88;
-  transform: rotate(-1.2deg);
+  transform: rotate(-0.6deg);
 }
 .path-line::after {
   content: '';
@@ -285,10 +301,10 @@ html, body {
 
 #stage-cards {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: clamp(18px, 3.4vw, 56px);
+  flex-wrap: nowrap;
+  gap: clamp(20px, 3vw, 48px);
   z-index: 1;
+  position: relative;
 }
 
 .stage-card {
@@ -588,6 +604,15 @@ html, body {
 }
 #leave-btn:hover { transform: translateX(-50%) translateY(-2px); }
 #leave-btn:active { transform: translateX(-50%) translateY(2px); }
+
+#browse-btn {
+  position: absolute;
+  bottom: 14px;
+  left: calc(50% + 92px);
+}
+#browse-btn.active {
+  background: var(--yellow);
+}
 
 /* ================= juice ================= */
 

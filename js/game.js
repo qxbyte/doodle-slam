@@ -19,6 +19,7 @@ const SLAM_SCALE = 1.6;
 const game = {
   state: 'title',        // title | stages | maps | select | match | results
   demo: false,           // attract mode: bots play behind the menus
+  browse: false,         // sightseeing: free camera, fighter stands idle
   stageIdx: 0,           // chosen on the stage-select screen
   mapIdx: 0,             // chosen on the map-select screen
   difficulty: 'normal',  // bot tuning, chosen on the fighter-select screen
@@ -93,8 +94,10 @@ addEventListener('keydown', e => {
   if (e.code === 'Escape' && game.state === 'match') leaveMatch();
   if (e.code === 'Space' && game.state === 'match') {
     e.preventDefault();
-    camPan.x = camPan.y = 0;   // snap the camera back onto the player
+    if (game.browse) setBrowse(false);   // Space also exits sightseeing
+    camPan.x = camPan.y = 0;             // snap the camera back onto the player
   }
+  if (e.code === 'KeyB' && game.state === 'match') setBrowse(!game.browse);
   if (e.code === 'KeyM') {
     pushToast(SFX.toggleMute() ? 'Sound off' : 'Sound on');
   }
@@ -109,7 +112,7 @@ document.addEventListener('mouseleave', () => { input.mouseInside = false; });
 document.addEventListener('mouseenter', () => { input.mouseInside = true; });
 addEventListener('blur', () => { input.mouseInside = false; });
 addEventListener('mousedown', e => {
-  if (game.state !== 'match') return;
+  if (game.state !== 'match' || game.browse) return;
   if (e.button === 0) input.firing = true;
   if (e.button === 2) {
     const p = game.player;
@@ -146,6 +149,27 @@ function resetMatchState() {
   for (let i = 0; i < 4; i++) spawnPickup();
 }
 
+/* browse mode: free camera to sightsee the whole map;
+   the fighter stands idle until you come back */
+const browseCam = { x: 0, y: 0 };
+const BROWSE_SPEED = 720;   // world px/s with WASD/arrows
+
+function setBrowse(on) {
+  if (game.state !== 'match' && on) return;
+  const was = game.browse;
+  game.browse = on;
+  const btn = $('#browse-btn');
+  btn.textContent = on ? 'BACK TO BATTLE' : 'BROWSE MAP';
+  btn.classList.toggle('active', on);
+  if (on) {
+    browseCam.x = game.player.x;
+    browseCam.y = game.player.y;
+    if (!was) pushToast('Browsing the map — your fighter stands idle. B returns.');
+  } else {
+    camPan.x = camPan.y = 0;
+  }
+}
+
 /* attract mode: an all-bot match on a random map, rendered behind
    the translucent menu screens with a slow cinematic camera */
 const demoCam = { x: WORLD.w / 2, y: WORLD.h / 2, tx: WORLD.w / 2, ty: WORLD.h / 2, retarget: 0 };
@@ -177,6 +201,7 @@ function startMatch(playerTeam) {
   camPan.x = camPan.y = 0;
   ui.feed.innerHTML = '';
   setWeaponNote(playerTeam);
+  setBrowse(false);
   game.state = 'match';
   showScreen(null);
   SFX.play('start');
@@ -242,8 +267,8 @@ function update(dt) {
 
   const p = game.player;
 
-  // player input (attract mode is all bots)
-  if (p.alive && !game.demo) {
+  // player input (attract mode is all bots; browsing leaves the fighter idle)
+  if (p.alive && !game.demo && !game.browse) {
     let dx = 0, dy = 0;
     if (input.keys.has('KeyW') || input.keys.has('ArrowUp')) dy -= 1;
     if (input.keys.has('KeyS') || input.keys.has('ArrowDown')) dy += 1;
@@ -421,8 +446,6 @@ function update(dt) {
     return;   // no HUD, no player camera while in the menus
   }
 
-  // camera follows player; mouse at the window edge pans it to scout,
-  // and it eases back once the mouse leaves the edge (Space snaps back)
   cam.zoom = camZoom();
   const vw = innerWidth / cam.zoom, vh = innerHeight / cam.zoom;   // world px in view
   let ex = 0, ey = 0;
@@ -432,6 +455,26 @@ function update(dt) {
     if (input.mouseY < EDGE_MARGIN) ey = -1;
     else if (input.mouseY > innerHeight - EDGE_MARGIN) ey = 1;
   }
+
+  // browse mode: free camera — WASD/arrows and screen edges move it
+  // anywhere on the map, no tether to the fighter
+  if (game.browse) {
+    let bx = ex, by = ey;
+    if (input.keys.has('KeyW') || input.keys.has('ArrowUp')) by -= 1;
+    if (input.keys.has('KeyS') || input.keys.has('ArrowDown')) by += 1;
+    if (input.keys.has('KeyA') || input.keys.has('ArrowLeft')) bx -= 1;
+    if (input.keys.has('KeyD') || input.keys.has('ArrowRight')) bx += 1;
+    browseCam.x = clamp(browseCam.x + clamp(bx, -1, 1) * BROWSE_SPEED * dt, 0, WORLD.w);
+    browseCam.y = clamp(browseCam.y + clamp(by, -1, 1) * BROWSE_SPEED * dt, 0, WORLD.h);
+    cam.x = clamp(browseCam.x - vw / 2, -vw / 2, WORLD.w - vw / 2);
+    cam.y = clamp(browseCam.y - vh / 2, -vh / 2, WORLD.h - vh / 2);
+    updateHUD(game);
+    renderMinimap(game);
+    return;
+  }
+
+  // camera follows player; mouse at the window edge pans it to scout,
+  // and it eases back once the mouse leaves the edge (Space snaps back)
   if (ex || ey) {
     camPan.x += ex * EDGE_PAN_SPEED * dt;
     camPan.y += ey * EDGE_PAN_SPEED * dt;
@@ -608,8 +651,8 @@ function render() {
 
   ctx.restore();
 
-  // crosshair (drawn last, in screen space)
-  if (game.state === 'match') {
+  // crosshair (drawn last, in screen space; hidden while sightseeing)
+  if (game.state === 'match' && !game.browse) {
     const mx = input.mouseX, my = input.mouseY;
     ctx.strokeStyle = '#1c1c1a';
     ctx.lineWidth = 2.5;
@@ -688,8 +731,10 @@ function boot() {
     }
   });
   $('#leave-btn').addEventListener('click', leaveMatch);
+  $('#browse-btn').addEventListener('click', () => setBrowse(!game.browse));
   $('#again-btn').addEventListener('click', () => startMatch(game.player.team));
   $('#menu-btn').addEventListener('click', leaveMatch);
+  attachDragScroll($('#stage-path'));
 
   // every button click gets a little pencil tick
   document.addEventListener('click', e => {
