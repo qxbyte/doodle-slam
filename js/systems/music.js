@@ -105,18 +105,28 @@ const Music = (() => {
     }
   }
 
+  function tick() {
+    // the context only runs after a user gesture; wait for it
+    if (ac.state !== 'running') return;
+    // after a suspension the clock jumped ahead — resync instead of
+    // machine-gunning every missed step at once
+    if (nextTime < ac.currentTime) nextTime = ac.currentTime + 0.1;
+    while (nextTime < ac.currentTime + 0.2) {
+      scheduleStep(step, nextTime);
+      step++;
+      nextTime += STEP;
+    }
+  }
+
   function start() {
-    if (timer || muted || !ensure()) return;
+    if (muted || !ensure()) return;
+    // always try to resume: start() may be re-invoked by the first
+    // user gesture while the scheduler is already armed
     if (ac.state === 'suspended') ac.resume();
+    if (timer) return;
     step = 0;
     nextTime = ac.currentTime + 0.1;
-    timer = setInterval(() => {
-      while (nextTime < ac.currentTime + 0.2) {
-        scheduleStep(step, nextTime);
-        step++;
-        nextTime += STEP;
-      }
-    }, 50);
+    timer = setInterval(tick, 50);
   }
 
   function stop() {
