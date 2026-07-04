@@ -511,6 +511,8 @@ html, body {
 }
 #replay-canvas {
   display: block;
+  width: 330px;
+  height: 220px;
   border: 2px solid var(--ink);
   border-radius: 8px;
 }
@@ -644,6 +646,8 @@ html, body {
 #minimap {
   position: absolute;
   right: 14px; bottom: 14px;
+  width: 176px;
+  height: 118px;
   border: 2.5px solid var(--ink);
   border-radius: 10px;
   background: #fff;

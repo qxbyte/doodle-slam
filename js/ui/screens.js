@@ -23,7 +23,7 @@ function buildStageCards() {
     card.className = 'stage-card';
     card.dataset.stage = i;
     const cv = document.createElement('canvas');
-    cv.width = 232; cv.height = 150;
+    cv.width = 464; cv.height = 300;          // 2x backing = crisp on retina
     drawStageVignette(cv, stage.vignette);
     card.appendChild(cv);
     const prog = Campaign.stageStars(i);
@@ -42,12 +42,14 @@ function buildStageCards() {
 function drawStageVignette(cv, kind) {
   const c = cv.getContext('2d');
   const rng = makeRng(VIGNETTE_SEEDS[kind] || 99);
+  const dims = { width: 232, height: 150 };   // logical space the art targets
+  c.scale(cv.width / dims.width, cv.height / dims.height);
   c.fillStyle = VIGNETTE_BG[kind] || PAPER;
-  c.fillRect(0, 0, cv.width, cv.height);
+  c.fillRect(0, 0, dims.width, dims.height);
   c.lineJoin = 'round';
   c.lineCap = 'round';
   c.strokeStyle = INK;
-  (VIGNETTES[kind] || VIGNETTES.city)(c, rng, cv);
+  (VIGNETTES[kind] || VIGNETTES.city)(c, rng, dims);
 }
 
 /* Clicking blank paper on the stage screen bursts a paint splat —
@@ -113,7 +115,7 @@ function buildMapCards(stageIdx = null) {
     card.className = 'map-card';
     card.dataset.map = i;
     const cv = document.createElement('canvas');
-    cv.width = 264; cv.height = 176;
+    cv.width = 528; cv.height = 352;          // 2x backing = crisp on retina
     drawMapPreview(cv, map);
     card.appendChild(cv);
     const stars = Campaign.stars(map.name);
@@ -131,6 +133,7 @@ function buildMapCards(stageIdx = null) {
 function drawMapPreview(cv, map) {
   const c = cv.getContext('2d');
   const sx = cv.width / WORLD.w, sy = cv.height / WORLD.h;
+  c.clearRect(0, 0, cv.width, cv.height);
   c.fillStyle = { desk: '#eedfcf', moon: '#e9edef', sand: '#f2e7cf', snow: '#f4f7f9', chalk: '#2c3b35', seabed: '#dcebf0' }[map.ground] || '#f0efe9';
   c.fillRect(0, 0, cv.width, cv.height);
   // frozen lakes + current lanes
@@ -207,9 +210,11 @@ function buildFighterCards() {
     card.dataset.team = team.id;
     card.style.borderBottomColor = team.color;
     const cv = document.createElement('canvas');
-    cv.width = 120; cv.height = 110;
+    cv.width = 240; cv.height = 220;          // 2x backing = crisp on retina
+    cv.style.width = '120px';
+    cv.style.height = '110px';
     const c = cv.getContext('2d');
-    c.scale(2.6, 2.6);
+    c.scale(5.2, 5.2);
     drawCharacter(c, team.id, 23, 24, { aim: -0.35 });
     card.appendChild(cv);
     const w = WEAPONS[team.id];
@@ -226,15 +231,17 @@ function buildFighterCards() {
 /* the paint burst the logo sits on */
 function initTitleArt() {
   const cv = $('#logo-splat');
+  cv.width = 1440; cv.height = 840;           // 2x backing = crisp on retina
   const c = cv.getContext('2d');
   const rng = makeRng(4242);
-  c.clearRect(0, 0, cv.width, cv.height);
+  c.scale(2, 2);
+  const W = 720, H = 420;
   c.globalAlpha = 0.9;
-  drawSplat(c, rng, cv.width * 0.36, cv.height * 0.40, 96, '#2f66e0');
-  drawSplat(c, rng, cv.width * 0.64, cv.height * 0.62, 88, '#e6392a');
+  drawSplat(c, rng, W * 0.36, H * 0.40, 96, '#2f66e0');
+  drawSplat(c, rng, W * 0.64, H * 0.62, 88, '#e6392a');
   c.globalAlpha = 0.85;
-  drawSplat(c, rng, cv.width * 0.74, cv.height * 0.30, 46, '#f0b41c');
-  drawSplat(c, rng, cv.width * 0.24, cv.height * 0.72, 40, '#3ba24f');
+  drawSplat(c, rng, W * 0.74, H * 0.30, 46, '#f0b41c');
+  drawSplat(c, rng, W * 0.24, H * 0.72, 40, '#3ba24f');
   c.globalAlpha = 1;
 }
 

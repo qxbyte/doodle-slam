@@ -59,15 +59,16 @@ const Replay = (() => {
     for (const b of BUILDINGS) {
       c.fillRect(b.x / WORLD.w * w, b.y / WORLD.h * h, b.w / WORLD.w * w, b.h / WORLD.h * h);
     }
-    // progress bar + match clock along the bottom
+    // progress bar + match clock along the bottom (sized to the frame)
+    const barH = Math.max(5, Math.round(h * 0.023));
     c.fillStyle = 'rgba(28,28,26,0.15)';
-    c.fillRect(0, h - 5, w, 5);
+    c.fillRect(0, h - barH, w, barH);
     c.fillStyle = '#1c1c1a';
-    c.fillRect(0, h - 5, w * progress, 5);
-    c.font = `800 11px 'Nunito', sans-serif`;
+    c.fillRect(0, h - barH, w * progress, barH);
+    c.font = `800 ${Math.max(11, Math.round(h * 0.05))}px 'Nunito', sans-serif`;
     c.textAlign = 'right';
     c.fillStyle = '#1c1c1a';
-    c.fillText(formatTime(180 * progress).replace(/^(\d)/, '$1'), w - 6, h - 10);
+    c.fillText(formatTime(180 * progress), w - 6, h - barH - 5);
   }
 
   function start(canvas) {

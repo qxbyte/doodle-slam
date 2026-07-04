@@ -104,7 +104,9 @@ function pushToast(text, kind = '') {
 
 function renderMinimap(game) {
   const c = ui.minimapCtx;
-  const mw = ui.minimap.width, mh = ui.minimap.height;
+  // 2x backing for retina; draw in logical 176x118 space
+  c.setTransform(2, 0, 0, 2, 0, 0);
+  const mw = ui.minimap.width / 2, mh = ui.minimap.height / 2;
   const sx = mw / GRID_W, sy = mh / GRID_H;
   c.fillStyle = '#fdfdfa';
   c.fillRect(0, 0, mw, mh);

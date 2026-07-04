@@ -138,13 +138,14 @@ function drawCharacter(ctx, teamId, x, y, opts = {}) {
   ctx.save();
   ctx.translate(x, y);
   ctx.scale(scale, scale);
-  ctx.lineWidth = 1.6;
+  ctx.lineWidth = 1.9;
   ctx.strokeStyle = INK;
   ctx.lineJoin = 'round';
   ctx.lineCap = 'round';
 
   const bob = Math.sin(walk * 10) * 1.4;
   const by = bob * 0.3;               // upper-body bob
+  const skin = ['#ba7a4a', '#e8b48c', '#d99a62', '#8d5a38'][teamId];
   const bodyW = [13, 12, 11, 15][teamId];   // build: NIA slim, KOBI round
   const hw = bodyW / 2;
 
@@ -179,7 +180,7 @@ function drawCharacter(ctx, teamId, x, y, opts = {}) {
     ctx.quadraticCurveTo(-8 - Math.sin(walk * 6) * 1.5, -4 + by, -6.5, 3 + by);
     ctx.stroke();
     ctx.strokeStyle = INK;
-    ctx.lineWidth = 1.6;
+    ctx.lineWidth = 1.9;
   }
 
   // body (team colour), per-fighter outfit details
@@ -203,7 +204,7 @@ function drawCharacter(ctx, teamId, x, y, opts = {}) {
     ctx.moveTo(-1.5, -1 + by); ctx.lineTo(1, 1.5 + by); ctx.lineTo(-0.5, 1.5 + by); ctx.lineTo(2, 4.5 + by);
     ctx.stroke();
     ctx.strokeStyle = INK;
-    ctx.lineWidth = 1.6;
+    ctx.lineWidth = 1.9;
   } else if (teamId === 2) {    // NIA: zip line + star badge
     ctx.beginPath(); ctx.moveTo(0, -2 + by); ctx.lineTo(0, 9 + by); ctx.stroke();
     ctx.fillStyle = '#fff';
@@ -225,57 +226,75 @@ function drawCharacter(ctx, teamId, x, y, opts = {}) {
     ctx.lineWidth = 1.4;
     ctx.beginPath(); ctx.moveTo(3, 1.5 + by); ctx.lineTo(3, -2.5 + by); ctx.stroke();
     ctx.strokeStyle = INK;
-    ctx.lineWidth = 1.6;
+    ctx.lineWidth = 1.9;
   }
 
   // weapon held toward aim — silhouette matches the loadout
   ctx.save();
   ctx.rotate(aim);
+  // arms reaching for the grip
+  ctx.strokeStyle = INK;
+  ctx.lineWidth = 1.9;
+  ctx.beginPath();
+  ctx.moveTo(1.5, -2.8); ctx.lineTo(5.8, -1.2);
+  ctx.moveTo(1.5, 3.2); ctx.lineTo(9, 1.6);
+  ctx.stroke();
   ctx.fillStyle = team.color;
   if (teamId === 1) {
     // Splat Scatter: stubby double barrel
-    ctx.beginPath(); ctx.roundRect(4, -3.4, 7, 3, 1.4); ctx.fill(); ctx.stroke();
-    ctx.beginPath(); ctx.roundRect(4, 0.4, 7, 3, 1.4); ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.roundRect(4, -4, 8.4, 3.6, 1.6); ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.roundRect(4, 0.4, 8.4, 3.6, 1.6); ctx.fill(); ctx.stroke();
     ctx.fillStyle = '#fff';
-    ctx.beginPath(); ctx.roundRect(10, -2.6, 2.6, 5.2, 1); ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.roundRect(11.2, -3, 3.2, 6, 1.2); ctx.fill(); ctx.stroke();
   } else if (teamId === 2) {
     // Longshot Pen: long thin barrel with a scope ring
-    ctx.beginPath(); ctx.roundRect(4, -1.4, 14, 2.8, 1.2); ctx.fill(); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(18, -1.4); ctx.lineTo(20.5, 0); ctx.lineTo(18, 1.4); ctx.closePath();
-    ctx.fillStyle = '#3c3c3a'; ctx.fill();
-    ctx.beginPath(); ctx.arc(9, -3, 1.6, 0, Math.PI * 2);
+    ctx.beginPath(); ctx.roundRect(4, -1.7, 15.5, 3.4, 1.4); ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(19.5, -1.7); ctx.lineTo(22.5, 0); ctx.lineTo(19.5, 1.7); ctx.closePath();
+    ctx.fillStyle = '#3c3c3a'; ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.arc(9.5, -3.4, 1.9, 0, Math.PI * 2);
     ctx.fillStyle = '#fff'; ctx.fill(); ctx.stroke();
   } else if (teamId === 3) {
     // Blob Roller: fat round blob-thrower
-    ctx.beginPath(); ctx.ellipse(8, 0, 5, 3.6, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.ellipse(8.5, 0, 5.8, 4.2, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
     ctx.fillStyle = '#fff';
-    ctx.beginPath(); ctx.roundRect(12, -2, 3.6, 4, 1.6); ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.roundRect(13.2, -2.3, 4, 4.6, 1.8); ctx.fill(); ctx.stroke();
   } else {
     // SketchBlaster: the classic
-    ctx.beginPath(); ctx.roundRect(4, -2.4, 10, 4.8, 1.6); ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.roundRect(4, -2.8, 11.5, 5.6, 1.8); ctx.fill(); ctx.stroke();
     ctx.fillStyle = '#fff';
-    ctx.beginPath(); ctx.roundRect(11, -1.4, 3.4, 2.8, 1); ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.roundRect(12, -1.7, 3.8, 3.4, 1.2); ctx.fill(); ctx.stroke();
   }
+  // both hands gripping
+  ctx.fillStyle = skin;
+  ctx.lineWidth = 1.2;
+  ctx.beginPath(); ctx.arc(6, -0.8, 1.7, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+  ctx.beginPath(); ctx.arc(9.6, 1.2, 1.7, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+  ctx.lineWidth = 1.9;
   if (firing) {
     ctx.fillStyle = team.color;
-    ctx.beginPath(); ctx.arc(teamId === 2 ? 22 : 17, 0, 1.9, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(teamId === 2 ? 24 : 18.5, 0, 2.1, 0, Math.PI * 2); ctx.fill();
   }
   ctx.restore();
 
   // head
-  const skin = ['#ba7a4a', '#e8b48c', '#d99a62', '#8d5a38'][teamId];
   ctx.fillStyle = skin;
-  ctx.beginPath(); ctx.arc(0, -8 + by, 6, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+  ctx.beginPath(); ctx.arc(0, -8 + by, 6.4, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
   // eyes
   ctx.fillStyle = '#222';
   ctx.beginPath(); ctx.arc(-2, -8.5 + by, 0.9, 0, Math.PI * 2); ctx.fill();
   ctx.beginPath(); ctx.arc(2, -8.5 + by, 0.9, 0, Math.PI * 2); ctx.fill();
+  // little open-mouth grin, like the reference doodles
+  ctx.strokeStyle = '#222';
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.arc(0.4, -6.6 + by, 2, 0.25, Math.PI - 0.55); ctx.stroke();
+  ctx.strokeStyle = INK;
+  ctx.lineWidth = 1.9;
   if (teamId === 1) {           // JAX: cheek plaster
     ctx.strokeStyle = '#e8d5a4';
-    ctx.lineWidth = 1.6;
+    ctx.lineWidth = 1.9;
     ctx.beginPath(); ctx.moveTo(2.8, -5.6 + by); ctx.lineTo(5, -6.8 + by); ctx.stroke();
     ctx.strokeStyle = INK;
-    ctx.lineWidth = 1.6;
+    ctx.lineWidth = 1.9;
   }
   if (teamId === 2) {           // NIA: scope over the right eye
     ctx.strokeStyle = '#3c3c3a';
@@ -286,7 +305,7 @@ function drawCharacter(ctx, teamId, x, y, opts = {}) {
     ctx.moveTo(2, -6.8 + by); ctx.lineTo(2, -5.4 + by);
     ctx.stroke();
     ctx.strokeStyle = INK;
-    ctx.lineWidth = 1.6;
+    ctx.lineWidth = 1.9;
   }
 
   const hy = -8 + by; // hat anchor
