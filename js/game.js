@@ -33,7 +33,7 @@ const game = {
   rockets: [],
   fx: [],                // transient juice: impact bursts, SPLAT! text
   skillFx: [],           // ongoing skill effects (paint drones)
-  adventure: null,       // { level, boss, … } while a story level runs
+  adv: null,             // story-mode runtime (js/adventure/run.js)
   zones: [],             // zone-control capture circles
   zoneScores: [0, 0, 0, 0],
   newStars: [],          // campaign stars earned this match
@@ -246,7 +246,7 @@ function startMatch(playerTeam) {
   Replay.stop();
   game.demo = false;
   game.daily = false;
-  game.adventure = null;
+  game.adv = null;
   setMap(game.mapIdx);   // builds the sketch layers, sets OBSTACLES/PLAZA
   Ambient.set(Settings.data.ambient ? CURRENT_MAP.ambient : null);
   Music.setMood(CURRENT_MAP.mood);
@@ -313,124 +313,6 @@ function enterEggWorld(egg) {
   pushToast(L(zipper ? 'WELCOME TO THE INSIDE.' : 'WELCOME TO THE OTHER SIDE.'));
 }
 
-/* ---------------- adventure mode ---------------- */
-
-function startAdventureLevel(idx) {
-  const lvl = ADV_LEVELS[idx];
-  const mapIdx = MAPS.findIndex(m => m.name === lvl.map);
-  if (mapIdx < 0) return;
-  Replay.stop();
-  game.demo = false;
-  game.daily = false;
-  game.mapIdx = mapIdx;
-  game.difficulty = lvl.difficulty;
-  setMap(mapIdx);
-  Ambient.set(Settings.data.ambient ? CURRENT_MAP.ambient : null);
-  Music.setMood(lvl.boss ? 'volcano' : CURRENT_MAP.mood);   // boss fight = tense
-  initPaint();
-  const team = Adventure.team;
-  game.fighters = TEAMS.map(t => new Fighter(t.id, t.id === team));
-  game.player = game.fighters[team];
-  resetMatchState();
-  game.adventure = { level: idx, boss: null };
-  game.timeLeft = lvl.time;
-  // only lvl.enemies minions take the field; the rest sit out
-  const foes = TEAMS.map(t => t.id).filter(id => id !== team).slice(0, lvl.enemies);
-  for (const f of game.fighters) {
-    if (!f.isPlayer && !foes.includes(f.team)) {
-      f.alive = false;
-      f.respawnTimer = Infinity;
-    }
-  }
-  if (lvl.boss) {
-    game.adventure.boss = {
-      x: PLAZA.x, y: PLAZA.y,
-      hp: lvl.boss.hp, maxHp: lvl.boss.hp,
-      speed: lvl.boss.speed, radius: lvl.boss.radius,
-      hitT: 0, eraseT: 0,
-    };
-  }
-  // the legendary weapon is always out there, waiting
-  const ws = randomOpenSpot(120);
-  game.pickups.push({ x: ws.x, y: ws.y, type: 'weapon', bob: 0 });
-  Adventure.markStarted(idx);
-  game.newBest = false;
-  Replay.reset();
-  ui.feed.innerHTML = '';
-  setWeaponNote(team);
-  setBrowse(false);
-  game.state = 'match';
-  showScreen(null);
-  SFX.play('start');
-  pushToast(`${L('LEVEL')} ${idx + 1} · ${lvl.name}`);
-}
-
-function updateAdventure(dt) {
-  const adv = game.adventure;
-  const boss = adv.boss;
-  if (boss && boss.hp > 0) {
-    // it slides toward the hero, erasing everything it crosses
-    const p = game.player;
-    const a = Math.atan2(p.y - boss.y, p.x - boss.x);
-    boss.x = clamp(boss.x + Math.cos(a) * boss.speed * dt, 50, WORLD.w - 50);
-    boss.y = clamp(boss.y + Math.sin(a) * boss.speed * dt, 50, WORLD.h - 50);
-    boss.eraseT -= dt;
-    if (boss.eraseT <= 0) {
-      boss.eraseT = 0.12;
-      erasePaint(boss.x, boss.y, boss.radius * 1.2);
-    }
-    boss.hitT = Math.max(0, boss.hitT - dt);
-    // contact grinds fighters down
-    for (const f of game.fighters) {
-      if (!f.alive) continue;
-      const d = dist(f.x, f.y, boss.x, boss.y);
-      if (d < boss.radius + FIGHTER_RADIUS) {
-        // shove them out while it hurts
-        const push = (boss.radius + FIGHTER_RADIUS - d) + 40 * dt;
-        const na = Math.atan2(f.y - boss.y, f.x - boss.x);
-        const fixed = collideWorld(f.x + Math.cos(na) * push, f.y + Math.sin(na) * push, FIGHTER_RADIUS);
-        f.x = fixed.x; f.y = fixed.y;
-        if (f.shieldT <= 0) {
-          f.hp -= 40 * dt;
-          f.lavaTick -= dt;
-          if (f.lavaTick <= 0) {
-            f.lavaTick = 0.4;
-            if (f.isPlayer && !game.demo) { SFX.play('hurt'); flashHurt(); }
-          }
-          if (f.hp <= 0) {
-            f.alive = false;
-            f.respawnTimer = 2.5;
-            game.stats[f.team].downs++;
-            addFx({ type: 'text', x: f.x, y: f.y - 24, text: 'ERASED!', color: '#8a8a86' });
-            addShake(f.isPlayer ? 9 : 4);
-            SFX.play('splatted');
-            pushToast(L('{n} was erased!', { n: f.name }));
-          }
-        }
-      }
-    }
-    if (boss.hp <= 0) {
-      // it crumbles into shavings
-      for (let k = 0; k < 5; k++) {
-        addFx({ type: 'burst', x: boss.x + rand(Math.random, -40, 40), y: boss.y + rand(Math.random, -40, 40), r1: 60, drops: 8, dur: 0.5, color: '#f2e3e0' });
-      }
-      splat(boss.x, boss.y, 120, game.player.team);
-      addShake(12);
-      SFX.play('rocketBoom');
-    }
-  }
-  if (advGoalMet(game)) endAdventureLevel(true);
-}
-
-function endAdventureLevel(win) {
-  if (win) Adventure.markCleared(game.adventure.level);
-  game.state = 'results';
-  setBrowse(false);
-  setPauseMenu(false);
-  SFX.play(win ? 'slam' : 'end');
-  showLevelEnd(win);
-}
-
 /* the boss: a giant eraser dragged across the town */
 function drawEraserBoss(b) {
   ctx.save();
@@ -487,7 +369,7 @@ function setPauseMenu(on) {
 function leaveMatch() {
   Replay.stop();
   Music.setMood('default');
-  game.adventure = null;
+  game.adv = null;
   $('#story-panel').classList.add('hidden');
   $('#level-end-panel').classList.add('hidden');
   game.state = 'title';
@@ -558,7 +440,7 @@ function update(dt) {
   game.elapsed += dt;
   game.timeLeft -= dt;
   if (game.timeLeft <= 0) {
-    game.adventure ? endAdventureLevel(false) : endMatch();
+    game.adv ? endAdventureLevel(false) : endMatch();
     return;
   }
 
@@ -601,7 +483,7 @@ function update(dt) {
     // the hidden door: only the player can find it, once per match
     // (not in daily runs — everyone's score must share the same map)
     const egg = CURRENT_MAP.egg;
-    if (egg && !game.eggEntered && !game.demo && !game.daily && !game.adventure && p.alive &&
+    if (egg && !game.eggEntered && !game.demo && !game.daily && !game.adv && p.alive &&
         p.x > egg.x - 6 && p.x < egg.x + egg.w + 6 &&
         p.y > egg.y - 6 && p.y < egg.y + egg.h + 6) {
       enterEggWorld(egg);
@@ -709,9 +591,9 @@ function update(dt) {
   // fighters never stack — overlapping pairs get nudged apart
   separateFighters(game.fighters);
 
-  // adventure: boss brain + objective check
-  if (game.adventure) {
-    updateAdventure(dt);
+  // story mode: enemy brains + route/objective check
+  if (game.adv) {
+    updateAdventureRun(dt);
     if (game.state !== 'match') return;   // the level just ended
   }
 
@@ -729,13 +611,10 @@ function update(dt) {
     pr.life -= dt;
     let dead = false;
 
-    const boss = game.adventure && game.adventure.boss;
-    if (boss && boss.hp > 0 && pr.team === game.player.team &&
-        dist(pr.x, pr.y, boss.x, boss.y) < boss.radius) {
-      boss.hp -= pr.dmg;
-      boss.hitT = 0.15;
+    if (game.adv && pr.team === game.player.team &&
+        advHitEnemies(game, pr.x, pr.y, 6, pr.dmg)) {
+      splat(pr.x, pr.y, rand(Math.random, pr.sMin * 0.7, pr.sMax * 0.7), pr.team);
       addFx({ type: 'burst', x: pr.x, y: pr.y, r1: 24, color: TEAMS[pr.team].color });
-      if (pr.owner.isPlayer) SFX.play('hit');
       dead = true;
     } else if (pointBlocked(pr.x, pr.y)) {
       dead = true; // buildings eat shots, no splat on walls
@@ -779,11 +658,7 @@ function update(dt) {
             f.hurt(game, 55, b.owner);
           }
         }
-        const bboss = game.adventure && game.adventure.boss;
-        if (bboss && bboss.hp > 0 && dist(bboss.x, bboss.y, bx, by) < 110 + bboss.radius) {
-          bboss.hp -= 60;
-          bboss.hitT = 0.2;
-        }
+        if (game.adv) advHitEnemies(game, bx, by, 110, 60);
         addFx({ type: 'burst', x: bx, y: by, r1: 110, drops: 8, dur: 0.4, color: TEAMS[b.team].color });
         addShake(6);
         SFX.play('boom');
@@ -1085,9 +960,14 @@ function render() {
     }
   }
 
-  // the adventure boss rides above everything on the field
-  if (game.adventure && game.adventure.boss && game.adventure.boss.hp > 0) {
-    drawEraserBoss(game.adventure.boss);
+  // story mode: guide ring/arrow under, enemies and shots above
+  if (game.adv) {
+    drawAdventureGuide(ctx, game);
+    for (const m of game.adv.minions) m.draw(ctx);
+    if (game.adv.boss && game.adv.boss.hp > 0 && game.adv.boss.awake) {
+      drawEraserBoss(game.adv.boss);
+    }
+    drawAdvShots(ctx, game);
   }
 
   ctx.restore();
@@ -1288,6 +1168,7 @@ function boot() {
   });
 
   // adventure screen
+  initWorldMapClicks();
   $('#adv-continue').addEventListener('click', () => showStory(Adventure.lastLevel()));
   $('#adv-restart').addEventListener('click', () => {
     Adventure.reset();
@@ -1310,11 +1191,11 @@ function boot() {
   });
   $('#level-next').addEventListener('click', () => {
     $('#level-end-panel').classList.add('hidden');
-    showStory(game.adventure.level + 1);
+    showStory(game.adv.level + 1);
   });
   $('#level-retry').addEventListener('click', () => {
     $('#level-end-panel').classList.add('hidden');
-    showStory(game.adventure.level);
+    showStory(game.adv.level);
   });
   $('#level-menu').addEventListener('click', leaveMatch);
   $('#stage-cards').addEventListener('click', e => {
@@ -1369,7 +1250,7 @@ function boot() {
   $('#pause-resume').addEventListener('click', () => setPauseMenu(false));
   $('#pause-restart').addEventListener('click', () => {
     setPauseMenu(false);
-    if (game.adventure) startAdventureLevel(game.adventure.level);
+    if (game.adv) startAdventureLevel(game.adv.level);
     else if (game.daily) startDailyMatch();
     else startMatch(game.player.team);
   });
@@ -1439,6 +1320,8 @@ function boot() {
   if (params.has('fan')) $('#play-bang').classList.add('open');
   if (params.has('adv')) {
     startAdventureLevel(clamp(Number(params.get('adv')) || 0, 0, ADV_LEVELS.length - 1));
+    if (params.has('px')) game.player.x = Number(params.get('px')) || game.player.x;
+    if (params.has('py')) game.player.y = Number(params.get('py')) || game.player.y;
     const aff = Number(params.get('ff')) || 0;
     for (let i = 0; i < aff * 30; i++) update(1 / 30);
   }

@@ -4,10 +4,12 @@
    gap on MESSY DESK's pencil case. Never listed anywhere
    (hidden: true, stage: -1); you can only squeeze in mid-match.
 
-   Shrunk down among your own supplies: a quilted fabric lining,
-   long slot dividers, and stationery the size of buildings —
-   pencils, erasers, a sharpener, a notepad. The red button rests
-   on a spilled ink blot, just like home. */
+   NOT the desk again: in here you are ant-sized inside the case
+   itself. Quilted fabric lining, padded slot dividers, and only
+   things that live in a pencil case — a bundle of crayons, a
+   glue stick, a fat marker with its cap off, a correction-tape
+   mouse. Sticker decals dot the lining. The red button rests on
+   a leaked ink blot. */
 registerMap({
   name: 'INSIDE THE PENCIL CASE',
   desc: 'The world inside the zipper.',
@@ -24,14 +26,14 @@ registerMap({
     // slot dividers: the long padded ridges that split the case
     { x: 340,  y: 430,  w: 900, h: 60,  kind: 'divider' },
     { x: 1160, y: 1080, w: 900, h: 60,  kind: 'divider' },
-    // giant stationery, snug in their slots
-    { x: 420,  y: 180,  w: 640, h: 58,  kind: 'pencil' },
-    { x: 1350, y: 250,  w: 620, h: 56,  kind: 'pencil' },
-    { x: 300,  y: 700,  w: 230, h: 130, kind: 'eraser' },
-    { x: 1850, y: 620,  w: 200, h: 115, kind: 'eraser' },
-    { x: 700,  y: 1250, w: 150, h: 120, kind: 'sharpener' },
-    { x: 2050, y: 1330, w: 170, h: 170, kind: 'notepad' },
-    { x: 180,  y: 1150, w: 170, h: 170, kind: 'mug' },
-    { x: 900,  y: 800,  w: 280, h: 105, kind: 'stapler' },
+    // pencil-case natives, huge at this scale
+    { x: 420,  y: 170,  w: 660, h: 90,  kind: 'crayons' },
+    { x: 1400, y: 240,  w: 560, h: 80,  kind: 'marker' },
+    { x: 300,  y: 690,  w: 190, h: 150, kind: 'gluestick' },
+    { x: 1860, y: 610,  w: 220, h: 130, kind: 'correction' },
+    { x: 700,  y: 1240, w: 200, h: 140, kind: 'gluestick' },
+    { x: 2020, y: 1300, w: 240, h: 130, kind: 'correction' },
+    { x: 150,  y: 1180, w: 520, h: 80,  kind: 'crayons' },
+    { x: 820,  y: 940,  w: 300, h: 70,  kind: 'crayons' },
   ],
 });

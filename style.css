@@ -1177,3 +1177,16 @@ body.touch .weapon-note { display: none; }
   color: #256b34;
   font-weight: 900;
 }
+
+/* ===== world map (adventure select) ===== */
+#worldmap-wrap { z-index: 1; }
+#worldmap {
+  display: block;
+  width: min(880px, 90vw);
+  height: auto;
+  border: 3px solid var(--ink);
+  border-radius: 12px;
+  box-shadow: var(--card-shadow);
+  background: #f4efe2;
+  cursor: pointer;
+}

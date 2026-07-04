@@ -49,8 +49,10 @@ function hudSet(key, val, apply) {
 
 function updateHUD(game) {
   // timer
-  hudSet('timer', formatTime(game.timeLeft), v => { ui.timer.textContent = v; });
-  hudSet('urgent', game.timeLeft <= 30, v => ui.timer.classList.toggle('urgent', v));
+  // story mode counts up (no clock pressure); matches count down
+  hudSet('timer', formatTime(game.adv ? game.elapsed : game.timeLeft),
+    v => { ui.timer.textContent = v; });
+  hudSet('urgent', !game.adv && game.timeLeft <= 30, v => ui.timer.classList.toggle('urgent', v));
 
   // score panel adapts to the match mode
   const mode = currentMode();
@@ -81,7 +83,7 @@ function updateHUD(game) {
   });
 
   // adventure objective line
-  hudSet('obj', game.adventure ? advGoalText(game) : '', v => {
+  hudSet('obj', game.adv ? advGoalText(game) : '', v => {
     const el = $('#objective-note');
     el.textContent = v;
     el.classList.toggle('hidden', !v);
@@ -188,15 +190,35 @@ function renderMinimap(game) {
     c.fill(); c.stroke();
   }
 
-  // adventure boss: a fat dark blip
-  const ab = game.adventure && game.adventure.boss;
-  if (ab && ab.hp > 0) {
-    c.fillStyle = '#5a78b8';
+  // story mode: active area ring, minion dots, boss blip
+  if (game.adv) {
+    const lvl = ADV_LEVELS[game.adv.level];
+    const zone = lvl.route[game.adv.zoneIdx];
+    if (zone) {
+      c.strokeStyle = zone.boss ? 'rgba(230,57,42,0.9)' : 'rgba(47,102,224,0.85)';
+      c.lineWidth = 1.4;
+      c.setLineDash([3, 3]);
+      c.beginPath();
+      c.arc(zone.x / WORLD.w * mw, zone.y / WORLD.h * mh, zone.r / WORLD.w * mw, 0, Math.PI * 2);
+      c.stroke();
+      c.setLineDash([]);
+    }
+    c.fillStyle = '#8a8a86';
     c.strokeStyle = '#1c1c1a';
-    c.lineWidth = 1.2;
-    c.beginPath();
-    c.arc(ab.x / WORLD.w * mw, ab.y / WORLD.h * mh, 4.4, 0, Math.PI * 2);
-    c.fill(); c.stroke();
+    c.lineWidth = 0.8;
+    for (const m of game.adv.minions) {
+      c.beginPath();
+      c.arc(m.x / WORLD.w * mw, m.y / WORLD.h * mh, 2, 0, Math.PI * 2);
+      c.fill(); c.stroke();
+    }
+    const ab = game.adv.boss;
+    if (ab && ab.hp > 0) {
+      c.fillStyle = '#5a78b8';
+      c.lineWidth = 1.2;
+      c.beginPath();
+      c.arc(ab.x / WORLD.w * mw, ab.y / WORLD.h * mh, 4.4, 0, Math.PI * 2);
+      c.fill(); c.stroke();
+    }
   }
 
   // the red button: live = pulsing dot, pending = ring + countdown

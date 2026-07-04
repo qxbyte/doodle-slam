@@ -496,13 +496,27 @@ t('adventure progress saves, gates and resets', () => {
   localStorage.removeItem('doodleSlam.adventure');
 });
 
-t('adventure levels are well-formed and maps exist', () => {
+t('adventure levels are well-formed routes on real maps', () => {
   eq(ADV_LEVELS.length, 3, 'two normal levels plus the boss');
-  for (const lvl of ADV_LEVELS) {
+  ADV_LEVELS.forEach((lvl, i) => {
     ok(MAPS.some(m => m.name === lvl.map), `${lvl.map} exists`);
-    ok(lvl.time > 60 && lvl.enemies >= 0 && lvl.goal, 'sane level tuning');
+    ok(lvl.route.length >= 3, 'a route has at least three areas');
+    ok(ADV_TIERS[lvl.tier], 'tier tuning exists');
+    for (const z of lvl.route) {
+      ok(z.x > 100 && z.x < WORLD.w - 100 && z.y > 100 && z.y < WORLD.h - 100, 'area on the map');
+      ok(z.foes >= 0 && z.r > 100, 'sane area');
+    }
+    if (i < 2) ok(!lvl.route.some(z => z.boss), 'normal levels carry no boss');
+  });
+  const last = ADV_LEVELS[2].route;
+  ok(last[last.length - 1].boss, 'the final area of level 3 is the boss');
+});
+
+t('enemy shots stay dodgeable at every tier', () => {
+  for (const t2 of ADV_TIERS) {
+    ok(t2.shotSpeed <= 240, 'shots slower than a painted-lane hero (235+)');
+    ok(t2.fireEvery >= 1.4, 'volleys stay sparse');
   }
-  ok(ADV_LEVELS[2].boss && ADV_LEVELS[2].goal.boss, 'level 3 is the boss');
 });
 
 t('the Rainbow Blaster outclasses the starting loadout', () => {

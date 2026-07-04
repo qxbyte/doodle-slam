@@ -97,7 +97,7 @@ const FILES = [
   'js/systems/challenges.js',
   'js/systems/achievements.js',
   'js/systems/daily.js',
-  'js/systems/adventure.js',
+  'js/adventure/data.js',
   'js/systems/settings.js',
   'js/systems/records.js',
   'js/systems/entities.js',

@@ -123,9 +123,8 @@
   <h2 class="select-title" data-i18n="ADVENTURE"></h2>
   <p class="adv-blurb" data-i18n="advBlurb"></p>
   <div id="adv-heroes"></div>
-  <div id="adv-nodes-wrap">
-    <div class="adv-line"></div>
-    <div id="adv-nodes"></div>
+  <div id="worldmap-wrap">
+    <canvas id="worldmap"></canvas>
   </div>
   <div class="adv-btns">
     <button id="adv-continue" class="big-btn"></button>
@@ -257,7 +256,10 @@
 <script src="js/systems/challenges.js"></script>
 <script src="js/systems/achievements.js"></script>
 <script src="js/systems/daily.js"></script>
-<script src="js/systems/adventure.js"></script>
+<script src="js/adventure/data.js"></script>
+<script src="js/adventure/enemies.js"></script>
+<script src="js/adventure/run.js"></script>
+<script src="js/adventure/worldmap.js"></script>
 <script src="js/systems/sharecard.js"></script>
 <script src="js/systems/ambient.js"></script>
 <script src="js/systems/touch.js"></script>
