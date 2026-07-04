@@ -139,7 +139,7 @@ function drawSplat(ctx, rng, x, y, r, color) {
    fat INK. Painting the figure through this first, then repainting
    it in real colours on top, fuses all the separate shapes into one
    continuous hand-inked contour — no more "assembled from parts". */
-function withInkSilhouette(ctx, fn, grow = 0.35) {
+function withInkSilhouette(ctx, fn, grow = 0.3) {
   let proto = Object.getPrototypeOf(ctx);
   const desc = p => {
     for (let o = proto; o; o = Object.getPrototypeOf(o)) {
@@ -182,7 +182,7 @@ function drawCharacter(ctx, teamId, x, y, opts = {}) {
   ctx.save();
   ctx.translate(x, y);
   ctx.scale(scale, scale);
-  ctx.lineWidth = 1.4;
+  ctx.lineWidth = 1.2;
   ctx.strokeStyle = INK;
   ctx.lineJoin = 'round';
   ctx.lineCap = 'round';
@@ -208,7 +208,7 @@ function drawCharacter(ctx, teamId, x, y, opts = {}) {
      (fuses the parts into a single sticker-like contour), then in
      real colours with shading on top. sil = silhouette pass. */
   const paintFigure = sil => {
-  ctx.lineWidth = 1.4;
+  ctx.lineWidth = 1.2;
   ctx.strokeStyle = INK;
 
   // legs + shoes
@@ -250,7 +250,7 @@ function drawCharacter(ctx, teamId, x, y, opts = {}) {
     ctx.fillStyle = '#4c5a76';
     ctx.beginPath(); ctx.roundRect(-5.6, 7.6, 2.2, 2.4, 0.6); ctx.fill(); ctx.stroke();
     ctx.beginPath(); ctx.roundRect(3.4, 7.6, 2.2, 2.4, 0.6); ctx.fill(); ctx.stroke();
-    ctx.lineWidth = 1.4;
+    ctx.lineWidth = 1.2;
   } else if (teamId === 1) {
     // BAM: short sporty shorts with white side stripes
     ctx.fillStyle = '#4a3c40';
@@ -264,7 +264,7 @@ function drawCharacter(ctx, teamId, x, y, opts = {}) {
     ctx.strokeStyle = INK;
     ctx.lineWidth = 1;
     ctx.beginPath(); ctx.moveTo(0, 7.6); ctx.lineTo(0, 10); ctx.stroke();
-    ctx.lineWidth = 1.4;
+    ctx.lineWidth = 1.2;
   } else if (teamId === 2) {
     // ZIP: little pleated skirt
     ctx.fillStyle = '#54492e';
@@ -280,7 +280,7 @@ function drawCharacter(ctx, teamId, x, y, opts = {}) {
     ctx.moveTo(-2, 6.6); ctx.lineTo(-3, 10.4);
     ctx.moveTo(2, 6.6); ctx.lineTo(3, 10.4);
     ctx.stroke();
-    ctx.lineWidth = 1.4;
+    ctx.lineWidth = 1.2;
   } else if (pose === 'run') {
     // BLOB running: each baggy pant leg swings with its own leg
     const pant = (cx, s) => {
@@ -310,7 +310,7 @@ function drawCharacter(ctx, teamId, x, y, opts = {}) {
     ctx.beginPath(); ctx.roundRect(1, 11.4, 4.4, 1.6, 0.8); ctx.fill(); ctx.stroke();
     ctx.fillStyle = '#f0b41c';
     ctx.beginPath(); ctx.arc(-2.6, 9.4, 0.9, 0, Math.PI * 2); ctx.fill();
-    ctx.lineWidth = 1.4;
+    ctx.lineWidth = 1.2;
   }
   ctx.restore();
   if (teamId === 0) {                  // SPLASH: knee pads (follow the stride)
@@ -336,7 +336,7 @@ function drawCharacter(ctx, teamId, x, y, opts = {}) {
     ctx.quadraticCurveTo(-8 - (pose === 'run' ? runS * 2.2 : Math.sin(walk * 6) * 1.5), -4 + by, -6.5, 3 + by);
     ctx.stroke();
     ctx.strokeStyle = INK;
-    ctx.lineWidth = 1.4;
+    ctx.lineWidth = 1.2;
   }
 
   // body (team colour), per-fighter outfit details
@@ -355,12 +355,12 @@ function drawCharacter(ctx, teamId, x, y, opts = {}) {
     ctx.fillStyle = '#3c3c3a';
     ctx.beginPath(); ctx.roundRect(-hw, 5.4, bodyW, 2, 1); ctx.fill(); ctx.stroke();
     ctx.strokeStyle = '#fff';
-    ctx.lineWidth = 1.2;
+    ctx.lineWidth = 1.05;
     ctx.beginPath();
     ctx.moveTo(-1.5, -1 + by); ctx.lineTo(1, 1.5 + by); ctx.lineTo(-0.5, 1.5 + by); ctx.lineTo(2, 4.5 + by);
     ctx.stroke();
     ctx.strokeStyle = INK;
-    ctx.lineWidth = 1.4;
+    ctx.lineWidth = 1.2;
   } else if (teamId === 2) {    // ZIP: zip line + star badge
     ctx.beginPath(); ctx.moveTo(0, -2 + by); ctx.lineTo(0, 9 + by); ctx.stroke();
     ctx.fillStyle = '#fff';
@@ -379,10 +379,10 @@ function drawCharacter(ctx, teamId, x, y, opts = {}) {
       ctx.beginPath(); ctx.arc(sx, sy + by, 1, 0, Math.PI * 2); ctx.fill();
     }
     ctx.strokeStyle = '#7a5a38';
-    ctx.lineWidth = 1.4;
+    ctx.lineWidth = 1.2;
     ctx.beginPath(); ctx.moveTo(3, 1.5 + by); ctx.lineTo(3, -2.5 + by); ctx.stroke();
     ctx.strokeStyle = INK;
-    ctx.lineWidth = 1.4;
+    ctx.lineWidth = 1.2;
   }
 
   if (!sil) {
@@ -403,7 +403,7 @@ function drawCharacter(ctx, teamId, x, y, opts = {}) {
 
   // weapon — battle: held toward aim; run: a per-fighter carry pose
   ctx.strokeStyle = INK;
-  ctx.lineWidth = 1.4;
+  ctx.lineWidth = 1.2;
   if (pose === 'run') {
     // [tx, ty, angle] — no one jogs in a firing stance, and no two match
     const [wx, wy, rot] = [
@@ -467,14 +467,14 @@ function drawCharacter(ctx, teamId, x, y, opts = {}) {
     ctx.lineTo([12.5, 10.5, 17, 10.5][teamId], [-1.7, -2.9, -0.8, -2.5][teamId]);
     ctx.stroke();
     ctx.strokeStyle = INK;
-    ctx.lineWidth = 1.4;
+    ctx.lineWidth = 1.2;
   }
   // both hands gripping
   ctx.fillStyle = skin;
-  ctx.lineWidth = 1.2;
+  ctx.lineWidth = 1.05;
   ctx.beginPath(); ctx.arc(6, -0.8, 1.7, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
   ctx.beginPath(); ctx.arc(9.6, 1.2, 1.7, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-  ctx.lineWidth = 1.4;
+  ctx.lineWidth = 1.2;
   if (firing) {
     ctx.fillStyle = team.color;
     ctx.beginPath(); ctx.arc(teamId === 2 ? 24 : 18.5, 0, 2.1, 0, Math.PI * 2); ctx.fill();
@@ -493,27 +493,27 @@ function drawCharacter(ctx, teamId, x, y, opts = {}) {
   ctx.lineWidth = 1;
   ctx.beginPath(); ctx.arc(0.4, -6.6 + by, 2, 0.25, Math.PI - 0.55); ctx.stroke();
   ctx.strokeStyle = INK;
-  ctx.lineWidth = 1.4;
+  ctx.lineWidth = 1.2;
   if (!sil) {
     // face: shade along the right jaw, sheen on the brow, blush
     ctx.strokeStyle = 'rgba(0,0,0,0.10)';
     ctx.lineWidth = 1.9;
     ctx.beginPath(); ctx.arc(0, -8 + by, 5.2, -0.5, 0.8); ctx.stroke();
     ctx.strokeStyle = 'rgba(255,255,255,0.35)';
-    ctx.lineWidth = 1.4;
+    ctx.lineWidth = 1.2;
     ctx.beginPath(); ctx.arc(0, -8 + by, 5, Math.PI * 1.1, Math.PI * 1.45); ctx.stroke();
     ctx.fillStyle = 'rgba(232,110,100,0.30)';
     ctx.beginPath(); ctx.arc(-3.7, -5.9 + by, 1.15, 0, Math.PI * 2); ctx.fill();
     ctx.beginPath(); ctx.arc(3.7, -5.9 + by, 1.15, 0, Math.PI * 2); ctx.fill();
     ctx.strokeStyle = INK;
-    ctx.lineWidth = 1.4;
+    ctx.lineWidth = 1.2;
   }
   if (teamId === 1) {           // BAM: cheek plaster
     ctx.strokeStyle = '#e8d5a4';
-    ctx.lineWidth = 1.4;
+    ctx.lineWidth = 1.2;
     ctx.beginPath(); ctx.moveTo(2.8, -5.6 + by); ctx.lineTo(5, -6.8 + by); ctx.stroke();
     ctx.strokeStyle = INK;
-    ctx.lineWidth = 1.4;
+    ctx.lineWidth = 1.2;
   }
   if (teamId === 2) {           // ZIP: scope over the right eye
     ctx.strokeStyle = '#3c3c3a';
@@ -524,7 +524,7 @@ function drawCharacter(ctx, teamId, x, y, opts = {}) {
     ctx.moveTo(2, -6.8 + by); ctx.lineTo(2, -5.4 + by);
     ctx.stroke();
     ctx.strokeStyle = INK;
-    ctx.lineWidth = 1.4;
+    ctx.lineWidth = 1.2;
   }
 
   const hy = -8 + by; // hat anchor
@@ -569,14 +569,14 @@ function drawCharacter(ctx, teamId, x, y, opts = {}) {
       ctx.stroke();
     } else {
       ctx.strokeStyle = 'rgba(255,255,255,0.30)';
-      ctx.lineWidth = 1.4;
+      ctx.lineWidth = 1.2;
       ctx.beginPath();
       if (teamId === 3) ctx.arc(0, hy - 4.2, 4.4, Math.PI * 1.05, Math.PI * 1.45);
       else ctx.arc(0, hy - 1.5, 4.3, Math.PI * 1.08, Math.PI * 1.5);
       ctx.stroke();
     }
     ctx.strokeStyle = INK;
-    ctx.lineWidth = 1.4;
+    ctx.lineWidth = 1.2;
   }
   };   // end paintFigure
 

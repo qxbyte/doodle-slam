@@ -127,6 +127,8 @@ document.addEventListener('mouseenter', () => { input.mouseInside = true; });
 addEventListener('blur', () => { input.mouseInside = false; });
 addEventListener('mousedown', e => {
   if (game.state !== 'match' || game.browse) return;
+  // clicks on HUD buttons (leave match, browse…) must not fire the weapon
+  if (e.target.closest && e.target.closest('button')) return;
   if (e.button === 0) input.firing = true;
   if (e.button === 2) {
     const p = game.player;
