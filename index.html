@@ -67,16 +67,12 @@
   <p class="tagline" data-i18n="Splat the town. Own the turf. 3 minutes on the clock."></p>
   <div class="swatches" aria-hidden="true"><i style="--c:#2f66e0"></i><i style="--c:#e6392a"></i><i style="--c:#f0b41c"></i><i style="--c:#3ba24f"></i></div>
   <div id="title-record"></div>
-  <button id="play-btn" class="big-btn" data-i18n="PLAY"></button>
-  <div id="home-modes">
-    <button class="home-mode selected" data-home="career">
-      <span class="hm-name" data-i18n="CAREER"></span>
-      <span class="hm-desc" data-i18n="Stages, stars and unlocks"></span>
-    </button>
-    <button class="home-mode" data-home="adventure">
-      <span class="hm-name" data-i18n="ADVENTURE"></span>
-      <span class="hm-desc" data-i18n="The story of the Eraser"></span>
-    </button>
+  <!-- the lying-down "!" : play bar + mode dot that fans open -->
+  <div id="play-bang" class="mode-career">
+    <button id="play-btn" class="big-btn" data-i18n="PLAY"></button>
+    <button class="fan-opt fan-career selected" data-home="career" data-i18n="CAREER"></button>
+    <button class="fan-opt fan-adventure" data-home="adventure" data-i18n="ADVENTURE"></button>
+    <button id="mode-dot" aria-label="Pick a mode"></button>
   </div>
   <button id="daily-btn" class="pill-btn">DAILY RUN</button>
   <div class="corner-btns">

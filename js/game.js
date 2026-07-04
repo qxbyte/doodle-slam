@@ -1250,15 +1250,28 @@ function boot() {
   updateTitleRecord();
   updateDailyButton();
 
-  // flow: title -> (career | adventure), picked by the selector under PLAY
+  // flow: title -> (career | adventure). The play bar + dot form a
+  // lying-down "!" — the dot fans the mode options open, dock-style,
+  // and the whole mark takes the chosen mode's colour.
   let homeMode = 'career';
-  $('#home-modes').addEventListener('click', e => {
-    const btn = e.target.closest('.home-mode');
-    if (!btn) return;
-    homeMode = btn.dataset.home;
-    for (const b of document.querySelectorAll('.home-mode')) {
-      b.classList.toggle('selected', b === btn);
-    }
+  const bang = $('#play-bang');
+  $('#mode-dot').addEventListener('click', e => {
+    e.stopPropagation();
+    bang.classList.toggle('open');
+  });
+  for (const opt of document.querySelectorAll('.fan-opt')) {
+    opt.addEventListener('click', () => {
+      homeMode = opt.dataset.home;
+      bang.classList.toggle('mode-career', homeMode === 'career');
+      bang.classList.toggle('mode-adventure', homeMode === 'adventure');
+      for (const o of document.querySelectorAll('.fan-opt')) {
+        o.classList.toggle('selected', o === opt);
+      }
+      bang.classList.remove('open');
+    });
+  }
+  addEventListener('click', e => {
+    if (!e.target.closest('#play-bang')) bang.classList.remove('open');
   });
   $('#play-btn').addEventListener('click', () => {
     if (homeMode === 'adventure') {
@@ -1420,6 +1433,7 @@ function boot() {
   }
   if (params.get('screen') === 'badges') { buildBadgeWall(); $('#badges-panel').classList.remove('hidden'); }
   if (params.get('screen') === 'adventure') { buildAdventureScreen(); game.state = 'adventure'; showScreen('#screen-adventure'); }
+  if (params.has('fan')) $('#play-bang').classList.add('open');
   if (params.has('adv')) {
     startAdventureLevel(clamp(Number(params.get('adv')) || 0, 0, ADV_LEVELS.length - 1));
     const aff = Number(params.get('ff')) || 0;
