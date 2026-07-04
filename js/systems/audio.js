@@ -98,6 +98,7 @@ const SFX = (() => {
       if (!muted) { ensure(); bank.click(); }
       return muted;
     },
+    setMuted(m) { muted = m; },
     get muted() { return muted; },
     unlock() { ensure(); },
   };

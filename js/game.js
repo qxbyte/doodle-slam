@@ -52,7 +52,10 @@ const game = {
 
 function slamMul() { return game.slam ? SLAM_SCALE : 1; }
 
-function addShake(m) { game.shake = Math.min(12, game.shake + m); }
+function addShake(m) {
+  if (!Settings.data.shake) return;
+  game.shake = Math.min(12, game.shake + m);
+}
 
 function addFx(o) {
   game.fx.push(Object.assign({
@@ -105,9 +108,12 @@ addEventListener('keydown', e => {
     Skills.cast(game, game.player);
   }
   if (e.code === 'KeyM') {
-    const off = SFX.toggleMute();
-    Music.setMuted(off);
-    pushToast(off ? 'Sound off' : 'Sound on');
+    // master mute: if anything is audible, silence both; else restore both
+    const anyOn = Settings.data.sfx || Settings.data.music;
+    Settings.set('sfx', !anyOn);
+    Settings.set('music', !anyOn);
+    renderSettingsPanel();
+    pushToast(anyOn ? 'Sound off' : 'Sound on');
   }
 });
 addEventListener('keyup', e => input.keys.delete(e.code));
@@ -213,7 +219,7 @@ function startDemoMatch() {
   game.zones = [];
   game.mapIdx = Math.floor(Math.random() * MAPS.length);
   setMap(game.mapIdx);
-  Ambient.set(CURRENT_MAP.ambient);
+  Ambient.set(Settings.data.ambient ? CURRENT_MAP.ambient : null);
   initPaint();
   game.fighters = TEAMS.map(t => new Fighter(t.id, false));
   game.player = game.fighters[0];
@@ -229,7 +235,7 @@ function startMatch(playerTeam) {
   game.demo = false;
   game.daily = false;
   setMap(game.mapIdx);   // builds the sketch layers, sets OBSTACLES/PLAZA
-  Ambient.set(CURRENT_MAP.ambient);
+  Ambient.set(Settings.data.ambient ? CURRENT_MAP.ambient : null);
   initPaint();
   game.zones = game.mode === 'zones' ? computeZones(CURRENT_MAP) : [];
   game.fighters = TEAMS.map(t => new Fighter(t.id, t.id === playerTeam));
@@ -780,9 +786,57 @@ function frame(now) {
 
 /* ---------------- boot ---------------- */
 
+/* ---------------- settings panel ---------------- */
+
+function renderSettingsPanel() {
+  for (const el of document.querySelectorAll('#settings-panel .tgl')) {
+    const on = !!Settings.data[el.dataset.key];
+    el.classList.toggle('on', on);
+    el.textContent = on ? 'ON' : 'OFF';
+  }
+  const ub = $('#unlock-all-btn');
+  ub.textContent = Campaign.unlockAll() ? 'RE-LOCK STAGES' : 'UNLOCK ALL STAGES';
+}
+
+function initSettingsUI() {
+  const panel = $('#settings-panel');
+  $('#settings-btn').addEventListener('click', () => {
+    renderSettingsPanel();
+    panel.classList.remove('hidden');
+  });
+  $('#settings-close').addEventListener('click', () => panel.classList.add('hidden'));
+  panel.addEventListener('click', e => {
+    if (e.target === panel) panel.classList.add('hidden');
+    const tgl = e.target.closest('.tgl');
+    if (tgl) {
+      Settings.set(tgl.dataset.key, !Settings.data[tgl.dataset.key]);
+      renderSettingsPanel();
+    }
+  });
+  // the hidden bit: tap the panel title five times
+  let taps = 0, tapTimer = null;
+  $('#settings-title').addEventListener('click', () => {
+    taps++;
+    clearTimeout(tapTimer);
+    tapTimer = setTimeout(() => { taps = 0; }, 1500);
+    if (taps >= 5) {
+      taps = 0;
+      $('#unlock-all-btn').classList.remove('hidden');
+      renderSettingsPanel();
+    }
+  });
+  $('#unlock-all-btn').addEventListener('click', () => {
+    Campaign.setUnlockAll(!Campaign.unlockAll());
+    buildStageCards();
+    renderSettingsPanel();
+  });
+}
+
 function boot() {
   initHUD();
   Touch.init();
+  Settings.apply();
+  initSettingsUI();
 
   // background music unlocks on the first gesture (autoplay policy)
   const wakeAudio = () => {

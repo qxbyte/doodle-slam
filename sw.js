@@ -6,7 +6,7 @@
    (CI reminder lives in CLAUDE.md).
    ============================================================ */
 
-const VERSION = 'doodle-slam-v3';
+const VERSION = 'doodle-slam-v4';
 
 const SHELL = [
   './',
@@ -27,7 +27,8 @@ const SHELL = [
   './js/world/themes/moon.js', './js/world/themes/shore.js',
   './js/world/themes/peaks.js', './js/world/themes/fair.js',
   './js/world/themes/deep.js',
-  './js/systems/audio.js', './js/systems/music.js', './js/systems/paint.js',
+  './js/systems/audio.js', './js/systems/music.js', './js/systems/settings.js',
+  './js/systems/paint.js',
   './js/systems/replay.js', './js/systems/records.js', './js/systems/modes.js',
   './js/systems/skills.js', './js/systems/challenges.js', './js/systems/daily.js',
   './js/systems/sharecard.js', './js/systems/ambient.js', './js/systems/touch.js',

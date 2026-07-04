@@ -60,8 +60,9 @@ const sandbox = {
   requestAnimationFrame: () => 0,
   setTimeout, clearTimeout, setInterval, clearInterval,
   // game-side stubs used by entities at runtime
-  SFX: { play: () => {}, toggleMute: () => false, muted: false },
+  SFX: { play: () => {}, toggleMute: () => false, setMuted: () => {}, muted: false },
   Music: { start: () => {}, setMuted: () => {} },
+  Ambient: { set: () => {}, update: () => {}, draw: () => {} },
   flashHurt: () => {},
   addFx: () => {},
   addShake: () => {},
@@ -93,6 +94,7 @@ const FILES = [
   'js/systems/skills.js',
   'js/systems/challenges.js',
   'js/systems/daily.js',
+  'js/systems/settings.js',
   'js/systems/records.js',
   'js/systems/entities.js',
 ];

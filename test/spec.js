@@ -308,3 +308,22 @@ t('bubble shield soaks damage; hp drops without it', () => {
   victim.hurt(game, 40, attacker);
   eq(victim.hp, 60, 'no shield, real damage');
 });
+
+
+/* ---------------- settings & hidden unlock ---------------- */
+
+t('settings persist and default sensibly', () => {
+  ok(Settings.data.music === true || Settings.data.music === false, 'boolean');
+  Settings.set('music', false);
+  eq(JSON.parse(localStorage.getItem('doodleSlam.settings')).music, false, 'saved');
+  Settings.set('music', true);
+});
+
+t('unlock-all flag opens every stage and relocks cleanly', () => {
+  localStorage.clear();
+  ok(!Campaign.stageUnlocked(5), 'locked by default');
+  Campaign.setUnlockAll(true);
+  for (let i = 0; i < STAGES.length; i++) ok(Campaign.stageUnlocked(i), `stage ${i} open`);
+  Campaign.setUnlockAll(false);
+  ok(!Campaign.stageUnlocked(5), 'locked again');
+});

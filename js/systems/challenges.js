@@ -60,7 +60,19 @@ const Campaign = {
     return { got, total };
   },
 
+  unlockAll() {
+    try { return localStorage.getItem('doodleSlam.unlockAll') === '1'; }
+    catch { return false; }
+  },
+  setUnlockAll(on) {
+    try {
+      if (on) localStorage.setItem('doodleSlam.unlockAll', '1');
+      else localStorage.removeItem('doodleSlam.unlockAll');
+    } catch { }
+  },
+
   stageUnlocked(stageIdx) {
+    if (this.unlockAll()) return true;
     if (stageIdx === 0) return true;
     return this.stageStars(stageIdx - 1).got > 0;
   },

@@ -68,8 +68,22 @@
   <div id="title-record"></div>
   <button id="play-btn" class="big-btn">PLAY</button>
   <button id="daily-btn" class="pill-btn">DAILY RUN</button>
+  <button id="settings-btn" class="pill-btn corner" aria-label="Settings">&#9881; SETTINGS</button>
   <div class="controls-hint">WASD move &nbsp;&middot;&nbsp; hold Left Click to spray &nbsp;&middot;&nbsp; Right Click throws Paint Bombs &nbsp;&middot;&nbsp; Q fires your skill &nbsp;&middot;&nbsp; B browses the map &nbsp;&middot;&nbsp; M mutes</div>
   <div class="footnote">Fan project inspired by Splatoon. Not affiliated with Nintendo.</div>
+</div>
+
+<!-- ===== Settings overlay ===== -->
+<div id="settings-panel" class="hidden">
+  <div class="settings-card card">
+    <div id="settings-title" class="panel-title big">SETTINGS</div>
+    <div class="set-row"><span>Background music</span><button class="tgl" data-key="music">ON</button></div>
+    <div class="set-row"><span>Sound effects</span><button class="tgl" data-key="sfx">ON</button></div>
+    <div class="set-row"><span>Screen shake</span><button class="tgl" data-key="shake">ON</button></div>
+    <div class="set-row"><span>Ambient particles</span><button class="tgl" data-key="ambient">ON</button></div>
+    <button id="unlock-all-btn" class="pill-btn danger hidden">UNLOCK ALL STAGES</button>
+    <button id="settings-close" class="pill-btn gray">CLOSE</button>
+  </div>
 </div>
 
 <!-- ===== Stage select ===== -->
@@ -176,6 +190,7 @@
 <script src="js/systems/ambient.js"></script>
 <script src="js/systems/touch.js"></script>
 <script src="js/systems/music.js"></script>
+<script src="js/systems/settings.js"></script>
 <script src="js/systems/entities.js"></script>
 <script src="js/ui/hud.js"></script>
 <script src="js/ui/vignettes.js"></script>
