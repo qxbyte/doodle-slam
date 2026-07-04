@@ -156,11 +156,14 @@ class AdvBoss {
     this.maxHp = def.hp;
     this.speed = def.speed;
     this.radius = def.radius;
+    this.volley = def.volley || 3;             // shots per fan
+    this.volleyEvery = def.volleyEvery || 2.6;
+    this.chargeEvery = def.chargeEvery || 8;
     this.awake = false;
     this.hitT = 0;
     this.eraseT = 0;
-    this.volleyT = 2.5;
-    this.chargeT = 8;
+    this.volleyT = this.volleyEvery;
+    this.chargeT = this.chargeEvery;
     this.charging = 0;      // >0: telegraph countdown, <0: mid-charge
     this.chargeA = 0;
   }
@@ -192,7 +195,7 @@ class AdvBoss {
       this.x = clamp(this.x + Math.cos(this.chargeA) * 460 * dt, 60, WORLD.w - 60);
       this.y = clamp(this.y + Math.sin(this.chargeA) * 460 * dt, 60, WORLD.h - 60);
     } else if (this.chargeT <= 0 && p.alive) {
-      this.chargeT = 8;
+      this.chargeT = this.chargeEvery;
       this.charging = 1.0;   // telegraph
       this.chargeA = Math.atan2(p.y - this.y, p.x - this.x);
       addFx({ type: 'text', x: this.x, y: this.y - 90, text: '!!', color: '#e6392a' });
@@ -203,13 +206,13 @@ class AdvBoss {
       this.y = clamp(this.y + Math.sin(a) * this.speed * dt, 60, WORLD.h - 60);
     }
 
-    // fan volley: 3 slow shots, wide spacing — walk out of the arc
+    // fan volley: slow shots, 0.38rad gaps — walk out of the arc
     this.volleyT -= dt;
     if (this.volleyT <= 0 && p.alive) {
-      this.volleyT = 2.6;
+      this.volleyT = this.volleyEvery;
       const base = Math.atan2(p.y - this.y, p.x - this.x);
-      for (const off of [-0.38, 0, 0.38]) {
-        const a = base + off;
+      for (let k = 0; k < this.volley; k++) {
+        const a = base + (k - (this.volley - 1) / 2) * 0.38;
         game.adv.shots.push({
           x: this.x + Math.cos(a) * 50, y: this.y + Math.sin(a) * 50,
           vx: Math.cos(a) * 230, vy: Math.sin(a) * 230,

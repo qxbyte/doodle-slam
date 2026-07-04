@@ -25,9 +25,10 @@ const ADV_WEAPON = {
    purpose: the player outruns them (175-235 px/s) with room to
    dodge; later tiers add pressure without becoming a bullet hell. */
 const ADV_TIERS = [
-  { hp: 34, shotSpeed: 200, fireEvery: 1.9, dmg: 12, aimNoise: 0.16 },
-  { hp: 46, shotSpeed: 220, fireEvery: 1.6, dmg: 14, aimNoise: 0.11 },
-  { hp: 60, shotSpeed: 235, fireEvery: 1.45, dmg: 16, aimNoise: 0.08 },
+  { hp: 34, shotSpeed: 200, fireEvery: 1.9,  dmg: 12, aimNoise: 0.16 },
+  { hp: 46, shotSpeed: 215, fireEvery: 1.7,  dmg: 14, aimNoise: 0.12 },
+  { hp: 58, shotSpeed: 228, fireEvery: 1.55, dmg: 16, aimNoise: 0.09 },
+  { hp: 72, shotSpeed: 240, fireEvery: 1.4,  dmg: 18, aimNoise: 0.06 },
 ];
 
 /* Levels. route[] areas are visited in order: enter the circle to
@@ -35,10 +36,9 @@ const ADV_TIERS = [
    how many minions patrol it. The final area may carry the boss. */
 const ADV_LEVELS = [
   {
-    name: 'GREY STREETS', map: 'DOWNTOWN', tier: 0,
-    region: 'city',
+    name: 'GREY STREETS', map: 'DOWNTOWN', tier: 0, region: 'city',
     intro: 'The Eraser has drained the world grey, block by block. Its minions patrol the old streets — follow the route, wake them, splat every last one!',
-    outro: 'The streets glow again and a corner of the world map lights up. The grey trail leads into the pines…',
+    outro: 'The streets glow again and a corner of the world map lights up. The grey trail crosses the river…',
     route: [
       { x: 420,  y: 380,  r: 230, foes: 2 },
       { x: 1250, y: 900,  r: 250, foes: 3 },
@@ -47,27 +47,107 @@ const ADV_LEVELS = [
     ],
   },
   {
-    name: 'WHISPERING PINES', map: 'PINE CAMP', tier: 1,
-    region: 'pines',
-    intro: 'The woods crawl with grey. The minions here shoot straighter — keep moving, weave between the pines, and clear every camp on the trail.',
-    outro: 'The forest breathes colour again. One trail left on the map — it ends at the midnight fair. Something big is waiting.',
+    name: 'RIVERSIDE RUN', map: 'RIVERSIDE', tier: 0, region: 'river',
+    intro: 'Grey patrols hold both banks and the bridges between them. Sweep the riverside clean — mind the crossings, they love an ambush.',
+    outro: 'Both banks shine again. The trail slips away toward the midnight fair — something is performing there.',
+    route: [
+      { x: 450,  y: 320,  r: 230, foes: 2 },
+      { x: 1800, y: 400,  r: 240, foes: 3 },
+      { x: 1150, y: 850,  r: 260, foes: 3 },
+      { x: 1750, y: 1300, r: 240, foes: 4 },
+    ],
+  },
+  {
+    name: 'FAIR SHADOW', map: 'MIDNIGHT FAIR', tier: 1, region: 'fair',
+    intro: 'The chalk fair has a new act: a SHADOW of the Eraser. Clear its guard, then pop the copy — watch the volleys, keep your feet moving.',
+    outro: 'The shadow bursts like a soap bubble… a decoy! The real trail runs into the pines. The map lights up anyway — take the win.',
+    route: [
+      { x: 600,  y: 500,  r: 250, foes: 3 },
+      { x: 1750, y: 1150, r: 250, foes: 4 },
+      { x: 1200, y: 800,  r: 300, foes: 0, boss: { hp: 500, speed: 90, radius: 44, volley: 3, volleyEvery: 2.8, chargeEvery: 9 } },
+    ],
+  },
+  {
+    name: 'PINE TRAIL', map: 'PINE CAMP', tier: 1, region: 'pines',
+    intro: 'The woods crawl with grey. The minions here shoot straighter — weave between the pines and clear every camp on the trail.',
+    outro: 'The forest breathes colour again. Deeper in, the ferns are still grey…',
     route: [
       { x: 400,  y: 1250, r: 240, foes: 3 },
       { x: 700,  y: 480,  r: 230, foes: 3 },
       { x: 1500, y: 800,  r: 250, foes: 4 },
       { x: 2050, y: 350,  r: 230, foes: 3 },
-      { x: 2000, y: 1300, r: 250, foes: 5 },
+      { x: 2000, y: 1300, r: 250, foes: 4 },
     ],
   },
   {
-    name: 'THE ERASER', map: 'MIDNIGHT FAIR', tier: 2,
-    region: 'fair',
-    intro: 'The fair at the end of the world map — and THERE it is. Fight through its guard, then face the ERASER. Watch its volleys and the charge: keep moving and it cannot touch you.',
-    outro: 'SPLAT! The Eraser crumbles into shavings, the fair lights up, and the whole world map shines again. The town is saved… until chapter two. THE END.',
+    name: 'FERN HOLLOW', map: 'FERN HOLLOW', tier: 1, region: 'ferns',
+    intro: 'Down in the hollow the grey hides behind giant mushrooms. Flush every patrol out of the ferns — the creek crossings are choke points.',
+    outro: 'The hollow hums with colour. The trail climbs — up into the frozen pass.',
     route: [
-      { x: 600,  y: 500,  r: 260, foes: 4 },
-      { x: 1750, y: 1150, r: 260, foes: 5 },
-      { x: 1200, y: 800,  r: 320, foes: 0, boss: { hp: 620, speed: 100, radius: 46 } },
+      { x: 400,  y: 350,  r: 240, foes: 3 },
+      { x: 1250, y: 300,  r: 240, foes: 4 },
+      { x: 2000, y: 500,  r: 240, foes: 3 },
+      { x: 1500, y: 1100, r: 250, foes: 4 },
+      { x: 700,  y: 1250, r: 250, foes: 4 },
+    ],
+  },
+  {
+    name: 'FROZEN PASS', map: 'POWDER PEAKS', tier: 2, region: 'peaks',
+    intro: 'Grey squads camp across the snowfields — and the ice lakes will carry you straight through their fire lanes if you are not careful. Skate smart.',
+    outro: 'The pass is painted. Far below, the shore is under siege…',
+    route: [
+      { x: 450,  y: 400,  r: 240, foes: 3 },
+      { x: 1300, y: 350,  r: 240, foes: 4 },
+      { x: 2050, y: 600,  r: 240, foes: 4 },
+      { x: 1600, y: 1250, r: 250, foes: 5 },
+      { x: 800,  y: 1150, r: 240, foes: 4 },
+    ],
+  },
+  {
+    name: 'SHORE SIEGE', map: 'SUNNY SHORE', tier: 2, region: 'shore',
+    intro: 'A SMUDGE — a bigger, meaner copy — leads the siege on the shore. Break its beach patrols first, then knock it into the tide. Its fan is wider: dodge sideways, not backwards.',
+    outro: 'The smudge dissolves into the surf. Two trails left on the map — and they both point at the volcano rim. Almost there.',
+    route: [
+      { x: 500,  y: 350,  r: 240, foes: 3 },
+      { x: 1350, y: 300,  r: 240, foes: 4 },
+      { x: 2050, y: 450,  r: 240, foes: 4 },
+      { x: 1200, y: 750,  r: 300, foes: 0, boss: { hp: 800, speed: 100, radius: 48, volley: 4, volleyEvery: 2.4, chargeEvery: 7.5 } },
+    ],
+  },
+  {
+    name: 'DESK DIVE', map: 'MESSY DESK', tier: 3, region: 'desk',
+    intro: 'The grey has reached the desk itself — the paper the whole world is drawn on. Clear the stationery line by line before it erases the source.',
+    outro: 'The desk is safe, the doodles keep breathing. Next stop: the crater fields.',
+    route: [
+      { x: 450,  y: 300,  r: 240, foes: 4 },
+      { x: 1600, y: 320,  r: 240, foes: 4 },
+      { x: 2050, y: 900,  r: 240, foes: 4 },
+      { x: 1150, y: 1300, r: 250, foes: 5 },
+      { x: 500,  y: 1050, r: 240, foes: 4 },
+    ],
+  },
+  {
+    name: 'CRATER MARCH', map: 'CRATER FIELD', tier: 3, region: 'moon',
+    intro: 'Even the moon is turning grey. March crater to crater and wipe out the lunar patrols — the final trail starts here.',
+    outro: 'The moon glows in four colours. One region left on the map, and it is glowing red: the volcano. The REAL Eraser is waiting.',
+    route: [
+      { x: 500,  y: 400,  r: 240, foes: 4 },
+      { x: 1400, y: 300,  r: 240, foes: 4 },
+      { x: 2050, y: 700,  r: 240, foes: 5 },
+      { x: 1500, y: 1250, r: 250, foes: 5 },
+      { x: 700,  y: 1250, r: 240, foes: 5 },
+    ],
+  },
+  {
+    name: 'THE ERASER', map: 'CINDER BASIN', tier: 3, region: 'volcano',
+    intro: 'The volcano rim — and the REAL Eraser, huge and furious. Five-shot fans, quicker charges, and lava underfoot. Keep moving, keep painting, and end the grey for good.',
+    outro: 'SPLAT! The Eraser crumbles into a mountain of shavings and every region on the map blazes with colour. The world is saved… until chapter two. THE END.',
+    route: [
+      { x: 500,  y: 350,  r: 240, foes: 4 },
+      { x: 1700, y: 400,  r: 240, foes: 5 },
+      { x: 600,  y: 1150, r: 240, foes: 5 },
+      { x: 1900, y: 1250, r: 240, foes: 5 },
+      { x: 1300, y: 1050, r: 320, foes: 0, boss: { hp: 1150, speed: 110, radius: 52, volley: 5, volleyEvery: 2.2, chargeEvery: 6.5 } },
     ],
   },
 ];

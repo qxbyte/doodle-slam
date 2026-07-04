@@ -11,10 +11,18 @@
 
 const WORLDMAP = {
   w: 920, h: 520,
+  // ten regions snaking bottom row -> up the right -> top row
   regions: [
-    { x: 200, y: 360, r: 100 },   // the city
-    { x: 470, y: 170, r: 100 },   // the pines
-    { x: 750, y: 370, r: 100 },   // the fair
+    { x: 115, y: 420, r: 58 },
+    { x: 245, y: 385, r: 58 },
+    { x: 375, y: 430, r: 58 },
+    { x: 505, y: 385, r: 58 },
+    { x: 655, y: 420, r: 58 },
+    { x: 790, y: 320, r: 58 },
+    { x: 690, y: 185, r: 58 },
+    { x: 540, y: 130, r: 58 },
+    { x: 385, y: 185, r: 58 },
+    { x: 200, y: 145, r: 62 },
   ],
 };
 
@@ -80,16 +88,16 @@ function drawWorldMap() {
     c.textAlign = 'left';
     c.fillText(L('CHAPTER ONE · THE GREY'), 34, 52);
 
-    // the dashed route: entrance arrow -> region -> region -> region
-    const pts = [{ x: 56, y: 452 }, ...WORLDMAP.regions];
+    // the dashed route: entrance arrow -> every region in order
+    const pts = [{ x: 42, y: 470 }, ...WORLDMAP.regions];
     c.strokeStyle = INK_LIGHT;
     c.lineWidth = 2.4;
-    c.setLineDash([12, 10]);
+    c.setLineDash([10, 9]);
     c.beginPath();
     for (let i = 0; i < pts.length - 1; i++) {
       const a = pts[i], b = pts[i + 1];
-      const mx = (a.x + b.x) / 2 + (i % 2 ? 40 : -40);
-      const my = (a.y + b.y) / 2 + (i % 2 ? -30 : 30);
+      const mx = (a.x + b.x) / 2 + (i % 2 ? 16 : -16);
+      const my = (a.y + b.y) / 2 + (i % 2 ? -12 : 12);
       if (i === 0) c.moveTo(a.x, a.y);
       c.quadraticCurveTo(mx, my, b.x, b.y);
     }
@@ -100,13 +108,13 @@ function drawWorldMap() {
     c.strokeStyle = INK;
     c.lineWidth = 2;
     c.beginPath();
-    c.moveTo(66, 444); c.lineTo(44, 434); c.lineTo(50, 448); c.lineTo(40, 460);
+    c.moveTo(52, 462); c.lineTo(30, 452); c.lineTo(36, 466); c.lineTo(26, 478);
     c.closePath();
     c.fill(); c.stroke();
     c.fillStyle = INK;
-    c.font = "15px 'Patrick Hand', cursive";
+    c.font = "14px 'Patrick Hand', cursive";
     c.textAlign = 'center';
-    c.fillText('START', 56, 484);
+    c.fillText('START', 46, 500);
 
     // regions
     ADV_LEVELS.forEach((lvl, i) => {
@@ -151,46 +159,117 @@ function drawWorldRegion(c, rng, reg, lvl, i) {
   }
   c.restore();
 
-  // the region's signature doodle
+  // the region's signature doodle (scaled to the small map tiles)
   c.strokeStyle = lit || reachable ? INK : INK_LIGHT;
   c.fillStyle = 'rgba(255,255,255,0.5)';
-  c.lineWidth = 1.8;
-  if (lvl.region === 'city') {
-    for (const [bx, bw, bh] of [[-38, 24, 34], [-8, 26, 48], [24, 22, 28]]) {
-      c.fillRect(x + bx, y - bh + 14, bw, bh);
-      wobblyRect(c, rng, x + bx, y - bh + 14, bw, bh, 1);
-      c.stroke();
-      for (let wy = y - bh + 20; wy < y + 6; wy += 11) {
-        c.strokeRect(x + bx + 5, wy, 5, 6);
-        c.strokeRect(x + bx + 14, wy, 5, 6);
-      }
+  c.lineWidth = 1.6;
+  const g = lvl.region;
+  if (g === 'city') {
+    for (const [bx, bw, bh] of [[-24, 14, 20], [-6, 16, 30], [14, 13, 17]]) {
+      c.fillRect(x + bx, y - bh + 8, bw, bh);
+      c.strokeRect(x + bx, y - bh + 8, bw, bh);
     }
-  } else if (lvl.region === 'pines') {
-    for (const [px, s] of [[-30, 0.9], [2, 1.15], [32, 0.8]]) {
-      c.beginPath();
-      c.moveTo(x + px - 16 * s, y + 18 * s);
-      c.lineTo(x + px, y - 26 * s);
-      c.lineTo(x + px + 16 * s, y + 18 * s);
-      c.closePath();
-      c.fill(); c.stroke();
-      c.beginPath();
-      c.moveTo(x + px, y + 18 * s); c.lineTo(x + px, y + 26 * s);
-      c.stroke();
-    }
-  } else {
-    // the fair: a little ferris wheel
-    wobblyCircle(c, rng, x, y - 6, 26, 0.04);
+  } else if (g === 'river') {
+    c.strokeStyle = '#6e96af';
+    c.lineWidth = 3;
+    c.beginPath();
+    c.moveTo(x - 30, y - 12);
+    c.quadraticCurveTo(x - 6, y + 4, x + 8, y - 6);
+    c.quadraticCurveTo(x + 22, y - 14, x + 32, y - 2);
+    c.stroke();
+    c.strokeStyle = lit || reachable ? INK : INK_LIGHT;
+    c.lineWidth = 1.6;
+    c.beginPath(); c.arc(x + 2, y - 4, 12, Math.PI, 0); c.stroke();
+    c.beginPath();
+    c.moveTo(x - 10, y - 4); c.lineTo(x - 10, y + 4);
+    c.moveTo(x + 14, y - 4); c.lineTo(x + 14, y + 4);
+    c.stroke();
+  } else if (g === 'fair') {
+    wobblyCircle(c, rng, x, y - 4, 16, 0.04);
     c.stroke();
     c.beginPath();
     for (let k = 0; k < 6; k++) {
       const a = k * Math.PI / 3;
-      c.moveTo(x, y - 6);
-      c.lineTo(x + Math.cos(a) * 26, y - 6 + Math.sin(a) * 26);
+      c.moveTo(x, y - 4);
+      c.lineTo(x + Math.cos(a) * 16, y - 4 + Math.sin(a) * 16);
     }
     c.stroke();
     c.beginPath();
-    c.moveTo(x - 16, y + 30); c.lineTo(x, y - 6); c.lineTo(x + 16, y + 30);
+    c.moveTo(x - 10, y + 18); c.lineTo(x, y - 4); c.lineTo(x + 10, y + 18);
     c.stroke();
+  } else if (g === 'pines') {
+    for (const [px, sc] of [[-18, 0.62], [2, 0.8], [20, 0.55]]) {
+      c.beginPath();
+      c.moveTo(x + px - 16 * sc, y + 18 * sc);
+      c.lineTo(x + px, y - 26 * sc);
+      c.lineTo(x + px + 16 * sc, y + 18 * sc);
+      c.closePath();
+      c.fill(); c.stroke();
+    }
+  } else if (g === 'ferns') {
+    c.fillStyle = '#c98a8a';
+    c.beginPath(); c.arc(x, y - 4, 15, Math.PI, 0); c.closePath(); c.fill(); c.stroke();
+    c.fillStyle = '#fdfdf8';
+    c.fillRect(x - 4, y - 4, 8, 14);
+    c.strokeRect(x - 4, y - 4, 8, 14);
+    for (const [dx2, dy2] of [[-8, -10], [2, -14], [8, -8]]) {
+      c.beginPath(); c.arc(x + dx2, y + dy2, 2, 0, Math.PI * 2); c.fill(); c.stroke();
+    }
+  } else if (g === 'peaks') {
+    for (const [px, sc] of [[-12, 1], [14, 0.75]]) {
+      c.beginPath();
+      c.moveTo(x + px - 20 * sc, y + 16 * sc);
+      c.lineTo(x + px, y - 20 * sc);
+      c.lineTo(x + px + 20 * sc, y + 16 * sc);
+      c.closePath();
+      c.fill(); c.stroke();
+      c.beginPath();
+      c.moveTo(x + px - 6 * sc, y - 8 * sc);
+      c.lineTo(x + px, y - 20 * sc);
+      c.lineTo(x + px + 6 * sc, y - 8 * sc);
+      c.closePath();
+      c.fillStyle = '#fdfdf8';
+      c.fill(); c.stroke();
+      c.fillStyle = 'rgba(255,255,255,0.5)';
+    }
+  } else if (g === 'shore') {
+    c.fillStyle = '#fdfdf8';
+    c.beginPath();
+    c.moveTo(x - 7, y + 14); c.lineTo(x - 4, y - 16); c.lineTo(x + 4, y - 16); c.lineTo(x + 7, y + 14);
+    c.closePath(); c.fill(); c.stroke();
+    c.fillStyle = '#e6392a';
+    for (const sy2 of [-10, 0]) c.fillRect(x - 5, y + sy2, 10, 5);
+    c.strokeRect(x - 6, y - 22, 12, 7);
+  } else if (g === 'desk') {
+    c.save();
+    c.translate(x, y);
+    c.rotate(-0.5);
+    c.fillStyle = '#f0b41c';
+    c.fillRect(-20, -6, 32, 12);
+    c.strokeRect(-20, -6, 32, 12);
+    c.beginPath();
+    c.moveTo(12, -6); c.lineTo(22, 0); c.lineTo(12, 6);
+    c.closePath();
+    c.fillStyle = '#e8d5a4';
+    c.fill(); c.stroke();
+    c.restore();
+  } else if (g === 'moon') {
+    c.fillStyle = '#e8e4c8';
+    c.beginPath(); c.arc(x, y - 2, 15, 0, Math.PI * 2); c.fill(); c.stroke();
+    c.lineWidth = 1.2;
+    c.beginPath(); c.arc(x - 5, y - 6, 3.4, 0, Math.PI * 2); c.stroke();
+    c.beginPath(); c.arc(x + 5, y + 2, 2.4, 0, Math.PI * 2); c.stroke();
+    c.lineWidth = 1.6;
+  } else {
+    // the volcano
+    c.fillStyle = '#8d7d72';
+    c.beginPath();
+    c.moveTo(x - 20, y + 14); c.lineTo(x - 6, y - 12); c.lineTo(x + 6, y - 12); c.lineTo(x + 20, y + 14);
+    c.closePath(); c.fill(); c.stroke();
+    c.fillStyle = '#ee7434';
+    c.beginPath(); c.ellipse(x, y - 12, 6, 2.4, 0, 0, Math.PI * 2); c.fill();
+    c.strokeStyle = 'rgba(120,110,105,0.6)';
+    c.beginPath(); c.arc(x - 2, y - 22, 5, 0.4, Math.PI * 1.5); c.stroke();
   }
 
   // name plate + state
@@ -198,13 +277,13 @@ function drawWorldRegion(c, rng, reg, lvl, i) {
   c.strokeStyle = INK;
   c.lineWidth = 1.8;
   const label = `${i + 1} · ${lvl.name}`;
-  c.font = "italic 900 13px 'Archivo', sans-serif";
+  c.font = "italic 900 10.5px 'Archivo', sans-serif";
   const tw = c.measureText(label).width + 20;
-  c.beginPath(); c.roundRect(x - tw / 2, y + r * 0.78 - 12, tw, 24, 12); c.fill(); c.stroke();
+  c.beginPath(); c.roundRect(x - tw / 2, y + r * 0.86 - 10, tw, 20, 10); c.fill(); c.stroke();
   c.fillStyle = reachable ? INK : '#a5a5a0';
   c.textAlign = 'center';
   c.textBaseline = 'middle';
-  c.fillText(label, x, y + r * 0.78 + 1);
+  c.fillText(label, x, y + r * 0.86 + 1);
 
   if (lit) {
     // a proud little flag
@@ -223,10 +302,10 @@ function drawWorldRegion(c, rng, reg, lvl, i) {
     c.fillStyle = '#e6392a';
     c.strokeStyle = INK;
     c.lineWidth = 1.8;
-    c.beginPath(); c.roundRect(x - 24, y - r * 0.95 - 14, 48, 26, 13); c.fill(); c.stroke();
+    c.beginPath(); c.roundRect(x - 20, y - r - 22, 40, 22, 11); c.fill(); c.stroke();
     c.fillStyle = '#fff';
-    c.font = "italic 900 14px 'Archivo', sans-serif";
-    c.fillText('GO!', x, y - r * 0.95 - 1);
+    c.font = "italic 900 12px 'Archivo', sans-serif";
+    c.fillText('GO!', x, y - r - 11);
   } else {
     c.fillStyle = '#8a8a86';
     c.font = "15px 'Patrick Hand', cursive";
