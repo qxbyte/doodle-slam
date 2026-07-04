@@ -167,17 +167,17 @@ function drawCharacter(ctx, teamId, x, y, opts = {}) {
   // legs + shoes
   if (pose === 'run') {
     // scissor run cycle — legs swing sideways, feet lift on the kick
-    const lx = -3.5 + runS * 4.6, rx = 3.5 - runS * 4.6;
-    const lLift = Math.max(0, runS) * 2.4, rLift = Math.max(0, -runS) * 2.4;
+    const lx = -3.5 + runS * 3.1, rx = 3.5 - runS * 3.1;
+    const lLift = Math.max(0, runS) * 1.8, rLift = Math.max(0, -runS) * 1.8;
     ctx.beginPath();
     ctx.moveTo(-3.5, 8.5);
-    ctx.quadraticCurveTo(-3.5 + runS * 2, 11.5, lx, 14 - lLift);
+    ctx.quadraticCurveTo(-3.5 + runS * 1.4, 11.5, lx, 14 - lLift);
     ctx.moveTo(3.5, 8.5);
-    ctx.quadraticCurveTo(3.5 - runS * 2, 11.5, rx, 14 - rLift);
+    ctx.quadraticCurveTo(3.5 - runS * 1.4, 11.5, rx, 14 - rLift);
     ctx.stroke();
     ctx.fillStyle = '#333';
-    ctx.beginPath(); ctx.ellipse(lx - 0.3, 14.5 - lLift, 2.6, 1.4, runS * 0.35, 0, Math.PI * 2); ctx.fill();
-    ctx.beginPath(); ctx.ellipse(rx + 0.3, 14.5 - rLift, 2.6, 1.4, -runS * 0.35, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(lx - 0.3, 14.5 - lLift, 2.6, 1.4, runS * 0.26, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(rx + 0.3, 14.5 - rLift, 2.6, 1.4, -runS * 0.26, 0, Math.PI * 2); ctx.fill();
   } else {
     ctx.beginPath();
     ctx.moveTo(-3.5, 9 + bob * 0.4); ctx.lineTo(-3.5, 14 - bob);
@@ -187,7 +187,13 @@ function drawCharacter(ctx, teamId, x, y, opts = {}) {
     ctx.beginPath(); ctx.ellipse(-3.8, 14.5 - bob, 2.6, 1.4, 0, 0, Math.PI * 2); ctx.fill();
     ctx.beginPath(); ctx.ellipse(3.8, 14.5 + bob, 2.6, 1.4, 0, 0, Math.PI * 2); ctx.fill();
   }
-  // bottoms — a different cut per fighter
+  // bottoms — a different cut per fighter (hips rock with the stride)
+  ctx.save();
+  if (pose === 'run') {
+    ctx.translate(0, 6.8);
+    ctx.rotate(runS * 0.09);
+    ctx.translate(0, -6.8);
+  }
   if (teamId === 0) {
     // SPLASH: cargo shorts with side pockets
     ctx.fillStyle = '#3c4a66';
@@ -228,6 +234,24 @@ function drawCharacter(ctx, teamId, x, y, opts = {}) {
     ctx.moveTo(2, 6.6); ctx.lineTo(3, 10.4);
     ctx.stroke();
     ctx.lineWidth = 1.4;
+  } else if (pose === 'run') {
+    // BLOB running: each baggy pant leg swings with its own leg
+    const pant = (cx, s) => {
+      ctx.save();
+      ctx.translate(cx, 7.4);
+      ctx.rotate(s * 0.38);
+      ctx.fillStyle = '#38463a';
+      ctx.beginPath(); ctx.roundRect(-2.7, -1.2, 5.4, 4.4, 2); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = '#efe9dc';
+      ctx.beginPath(); ctx.roundRect(-2.4, 2, 4.8, 1.6, 0.8); ctx.fill(); ctx.stroke();
+      ctx.restore();
+    };
+    pant(-2.7, runS);
+    pant(2.7, -runS);
+    ctx.fillStyle = '#38463a';
+    ctx.beginPath(); ctx.roundRect(-5.4, 6.2, 10.8, 3, 2); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = '#f0b41c';
+    ctx.beginPath(); ctx.arc(-2.6, 8.2, 0.9, 0, Math.PI * 2); ctx.fill();
   } else {
     // BLOB: baggy painter pants, rolled cuffs, a stray drip
     ctx.fillStyle = '#38463a';
@@ -241,10 +265,11 @@ function drawCharacter(ctx, teamId, x, y, opts = {}) {
     ctx.beginPath(); ctx.arc(-2.6, 9.4, 0.9, 0, Math.PI * 2); ctx.fill();
     ctx.lineWidth = 1.4;
   }
+  ctx.restore();
   if (teamId === 0) {                  // SPLASH: knee pads (follow the stride)
     ctx.fillStyle = '#dfe3ea';
-    ctx.beginPath(); ctx.arc(-3.5 + runS * 2.4, 12 - Math.max(0, runS), 1.5, 0, Math.PI * 2); ctx.fill();
-    ctx.beginPath(); ctx.arc(3.5 - runS * 2.4, 12 - Math.max(0, -runS), 1.5, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(-3.5 + runS * 1.7, 12 - Math.max(0, runS) * 0.8, 1.5, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(3.5 - runS * 1.7, 12 - Math.max(0, -runS) * 0.8, 1.5, 0, Math.PI * 2); ctx.fill();
   }
 
   // SPLASH's antenna backpack pokes out behind the body
@@ -261,7 +286,7 @@ function drawCharacter(ctx, teamId, x, y, opts = {}) {
     ctx.lineWidth = 3;
     ctx.beginPath();
     ctx.moveTo(-4, -11 + by);
-    ctx.quadraticCurveTo(-8 - Math.sin(walk * 6) * 1.5, -4 + by, -6.5, 3 + by);
+    ctx.quadraticCurveTo(-8 - (pose === 'run' ? runS * 2.2 : Math.sin(walk * 6) * 1.5), -4 + by, -6.5, 3 + by);
     ctx.stroke();
     ctx.strokeStyle = INK;
     ctx.lineWidth = 1.4;
@@ -313,22 +338,38 @@ function drawCharacter(ctx, teamId, x, y, opts = {}) {
     ctx.lineWidth = 1.4;
   }
 
-  // weapon held toward aim — silhouette matches the loadout
-  // (run pose: carried high across the chest, muzzle up, swaying with the stride)
-  ctx.save();
-  if (pose === 'run') {
-    ctx.translate(4.5, by);
-    ctx.rotate(-1.1 + runS * 0.07);
-  } else {
-    ctx.rotate(aim);
-  }
-  // arms reaching for the grip
+  // weapon — battle: held toward aim; run: a per-fighter carry pose
   ctx.strokeStyle = INK;
   ctx.lineWidth = 1.4;
-  ctx.beginPath();
-  ctx.moveTo(1.5, -2.8); ctx.lineTo(5.8, -1.2);
-  ctx.moveTo(1.5, 3.2); ctx.lineTo(9, 1.6);
-  ctx.stroke();
+  if (pose === 'run') {
+    // [tx, ty, angle] — no one jogs in a firing stance, and no two match
+    const [wx, wy, rot] = [
+      [4.5, 0,   -1.10],   // SPLASH: blaster high across the chest
+      [5,   0.5, -0.78],   // BAM: scatter thrust up-forward mid-charge
+      [6.5, 0.2, -1.38],   // ZIP: pen straight up like a banner
+      [2,   4,   -0.52],   // BLOB: roller cradled at the belly
+    ][teamId];
+    const a = rot + runS * 0.07;
+    const cosA = Math.cos(a), sinA = Math.sin(a);
+    // arms reach from the shoulders to wherever the grips end up
+    const h1x = wx + 6 * cosA + 0.8 * sinA, h1y = wy + by + 6 * sinA - 0.8 * cosA;
+    const h2x = wx + 9.6 * cosA - 1.2 * sinA, h2y = wy + by + 9.6 * sinA + 1.2 * cosA;
+    ctx.beginPath();
+    ctx.moveTo(-hw + 1.5, 1 + by); ctx.quadraticCurveTo(0, 2.5 + by, h1x, h1y);
+    ctx.moveTo(hw - 1.5, 1.5 + by); ctx.lineTo(h2x, h2y);
+    ctx.stroke();
+    ctx.save();
+    ctx.translate(wx, wy + by);
+    ctx.rotate(a);
+  } else {
+    ctx.save();
+    ctx.rotate(aim);
+    // arms reaching for the grip
+    ctx.beginPath();
+    ctx.moveTo(1.5, -2.8); ctx.lineTo(5.8, -1.2);
+    ctx.moveTo(1.5, 3.2); ctx.lineTo(9, 1.6);
+    ctx.stroke();
+  }
   ctx.fillStyle = team.color;
   if (teamId === 1) {
     // Splat Scatter: stubby double barrel
