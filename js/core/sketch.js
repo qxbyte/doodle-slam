@@ -16,7 +16,7 @@ const PALETTES = {
   default:   { ink: '#4a4a48', light: '#8d8d88', paper: '#f0efe9' },
   chalk:     { ink: '#f0f2ec', light: '#a9b8ae', paper: '#2c3b35' },
   deep:      { ink: '#3d5566', light: '#7e97a6', paper: '#e2eef2' },
-  blueprint: { ink: '#dce8f2', light: '#8fb0cc', paper: '#274b73' },
+  night:     { ink: '#dce8f2', light: '#8fb0cc', paper: '#233c5e' },
 };
 
 let PALETTE_NAME = 'default';
