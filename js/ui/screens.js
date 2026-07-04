@@ -209,9 +209,14 @@ function drawMapPreviewInner(cv, map) {
 
 /* ---------------- fighter select ---------------- */
 
+/* card canvases redrawn every frame while the select screen is up,
+   so the fighters jog in place (see tickFighterCards) */
+const fighterCardAnims = [];
+
 function buildFighterCards() {
   const wrap = $('#fighter-cards');
   wrap.innerHTML = '';
+  fighterCardAnims.length = 0;
   for (const team of TEAMS) {
     const card = document.createElement('button');
     card.className = 'fighter-card';
@@ -223,7 +228,8 @@ function buildFighterCards() {
     cv.style.height = '110px';
     const c = cv.getContext('2d');
     c.scale(5.2, 5.2);
-    withDefaultPalette(() => drawCharacter(c, team.id, 23, 24, { aim: -0.35 }));
+    withDefaultPalette(() => drawCharacter(c, team.id, 23, 24, { pose: 'run' }));
+    fighterCardAnims.push({ c, id: team.id });
     card.appendChild(cv);
     const w = WEAPONS[team.id];
     card.insertAdjacentHTML('beforeend', `
@@ -231,6 +237,19 @@ function buildFighterCards() {
       <div class="f-weapon">${w.name}</div>
       <div class="f-desc">${L(team.desc)} ${(b => b[0].toUpperCase() + b.slice(1))(L(w.blurb))}.</div>`);
     wrap.appendChild(card);
+  }
+}
+
+/* jog-in-place run cycle on the select cards; called from the main
+   loop while game.state === 'select'. Phases offset per fighter so
+   the four don't run in lockstep. */
+function tickFighterCards(now) {
+  for (const f of fighterCardAnims) {
+    f.c.setTransform(1, 0, 0, 1, 0, 0);
+    f.c.clearRect(0, 0, 240, 220);
+    f.c.setTransform(5.2, 0, 0, 5.2, 0, 0);
+    withDefaultPalette(() =>
+      drawCharacter(f.c, f.id, 23, 24, { pose: 'run', walk: now / 1000 + f.id * 0.55 }));
   }
 }
 

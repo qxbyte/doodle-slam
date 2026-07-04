@@ -783,6 +783,7 @@ function frame(now) {
   lastT = now;
   update(dt);
   if (game.state === 'match' || game.state === 'results' || game.demo) Ambient.update(dt);
+  if (game.state === 'select') tickFighterCards(now);
   render();
   requestAnimationFrame(frame);
 }
@@ -997,7 +998,7 @@ function boot() {
     const ff = Number(params.get('ff')) || 0;
     for (let i = 0; i < ff * 30; i++) update(1 / 30);
   }
-  if (params.get('screen') === 'select') showScreen('#screen-select');
+  if (params.get('screen') === 'select') { game.state = 'select'; showScreen('#screen-select'); }
   if (params.get('screen') === 'maps') { buildMapCards(game.stageIdx); showScreen('#screen-maps'); }
   if (params.get('screen') === 'stages') showScreen('#screen-stages');
 

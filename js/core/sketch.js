@@ -144,7 +144,7 @@ function drawSplat(ctx, rng, x, y, r, color) {
      BLOB: painter — headphone beanie, splattered apron, brush
    ============================================================ */
 function drawCharacter(ctx, teamId, x, y, opts = {}) {
-  const { scale = 1, walk = 0, aim = 0, firing = false } = opts;
+  const { scale = 1, walk = 0, aim = 0, firing = false, pose = 'battle' } = opts;
   const team = TEAMS[teamId];
   ctx.save();
   ctx.translate(x, y);
@@ -155,19 +155,38 @@ function drawCharacter(ctx, teamId, x, y, opts = {}) {
   ctx.lineCap = 'round';
 
   const bob = Math.sin(walk * 10) * 1.4;
-  const by = bob * 0.3;               // upper-body bob
+  // run pose: body bounces between footfalls; battle: gentle bob
+  const by = pose === 'run'
+    ? 0.6 - Math.abs(Math.cos(walk * 10)) * 1.3
+    : bob * 0.3;
   const skin = ['#ba7a4a', '#e8b48c', '#d99a62', '#8d5a38'][teamId];
   const bodyW = [13, 12, 11, 15][teamId];   // build: ZIP slim, BLOB round
   const hw = bodyW / 2;
+  const runS = pose === 'run' ? Math.sin(walk * 10) : 0;   // stride phase
 
   // legs + shoes
-  ctx.beginPath();
-  ctx.moveTo(-3.5, 9 + bob * 0.4); ctx.lineTo(-3.5, 14 - bob);
-  ctx.moveTo(3.5, 9 - bob * 0.4); ctx.lineTo(3.5, 14 + bob);
-  ctx.stroke();
-  ctx.fillStyle = '#333';
-  ctx.beginPath(); ctx.ellipse(-3.8, 14.5 - bob, 2.6, 1.4, 0, 0, Math.PI * 2); ctx.fill();
-  ctx.beginPath(); ctx.ellipse(3.8, 14.5 + bob, 2.6, 1.4, 0, 0, Math.PI * 2); ctx.fill();
+  if (pose === 'run') {
+    // scissor run cycle — legs swing sideways, feet lift on the kick
+    const lx = -3.5 + runS * 4.6, rx = 3.5 - runS * 4.6;
+    const lLift = Math.max(0, runS) * 2.4, rLift = Math.max(0, -runS) * 2.4;
+    ctx.beginPath();
+    ctx.moveTo(-3.5, 8.5);
+    ctx.quadraticCurveTo(-3.5 + runS * 2, 11.5, lx, 14 - lLift);
+    ctx.moveTo(3.5, 8.5);
+    ctx.quadraticCurveTo(3.5 - runS * 2, 11.5, rx, 14 - rLift);
+    ctx.stroke();
+    ctx.fillStyle = '#333';
+    ctx.beginPath(); ctx.ellipse(lx - 0.3, 14.5 - lLift, 2.6, 1.4, runS * 0.35, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(rx + 0.3, 14.5 - rLift, 2.6, 1.4, -runS * 0.35, 0, Math.PI * 2); ctx.fill();
+  } else {
+    ctx.beginPath();
+    ctx.moveTo(-3.5, 9 + bob * 0.4); ctx.lineTo(-3.5, 14 - bob);
+    ctx.moveTo(3.5, 9 - bob * 0.4); ctx.lineTo(3.5, 14 + bob);
+    ctx.stroke();
+    ctx.fillStyle = '#333';
+    ctx.beginPath(); ctx.ellipse(-3.8, 14.5 - bob, 2.6, 1.4, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(3.8, 14.5 + bob, 2.6, 1.4, 0, 0, Math.PI * 2); ctx.fill();
+  }
   // bottoms — a different cut per fighter
   if (teamId === 0) {
     // SPLASH: cargo shorts with side pockets
@@ -222,10 +241,10 @@ function drawCharacter(ctx, teamId, x, y, opts = {}) {
     ctx.beginPath(); ctx.arc(-2.6, 9.4, 0.9, 0, Math.PI * 2); ctx.fill();
     ctx.lineWidth = 1.4;
   }
-  if (teamId === 0) {                  // SPLASH: knee pads
+  if (teamId === 0) {                  // SPLASH: knee pads (follow the stride)
     ctx.fillStyle = '#dfe3ea';
-    ctx.beginPath(); ctx.arc(-3.5, 12, 1.5, 0, Math.PI * 2); ctx.fill();
-    ctx.beginPath(); ctx.arc(3.5, 12, 1.5, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(-3.5 + runS * 2.4, 12 - Math.max(0, runS), 1.5, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(3.5 - runS * 2.4, 12 - Math.max(0, -runS), 1.5, 0, Math.PI * 2); ctx.fill();
   }
 
   // SPLASH's antenna backpack pokes out behind the body
@@ -295,8 +314,14 @@ function drawCharacter(ctx, teamId, x, y, opts = {}) {
   }
 
   // weapon held toward aim — silhouette matches the loadout
+  // (run pose: carried high across the chest, muzzle up, swaying with the stride)
   ctx.save();
-  ctx.rotate(aim);
+  if (pose === 'run') {
+    ctx.translate(4.5, by);
+    ctx.rotate(-1.1 + runS * 0.07);
+  } else {
+    ctx.rotate(aim);
+  }
   // arms reaching for the grip
   ctx.strokeStyle = INK;
   ctx.lineWidth = 1.4;
