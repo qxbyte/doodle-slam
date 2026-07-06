@@ -333,11 +333,7 @@ function leaveMatch() {
   buildStageCards();       // star counts / unlocks may have changed
   buildMapCards(game.stageIdx);
   showScreen('#screen-title');
-  if (!prefersReducedMotion()) startDemoMatch();
-}
-
-function prefersReducedMotion() {
-  return matchMedia('(prefers-reduced-motion: reduce)').matches;
+  startDemoMatch();
 }
 
 function endMatch() {
@@ -1323,8 +1319,8 @@ function boot() {
     for (let i = 0; i < aff * 30; i++) update(1 / 30);
   }
 
-  // attract mode behind the menus (skipped for reduced motion / debug runs)
-  if (auto === null && !prefersReducedMotion() && !params.has('nodemo')) {
+  // attract mode behind the menus (always on; skipped only for ?nodemo/debug runs)
+  if (auto === null && !params.has('nodemo')) {
     startDemoMatch();
     const dff = Number(params.get('dff')) || 0;   // debug: fast-forward the demo
     for (let i = 0; i < dff * 30; i++) update(1 / 30);
