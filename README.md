@@ -1,6 +1,6 @@
 # DOODLE SLAM!
 
-一个手绘涂鸦画风的 Splatoon 式地盘泼漆对战小游戏（fan project，复刻自 Higgsfield 上的一个演示视频）。
+一个手绘涂鸦画风的 Splatoon 式地盘泼漆对战小游戏。
 
 **在线试玩：https://qxbyte.github.io/doodle-slam/**
 
